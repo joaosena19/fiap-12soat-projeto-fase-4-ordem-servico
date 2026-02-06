@@ -9,6 +9,7 @@
     <DockerfileContext>.</DockerfileContext>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
+    <AssemblyName>OrdemServicoService.API</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
