@@ -58,8 +58,8 @@ nunit-*.xml
 *.csproj.user
 CoverageReport/
 .vs/
-bin/
-obj/
+**/bin/
+**/obj/
 
 # Visual Studio temporary files
 **/FileContentIndex/
@@ -69,6 +69,9 @@ obj/
 # Lambda publish
 publish/
 *.zip
+
+# Development settings
+appsettings.Development.json
 
 # OS
 .DS_Store
