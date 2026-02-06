@@ -1,8 +1,5 @@
-using Application.Cadastros.Dtos;
-using Application.Estoque.Dtos;
 using Application.OrdemServico.Dtos;
-using Domain.Cadastros.Enums;
-using Domain.Estoque.Enums;
+using static Application.OrdemServico.Dtos.CriarOrdemServicoCompletaDto;
 using Domain.OrdemServico.Enums;
 using FluentAssertions;
 using Infrastructure.Database;

@@ -3,13 +3,11 @@ using API.Dtos;
 using API.Presenters.OrdemServico;
 using Application.Identidade.Services;
 using Application.OrdemServico.Dtos;
-using Infrastructure.AntiCorruptionLayer.OrdemServico;
 using Infrastructure.Database;
 using Infrastructure.Handlers.OrdemServico;
 using Infrastructure.Monitoramento;
-using Infrastructure.Repositories.Cadastros;
-using Infrastructure.Repositories.Estoque;
 using Infrastructure.Repositories.OrdemServico;
+using Infrastructure.ExternalServices.Stubs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -69,12 +67,12 @@ namespace API.Endpoints.OrdemServico
         public async Task<IActionResult> GetById(Guid id)
         {
             var gateway = new OrdemServicoRepository(_context);
-            var veiculoGateway = new VeiculoRepository(_context);
+            var clienteExternalService = new ClienteExternalServiceStub();
             var presenter = new BuscarOrdemServicoPorIdPresenter();
             var handler = new OrdemServicoHandler(_loggerFactory);
             var ator = BuscarAtorAtual();
 
-            await handler.BuscarOrdemServicoPorIdAsync(ator, id, gateway, veiculoGateway, presenter);
+            await handler.BuscarOrdemServicoPorIdAsync(ator, id, gateway, clienteExternalService, presenter);
             return presenter.ObterResultado();
         }
 
@@ -95,12 +93,12 @@ namespace API.Endpoints.OrdemServico
         public async Task<IActionResult> GetByCodigo(string codigo)
         {
             var gateway = new OrdemServicoRepository(_context);
-            var veiculoGateway = new VeiculoRepository(_context);
+            var clienteExternalService = new ClienteExternalServiceStub();
             var presenter = new BuscarOrdemServicoPorCodigoPresenter();
             var handler = new OrdemServicoHandler(_loggerFactory);
             var ator = BuscarAtorAtual();
 
-            await handler.BuscarOrdemServicoPorCodigoAsync(ator, codigo, gateway, veiculoGateway, presenter);
+            await handler.BuscarOrdemServicoPorCodigoAsync(ator, codigo, gateway, clienteExternalService, presenter);
             return presenter.ObterResultado();
         }
 
@@ -125,8 +123,8 @@ namespace API.Endpoints.OrdemServico
             var gateway = new OrdemServicoRepository(_context);
             var presenter = new CriarOrdemServicoPresenter();
             var handler = new OrdemServicoHandler(_loggerFactory);
-            var veiculoExternalService = new VeiculoExternalService(new VeiculoRepository(_context));
-            var clienteExternalService = new ClienteExternalService(new VeiculoRepository(_context), new ClienteRepository(_context));
+            var veiculoExternalService = new VeiculoExternalServiceStub();
+            var clienteExternalService = new ClienteExternalServiceStub();
             var metricsService = new NewRelicMetricsService();
             var ator = BuscarAtorAtual();
 
@@ -153,16 +151,16 @@ namespace API.Endpoints.OrdemServico
         public async Task<IActionResult> CriarCompleta([FromBody] CriarOrdemServicoCompletaDto dto)
         {
             var ordemServicoGateway = new OrdemServicoRepository(_context);
-            var clienteGateway = new ClienteRepository(_context);
-            var veiculoGateway = new VeiculoRepository(_context);
-            var servicoGateway = new ServicoRepository(_context);
-            var itemEstoqueGateway = new ItemEstoqueRepository(_context);
+            var clienteExternalService = new ClienteExternalServiceStub();
+            var veiculoExternalService = new VeiculoExternalServiceStub();
+            var servicoExternalService = new ServicoExternalServiceStub();
+            var estoqueExternalService = new EstoqueExternalServiceStub();
             var presenter = new CriarOrdemServicoCompletaPresenter();
             var handler = new OrdemServicoHandler(_loggerFactory);
             var metricsService = new NewRelicMetricsService();
             var ator = BuscarAtorAtual();
 
-            await handler.CriarOrdemServicoCompletaAsync(ator, dto, ordemServicoGateway, clienteGateway, veiculoGateway, servicoGateway, itemEstoqueGateway, presenter, metricsService);
+            await handler.CriarOrdemServicoCompletaAsync(ator, dto, ordemServicoGateway, clienteExternalService, veiculoExternalService, servicoExternalService, estoqueExternalService, presenter, metricsService);
             return presenter.ObterResultado();
         }
 
@@ -190,7 +188,7 @@ namespace API.Endpoints.OrdemServico
             var presenter = new AdicionarServicosPresenter();
             var handler = new OrdemServicoHandler(_loggerFactory);
 
-            var servicoExternalService = new Infrastructure.AntiCorruptionLayer.OrdemServico.ServicoExternalService(new Infrastructure.Repositories.Cadastros.ServicoRepository(_context));
+            var servicoExternalService = new ServicoExternalServiceStub();
             await handler.AdicionarServicosAsync(ator, id, dto.ServicosOriginaisIds, gateway, servicoExternalService, presenter);
             return presenter.ObterResultado();
         }
@@ -219,7 +217,7 @@ namespace API.Endpoints.OrdemServico
             var presenter = new AdicionarItemPresenter();
             var handler = new OrdemServicoHandler(_loggerFactory);
 
-            var estoqueExternalService = new Infrastructure.AntiCorruptionLayer.OrdemServico.EstoqueExternalService(new Infrastructure.Repositories.Estoque.ItemEstoqueRepository(_context));
+            var estoqueExternalService = new EstoqueExternalServiceStub();
             await handler.AdicionarItemAsync(ator, id, dto.ItemEstoqueOriginalId, dto.Quantidade, gateway, estoqueExternalService, presenter);
             return presenter.ObterResultado();
         }
@@ -386,13 +384,13 @@ namespace API.Endpoints.OrdemServico
         public async Task<IActionResult> AprovarOrcamento(Guid id)
         {
             var gateway = new OrdemServicoRepository(_context);
-            var veiculoGateway = new VeiculoRepository(_context);
+            var clienteExternalService = new ClienteExternalServiceStub();
+            var estoqueExternalService = new EstoqueExternalServiceStub();
             var presenter = new OperacaoOrdemServicoPresenter();
             var handler = new OrdemServicoHandler(_loggerFactory);
             var ator = BuscarAtorAtual();
 
-            var estoqueExternalService = new Infrastructure.AntiCorruptionLayer.OrdemServico.EstoqueExternalService(new Infrastructure.Repositories.Estoque.ItemEstoqueRepository(_context));
-            await handler.AprovarOrcamentoAsync(ator, id, gateway, veiculoGateway, estoqueExternalService, presenter);
+            await handler.AprovarOrcamentoAsync(ator, id, gateway, clienteExternalService, estoqueExternalService, presenter);
             return presenter.ObterResultado();
         }
 
@@ -415,12 +413,12 @@ namespace API.Endpoints.OrdemServico
         public async Task<IActionResult> DesaprovarOrcamento(Guid id)
         {
             var gateway = new OrdemServicoRepository(_context);
-            var veiculoGateway = new VeiculoRepository(_context);
+            var clienteExternalService = new ClienteExternalServiceStub();
             var presenter = new OperacaoOrdemServicoPresenter();
             var handler = new OrdemServicoHandler(_loggerFactory);
             var ator = BuscarAtorAtual();
 
-            await handler.DesaprovarOrcamentoAsync(ator, id, gateway, veiculoGateway, presenter);
+            await handler.DesaprovarOrcamentoAsync(ator, id, gateway, clienteExternalService, presenter);
             return presenter.ObterResultado();
         }
 
@@ -526,7 +524,7 @@ namespace API.Endpoints.OrdemServico
             var presenter = new BuscaPublicaOrdemServicoPresenter();
             var handler = new OrdemServicoHandler(_loggerFactory);
 
-            var clienteExternalService = new Infrastructure.AntiCorruptionLayer.OrdemServico.ClienteExternalService(new Infrastructure.Repositories.Cadastros.VeiculoRepository(_context), new Infrastructure.Repositories.Cadastros.ClienteRepository(_context));
+            var clienteExternalService = new ClienteExternalServiceStub();
             await handler.BuscaPublicaAsync(dto.CodigoOrdemServico, dto.DocumentoIdentificadorCliente, gateway, clienteExternalService, presenter);
             return presenter.ObterResultado();
         }
@@ -554,13 +552,13 @@ namespace API.Endpoints.OrdemServico
         public async Task<IActionResult> WebhookAprovarOrcamento([FromBody] WebhookIdDto dto)
         {
             var gateway = new OrdemServicoRepository(_context);
-            var veiculoGateway = new VeiculoRepository(_context);
+            var clienteExternalService = new ClienteExternalServiceStub();
+            var estoqueExternalService = new EstoqueExternalServiceStub();
             var presenter = new OperacaoOrdemServicoPresenter();
             var handler = new OrdemServicoHandler(_loggerFactory);
             var ator = Ator.Sistema();
 
-            var estoqueExternalService = new Infrastructure.AntiCorruptionLayer.OrdemServico.EstoqueExternalService(new Infrastructure.Repositories.Estoque.ItemEstoqueRepository(_context));
-            await handler.AprovarOrcamentoAsync(ator, dto.Id, gateway, veiculoGateway, estoqueExternalService, presenter);
+            await handler.AprovarOrcamentoAsync(ator, dto.Id, gateway, clienteExternalService, estoqueExternalService, presenter);
             return presenter.ObterResultado();
         }
 
@@ -587,12 +585,12 @@ namespace API.Endpoints.OrdemServico
         public async Task<IActionResult> WebhookDesaprovarOrcamento([FromBody] WebhookIdDto dto)
         {
             var gateway = new OrdemServicoRepository(_context);
-            var veiculoGateway = new VeiculoRepository(_context);
+            var clienteExternalService = new ClienteExternalServiceStub();
             var presenter = new OperacaoOrdemServicoPresenter();
             var handler = new OrdemServicoHandler(_loggerFactory);
             var ator = Ator.Sistema();
 
-            await handler.DesaprovarOrcamentoAsync(ator, dto.Id, gateway, veiculoGateway, presenter);
+            await handler.DesaprovarOrcamentoAsync(ator, dto.Id, gateway, clienteExternalService, presenter);
             return presenter.ObterResultado();
         }
 

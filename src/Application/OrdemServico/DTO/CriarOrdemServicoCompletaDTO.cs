@@ -1,7 +1,14 @@
-using Domain.Cadastros.Enums;
-
 namespace Application.OrdemServico.Dtos
 {
+    /// <summary>
+    /// Enum de tipo de veículo replicado para o microsserviço de Ordem de Serviço
+    /// </summary>
+    public enum TipoVeiculoEnum
+    {
+        Carro = 1,
+        Moto = 2
+    }
+
     /// <summary>
     /// DTO para criação completa de ordem de serviço com cliente, veículo, serviços e itens
     /// </summary>

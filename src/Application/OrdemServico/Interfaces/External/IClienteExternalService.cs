@@ -8,5 +8,7 @@ namespace Application.OrdemServico.Interfaces.External
     public interface IClienteExternalService
     {
         Task<ClienteExternalDto?> ObterClientePorVeiculoIdAsync(Guid veiculoId);
+        Task<ClienteExternalDto?> ObterClientePorDocumentoAsync(string documentoIdentificador);
+        Task<ClienteExternalDto> CriarClienteAsync(CriarClienteExternalDto dto);
     }
 }

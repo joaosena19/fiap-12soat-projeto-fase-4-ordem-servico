@@ -1,6 +1,6 @@
 using Application.OrdemServico.Dtos;
 using Bogus;
-using Domain.Cadastros.Enums;
+using static Application.OrdemServico.Dtos.CriarOrdemServicoCompletaDto;
 using Tests.Helpers;
 
 namespace Tests.Application.OrdemServico.Helpers

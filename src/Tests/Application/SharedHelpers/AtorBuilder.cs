@@ -1,5 +1,5 @@
 using Application.Identidade.Services;
-using Domain.Identidade.Enums;
+using static Application.Identidade.Services.Ator;
 
 namespace Tests.Application.SharedHelpers
 {

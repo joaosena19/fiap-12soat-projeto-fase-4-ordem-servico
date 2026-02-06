@@ -8,5 +8,8 @@ namespace Application.OrdemServico.Interfaces.External
     public interface IVeiculoExternalService
     {
         Task<bool> VerificarExistenciaVeiculo(Guid veiculoId);
+        Task<VeiculoExternalDto?> ObterVeiculoPorIdAsync(Guid veiculoId);
+        Task<VeiculoExternalDto?> ObterVeiculoPorPlacaAsync(string placa);
+        Task<VeiculoExternalDto> CriarVeiculoAsync(CriarVeiculoExternalDto dto);
     }
 }

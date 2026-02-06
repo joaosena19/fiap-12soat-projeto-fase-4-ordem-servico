@@ -1,7 +1,19 @@
-using Domain.Identidade.Enums;
-
 namespace Application.Identidade.Services;
 
+/// <summary>
+/// Enum de roles replicado para o microsserviço de Ordem de Serviço
+/// </summary>
+public enum RoleEnum
+{
+    Administrador = 1,
+    Cliente = 2,
+    Sistema = 3
+}
+
+/// <summary>
+/// Classe Ator replicada para o microsserviço de Ordem de Serviço
+/// Representa o contexto de autorização do usuário atual
+/// </summary>
 public class Ator
 {
     public Guid UsuarioId { get; private set; }

@@ -2,6 +2,7 @@ using Application.Contracts.Gateways;
 using Application.Contracts.Presenters;
 using Application.Identidade.Services;
 using Application.Identidade.Services.Extensions;
+using Application.OrdemServico.Interfaces.External;
 using Shared.Enums;
 using Shared.Exceptions;
 using Application.Extensions;
@@ -11,7 +12,7 @@ namespace Application.OrdemServico.UseCases;
 
 public class BuscarOrdemServicoPorIdUseCase
 {
-    public async Task ExecutarAsync(Ator ator, Guid id, IOrdemServicoGateway gateway, IVeiculoGateway veiculoGateway, IBuscarOrdemServicoPorIdPresenter presenter, IAppLogger logger)
+    public async Task ExecutarAsync(Ator ator, Guid id, IOrdemServicoGateway gateway, IClienteExternalService clienteExternalService, IBuscarOrdemServicoPorIdPresenter presenter, IAppLogger logger)
     {
         try
         {
@@ -19,7 +20,10 @@ public class BuscarOrdemServicoPorIdUseCase
             if (ordemServico == null)
                 throw new DomainException("Ordem de serviço não encontrada.", ErrorType.ResourceNotFound, "Ordem de serviço não encontrada para Id {OrdemServicoId}", id);
 
-            if (!await ator.PodeAcessarOrdemServicoAsync(ordemServico, veiculoGateway))
+            // Obter clienteId do veículo para verificar autorização
+            var cliente = await clienteExternalService.ObterClientePorVeiculoIdAsync(ordemServico.VeiculoId);
+            
+            if (!ator.PodeAcessarOrdemServico(cliente?.Id))
                 throw new DomainException("Acesso negado. Apenas administradores ou donos da ordem de serviço podem visualizá-la.", ErrorType.NotAllowed, "Acesso negado para visualizar ordem de serviço {OrdemServicoId} para usuário {Ator_UsuarioId}", id, ator.UsuarioId);
 
             presenter.ApresentarSucesso(ordemServico);

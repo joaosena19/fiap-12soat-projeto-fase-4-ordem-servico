@@ -3,38 +3,31 @@ using OrdemServicoAggregate = Domain.OrdemServico.Aggregates.OrdemServico.OrdemS
 
 namespace Application.Identidade.Services.Extensions;
 
+/// <summary>
+/// Extensions do Ator para Ordem de Serviço.
+/// Modificado para não depender de gateways de outros bounded contexts.
+/// Verificações de autorização recebem o ClienteId já resolvido pelo use case.
+/// </summary>
 public static class AtorOrdemServicoExtensions
 {
     /// <summary>
     /// Administrador ou dono do veículo
     /// </summary>
-    public static async Task<bool> PodeAcessarOrdemServicoAsync(this Ator ator, OrdemServicoAggregate ordemServico, IVeiculoGateway veiculoGateway)
+    /// <param name="ator">Ator tentando acessar</param>
+    /// <param name="clienteIdDoVeiculo">Cliente Id do veículo associado à ordem de serviço (resolvido pelo use case)</param>
+    public static bool PodeAcessarOrdemServico(this Ator ator, Guid? clienteIdDoVeiculo)
     {
         if (ator.PodeGerenciarSistema()) return true;
-
-        var veiculo = await veiculoGateway.ObterPorIdAsync(ordemServico.VeiculoId);
-        return veiculo?.ClienteId == ator.ClienteId;
+        return clienteIdDoVeiculo == ator.ClienteId;
     }
 
     /// <summary>
     /// Administrador ou dono do veículo
     /// </summary>
-    public static async Task<bool> PodeAcessarOrdemServicoAsync(this Ator ator, Guid ordemServicoId, IOrdemServicoGateway ordemServicoGateway, IVeiculoGateway veiculoGateway)
+    public static bool PodeCriarOrdemServicoParaVeiculo(this Ator ator, Guid? clienteIdDoVeiculo)
     {
         if (ator.PodeGerenciarSistema()) return true;
-
-        var ordemServico = await ordemServicoGateway.ObterPorIdAsync(ordemServicoId);
-        if (ordemServico == null) return false;
-
-        return await ator.PodeAcessarOrdemServicoAsync(ordemServico, veiculoGateway);
-    }
-
-    /// <summary>
-    /// Administrador ou dono do veículo
-    /// </summary>
-    public static async Task<bool> PodeCriarOrdemServicoParaVeiculoAsync(this Ator ator, Guid veiculoId, IVeiculoGateway veiculoGateway)
-    {
-        return await ator.PodeAcessarVeiculoAsync(veiculoId, veiculoGateway);
+        return clienteIdDoVeiculo == ator.ClienteId;
     }
 
     /// <summary>
@@ -61,16 +54,14 @@ public static class AtorOrdemServicoExtensions
     /// Administradores, donos da ordem de serviço ou sistema (webhooks) podem aprovar/desaprovar orçamentos.
     /// </summary>
     /// <param name="ator">O ator que está tentando realizar a operação</param>
-    /// <param name="ordemServico">A ordem de serviço relacionada ao orçamento</param>
-    /// <param name="veiculoGateway">Gateway para acessar dados dos veículos</param>
+    /// <param name="clienteIdDoVeiculo">Cliente Id do veículo associado à ordem de serviço (resolvido pelo use case)</param>
     /// <returns>True se o ator pode aprovar/desaprovar orçamentos, False caso contrário</returns>
-    public static async Task<bool> PodeAprovarDesaprovarOrcamento(this Ator ator, OrdemServicoAggregate ordemServico, IVeiculoGateway veiculoGateway)
+    public static bool PodeAprovarDesaprovarOrcamento(this Ator ator, Guid? clienteIdDoVeiculo)
     {
         // Administradores e sistema podem aprovar/desaprovar qualquer orçamento
         if (ator.PodeGerenciarSistema() || ator.PodeAcionarWebhooks()) return true;
 
         // Cliente pode aprovar/desaprovar orçamento apenas se for dono do veículo
-        var veiculo = await veiculoGateway.ObterPorIdAsync(ordemServico.VeiculoId);
-        return veiculo?.ClienteId == ator.ClienteId;
+        return clienteIdDoVeiculo == ator.ClienteId;
     }
 }

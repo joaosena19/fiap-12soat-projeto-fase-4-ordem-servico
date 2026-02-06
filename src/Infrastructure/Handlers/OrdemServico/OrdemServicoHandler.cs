@@ -20,20 +20,20 @@ namespace Infrastructure.Handlers.OrdemServico
             await useCase.ExecutarAsync(ator, gateway, presenter, logger);
         }
 
-        public async Task BuscarOrdemServicoPorIdAsync(Ator ator, Guid id, IOrdemServicoGateway gateway, IVeiculoGateway veiculoGateway, IBuscarOrdemServicoPorIdPresenter presenter)
+        public async Task BuscarOrdemServicoPorIdAsync(Ator ator, Guid id, IOrdemServicoGateway gateway, IClienteExternalService clienteExternalService, IBuscarOrdemServicoPorIdPresenter presenter)
         {
             var useCase = new BuscarOrdemServicoPorIdUseCase();
             var logger = CriarLoggerPara<BuscarOrdemServicoPorIdUseCase>();
             
-            await useCase.ExecutarAsync(ator, id, gateway, veiculoGateway, presenter, logger);
+            await useCase.ExecutarAsync(ator, id, gateway, clienteExternalService, presenter, logger);
         }
 
-        public async Task BuscarOrdemServicoPorCodigoAsync(Ator ator, string codigo, IOrdemServicoGateway gateway, IVeiculoGateway veiculoGateway, IBuscarOrdemServicoPorCodigoPresenter presenter)
+        public async Task BuscarOrdemServicoPorCodigoAsync(Ator ator, string codigo, IOrdemServicoGateway gateway, IClienteExternalService clienteExternalService, IBuscarOrdemServicoPorCodigoPresenter presenter)
         {
             var useCase = new BuscarOrdemServicoPorCodigoUseCase();
             var logger = CriarLoggerPara<BuscarOrdemServicoPorCodigoUseCase>();
             
-            await useCase.ExecutarAsync(ator, codigo, gateway, veiculoGateway, presenter, logger);
+            await useCase.ExecutarAsync(ator, codigo, gateway, clienteExternalService, presenter, logger);
         }
 
         public async Task CriarOrdemServicoAsync(Ator ator, Guid veiculoId, IOrdemServicoGateway gateway, IVeiculoExternalService veiculoExternalService, IClienteExternalService clienteExternalService, ICriarOrdemServicoPresenter presenter, IMetricsService metricsService)
@@ -44,12 +44,12 @@ namespace Infrastructure.Handlers.OrdemServico
             await useCase.ExecutarAsync(ator, veiculoId, gateway, veiculoExternalService, presenter, logger, clienteExternalService, metricsService);
         }
 
-        public async Task CriarOrdemServicoCompletaAsync(Ator ator, Application.OrdemServico.Dtos.CriarOrdemServicoCompletaDto dto, IOrdemServicoGateway ordemServicoGateway, IClienteGateway clienteGateway, IVeiculoGateway veiculoGateway, IServicoGateway servicoGateway, IItemEstoqueGateway itemEstoqueGateway, ICriarOrdemServicoCompletaPresenter presenter, IMetricsService metricsService)
+        public async Task CriarOrdemServicoCompletaAsync(Ator ator, Application.OrdemServico.Dtos.CriarOrdemServicoCompletaDto dto, IOrdemServicoGateway ordemServicoGateway, IClienteExternalService clienteExternalService, IVeiculoExternalService veiculoExternalService, IServicoExternalService servicoExternalService, IEstoqueExternalService estoqueExternalService, ICriarOrdemServicoCompletaPresenter presenter, IMetricsService metricsService)
         {
             var useCase = new CriarOrdemServicoCompletaUseCase();
             var logger = CriarLoggerPara<CriarOrdemServicoCompletaUseCase>();
             
-            await useCase.ExecutarAsync(ator, dto, ordemServicoGateway, clienteGateway, veiculoGateway, servicoGateway, itemEstoqueGateway, presenter, logger, metricsService);
+            await useCase.ExecutarAsync(ator, dto, ordemServicoGateway, clienteExternalService, veiculoExternalService, servicoExternalService, estoqueExternalService, presenter, logger, metricsService);
         }
 
         public async Task AdicionarServicosAsync(Ator ator, Guid ordemServicoId, List<Guid> servicosOriginaisIds, IOrdemServicoGateway gateway, IServicoExternalService servicoExternalService, IAdicionarServicosPresenter presenter)
@@ -108,20 +108,20 @@ namespace Infrastructure.Handlers.OrdemServico
             await useCase.ExecutarAsync(ator, ordemServicoId, gateway, presenter, logger);
         }
 
-        public async Task AprovarOrcamentoAsync(Ator ator, Guid ordemServicoId, IOrdemServicoGateway gateway, IVeiculoGateway veiculoGateway, IEstoqueExternalService estoqueExternalService, IOperacaoOrdemServicoPresenter presenter)
+        public async Task AprovarOrcamentoAsync(Ator ator, Guid ordemServicoId, IOrdemServicoGateway gateway, IClienteExternalService clienteExternalService, IEstoqueExternalService estoqueExternalService, IOperacaoOrdemServicoPresenter presenter)
         {
             var useCase = new AprovarOrcamentoUseCase();
             var logger = CriarLoggerPara<AprovarOrcamentoUseCase>();
             
-            await useCase.ExecutarAsync(ator, ordemServicoId, gateway, veiculoGateway, estoqueExternalService, presenter, logger);
+            await useCase.ExecutarAsync(ator, ordemServicoId, gateway, clienteExternalService, estoqueExternalService, presenter, logger);
         }
 
-        public async Task DesaprovarOrcamentoAsync(Ator ator, Guid ordemServicoId, IOrdemServicoGateway gateway, IVeiculoGateway veiculoGateway, IOperacaoOrdemServicoPresenter presenter)
+        public async Task DesaprovarOrcamentoAsync(Ator ator, Guid ordemServicoId, IOrdemServicoGateway gateway, IClienteExternalService clienteExternalService, IOperacaoOrdemServicoPresenter presenter)
         {
             var useCase = new DesaprovarOrcamentoUseCase();
             var logger = CriarLoggerPara<DesaprovarOrcamentoUseCase>();
             
-            await useCase.ExecutarAsync(ator, ordemServicoId, gateway, veiculoGateway, presenter, logger);
+            await useCase.ExecutarAsync(ator, ordemServicoId, gateway, clienteExternalService, presenter, logger);
         }
 
         public async Task FinalizarExecucaoAsync(Ator ator, Guid ordemServicoId, IOrdemServicoGateway gateway, IOperacaoOrdemServicoPresenter presenter, IMetricsService metricsService)
