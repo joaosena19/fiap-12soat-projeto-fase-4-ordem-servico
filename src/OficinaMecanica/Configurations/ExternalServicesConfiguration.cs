@@ -1,4 +1,7 @@
+using Application.OrdemServico.Interfaces.External;
 using Infrastructure.ExternalServices;
+using Infrastructure.ExternalServices.Cadastro;
+using Microsoft.Extensions.Options;
 
 namespace API.Configurations;
 
@@ -21,6 +24,22 @@ public static class ExternalServicesConfiguration
         // Configurar settings de serviços externos
         services.Configure<ExternalServicesSettings>(
             configuration.GetSection("ExternalServices"));
+
+        // Registrar HttpClient tipado para o serviço de Cadastros
+        services.AddHttpClient<CadastroHttpClientService>((sp, client) =>
+        {
+            var settings = sp.GetRequiredService<IOptions<ExternalServicesSettings>>().Value;
+            client.BaseAddress = new Uri(settings.CadastroBaseUrl);
+            client.Timeout = TimeSpan.FromSeconds(30);
+        });
+
+        // Registrar as interfaces de serviço externo para o CadastroHttpClientService
+        services.AddScoped<IClienteExternalService>(sp => 
+            sp.GetRequiredService<CadastroHttpClientService>());
+        services.AddScoped<IServicoExternalService>(sp => 
+            sp.GetRequiredService<CadastroHttpClientService>());
+        services.AddScoped<IVeiculoExternalService>(sp => 
+            sp.GetRequiredService<CadastroHttpClientService>());
 
         return services;
     }
