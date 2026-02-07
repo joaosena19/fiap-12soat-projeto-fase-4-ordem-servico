@@ -12,7 +12,7 @@ namespace Application.OrdemServico.UseCases;
 
 public class BuscarOrdemServicoPorIdUseCase
 {
-    public async Task ExecutarAsync(Ator ator, Guid id, IOrdemServicoGateway gateway, IClienteExternalService clienteExternalService, IBuscarOrdemServicoPorIdPresenter presenter, IAppLogger logger)
+    public async Task ExecutarAsync(Ator ator, Guid id, IOrdemServicoGateway gateway, IVeiculoExternalService veiculoExternalService, IBuscarOrdemServicoPorIdPresenter presenter, IAppLogger logger)
     {
         try
         {
@@ -20,10 +20,8 @@ public class BuscarOrdemServicoPorIdUseCase
             if (ordemServico == null)
                 throw new DomainException("Ordem de serviço não encontrada.", ErrorType.ResourceNotFound, "Ordem de serviço não encontrada para Id {OrdemServicoId}", id);
 
-            // Obter clienteId do veículo para verificar autorização
-            var cliente = await clienteExternalService.ObterClientePorVeiculoIdAsync(ordemServico.VeiculoId);
-            
-            if (!ator.PodeAcessarOrdemServico(cliente?.Id))
+            // Verificar autorização usando serviço externo
+            if (!await ator.PodeAcessarOrdemServicoAsync(ordemServico, veiculoExternalService))
                 throw new DomainException("Acesso negado. Apenas administradores ou donos da ordem de serviço podem visualizá-la.", ErrorType.NotAllowed, "Acesso negado para visualizar ordem de serviço {OrdemServicoId} para usuário {Ator_UsuarioId}", id, ator.UsuarioId);
 
             presenter.ApresentarSucesso(ordemServico);

@@ -1,12 +1,12 @@
 using Application.Contracts.Gateways;
+using Application.OrdemServico.Interfaces.External;
 using OrdemServicoAggregate = Domain.OrdemServico.Aggregates.OrdemServico.OrdemServico;
 
 namespace Application.Identidade.Services.Extensions;
 
 /// <summary>
 /// Extensions do Ator para Ordem de Serviço.
-/// Modificado para não depender de gateways de outros bounded contexts.
-/// Verificações de autorização recebem o ClienteId já resolvido pelo use case.
+/// Usa serviços externos para acessar dados de outros bounded contexts (Cadastros).
 /// </summary>
 public static class AtorOrdemServicoExtensions
 {
@@ -14,20 +14,45 @@ public static class AtorOrdemServicoExtensions
     /// Administrador ou dono do veículo
     /// </summary>
     /// <param name="ator">Ator tentando acessar</param>
-    /// <param name="clienteIdDoVeiculo">Cliente Id do veículo associado à ordem de serviço (resolvido pelo use case)</param>
-    public static bool PodeAcessarOrdemServico(this Ator ator, Guid? clienteIdDoVeiculo)
+    /// <param name="ordemServico">Ordem de serviço sendo acessada</param>
+    /// <param name="veiculoExternalService">Serviço externo para acessar dados de veículos</param>
+    public static async Task<bool> PodeAcessarOrdemServicoAsync(this Ator ator, OrdemServicoAggregate ordemServico, IVeiculoExternalService veiculoExternalService)
     {
         if (ator.PodeGerenciarSistema()) return true;
-        return clienteIdDoVeiculo == ator.ClienteId;
+
+        var veiculo = await veiculoExternalService.ObterVeiculoPorIdAsync(ordemServico.VeiculoId);
+        return veiculo?.ClienteId == ator.ClienteId;
     }
 
     /// <summary>
     /// Administrador ou dono do veículo
     /// </summary>
-    public static bool PodeCriarOrdemServicoParaVeiculo(this Ator ator, Guid? clienteIdDoVeiculo)
+    /// <param name="ator">Ator tentando acessar</param>
+    /// <param name="ordemServicoId">Id da ordem de serviço</param>
+    /// <param name="ordemServicoGateway">Gateway para acessar dados da ordem de serviço</param>
+    /// <param name="veiculoExternalService">Serviço externo para acessar dados de veículos</param>
+    public static async Task<bool> PodeAcessarOrdemServicoAsync(this Ator ator, Guid ordemServicoId, IOrdemServicoGateway ordemServicoGateway, IVeiculoExternalService veiculoExternalService)
     {
         if (ator.PodeGerenciarSistema()) return true;
-        return clienteIdDoVeiculo == ator.ClienteId;
+
+        var ordemServico = await ordemServicoGateway.ObterPorIdAsync(ordemServicoId);
+        if (ordemServico == null) return false;
+
+        return await ator.PodeAcessarOrdemServicoAsync(ordemServico, veiculoExternalService);
+    }
+
+    /// <summary>
+    /// Administrador ou dono do veículo
+    /// </summary>
+    /// <param name="ator">Ator tentando criar ordem de serviço</param>
+    /// <param name="veiculoId">Id do veículo</param>
+    /// <param name="veiculoExternalService">Serviço externo para acessar dados de veículos</param>
+    public static async Task<bool> PodeCriarOrdemServicoParaVeiculoAsync(this Ator ator, Guid veiculoId, IVeiculoExternalService veiculoExternalService)
+    {
+        if (ator.PodeGerenciarSistema()) return true;
+
+        var veiculo = await veiculoExternalService.ObterVeiculoPorIdAsync(veiculoId);
+        return veiculo != null && veiculo.ClienteId == ator.ClienteId;
     }
 
     /// <summary>
@@ -54,14 +79,16 @@ public static class AtorOrdemServicoExtensions
     /// Administradores, donos da ordem de serviço ou sistema (webhooks) podem aprovar/desaprovar orçamentos.
     /// </summary>
     /// <param name="ator">O ator que está tentando realizar a operação</param>
-    /// <param name="clienteIdDoVeiculo">Cliente Id do veículo associado à ordem de serviço (resolvido pelo use case)</param>
+    /// <param name="ordemServico">A ordem de serviço relacionada ao orçamento</param>
+    /// <param name="veiculoExternalService">Serviço externo para acessar dados de veículos</param>
     /// <returns>True se o ator pode aprovar/desaprovar orçamentos, False caso contrário</returns>
-    public static bool PodeAprovarDesaprovarOrcamento(this Ator ator, Guid? clienteIdDoVeiculo)
+    public static async Task<bool> PodeAprovarDesaprovarOrcamento(this Ator ator, OrdemServicoAggregate ordemServico, IVeiculoExternalService veiculoExternalService)
     {
         // Administradores e sistema podem aprovar/desaprovar qualquer orçamento
         if (ator.PodeGerenciarSistema() || ator.PodeAcionarWebhooks()) return true;
 
         // Cliente pode aprovar/desaprovar orçamento apenas se for dono do veículo
-        return clienteIdDoVeiculo == ator.ClienteId;
+        var veiculo = await veiculoExternalService.ObterVeiculoPorIdAsync(ordemServico.VeiculoId);
+        return veiculo?.ClienteId == ator.ClienteId;
     }
 }

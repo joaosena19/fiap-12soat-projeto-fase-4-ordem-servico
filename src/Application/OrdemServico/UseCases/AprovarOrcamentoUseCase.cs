@@ -12,7 +12,7 @@ namespace Application.OrdemServico.UseCases;
 
 public class AprovarOrcamentoUseCase
 {
-    public async Task ExecutarAsync(Ator ator, Guid ordemServicoId, IOrdemServicoGateway gateway, IClienteExternalService clienteExternalService, IEstoqueExternalService estoqueExternalService, IOperacaoOrdemServicoPresenter presenter, IAppLogger logger)
+    public async Task ExecutarAsync(Ator ator, Guid ordemServicoId, IOrdemServicoGateway gateway, IVeiculoExternalService veiculoExternalService, IEstoqueExternalService estoqueExternalService, IOperacaoOrdemServicoPresenter presenter, IAppLogger logger)
     {
         try
         {
@@ -20,10 +20,8 @@ public class AprovarOrcamentoUseCase
             if (ordemServico == null)
                 throw new DomainException("Ordem de serviço não encontrada.", ErrorType.ResourceNotFound, "Ordem de serviço não encontrada para Id {OrdemServicoId}", ordemServicoId);
 
-            // Obter clienteId do veículo para verificar autorização
-            var cliente = await clienteExternalService.ObterClientePorVeiculoIdAsync(ordemServico.VeiculoId);
-            
-            if (!ator.PodeAprovarDesaprovarOrcamento(cliente?.Id))
+            // Verificar autorização usando serviço externo
+            if (!await ator.PodeAprovarDesaprovarOrcamento(ordemServico, veiculoExternalService))
                 throw new DomainException("Acesso negado. Apenas administradores ou donos da ordem de serviço podem aprovar orçamentos.", ErrorType.NotAllowed, "Acesso negado para aprovar orçamento da ordem de serviço {OrdemServicoId} para usuário {Ator_UsuarioId}", ordemServicoId, ator.UsuarioId);
 
             // Verificar disponibilidade dos itens no estoque antes de aprovar o orçamento

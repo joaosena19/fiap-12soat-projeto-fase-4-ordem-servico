@@ -20,20 +20,20 @@ namespace Infrastructure.Handlers.OrdemServico
             await useCase.ExecutarAsync(ator, gateway, presenter, logger);
         }
 
-        public async Task BuscarOrdemServicoPorIdAsync(Ator ator, Guid id, IOrdemServicoGateway gateway, IClienteExternalService clienteExternalService, IBuscarOrdemServicoPorIdPresenter presenter)
+        public async Task BuscarOrdemServicoPorIdAsync(Ator ator, Guid id, IOrdemServicoGateway gateway, IVeiculoExternalService veiculoExternalService, IBuscarOrdemServicoPorIdPresenter presenter)
         {
             var useCase = new BuscarOrdemServicoPorIdUseCase();
             var logger = CriarLoggerPara<BuscarOrdemServicoPorIdUseCase>();
             
-            await useCase.ExecutarAsync(ator, id, gateway, clienteExternalService, presenter, logger);
+            await useCase.ExecutarAsync(ator, id, gateway, veiculoExternalService, presenter, logger);
         }
 
-        public async Task BuscarOrdemServicoPorCodigoAsync(Ator ator, string codigo, IOrdemServicoGateway gateway, IClienteExternalService clienteExternalService, IBuscarOrdemServicoPorCodigoPresenter presenter)
+        public async Task BuscarOrdemServicoPorCodigoAsync(Ator ator, string codigo, IOrdemServicoGateway gateway, IVeiculoExternalService veiculoExternalService, IBuscarOrdemServicoPorCodigoPresenter presenter)
         {
             var useCase = new BuscarOrdemServicoPorCodigoUseCase();
             var logger = CriarLoggerPara<BuscarOrdemServicoPorCodigoUseCase>();
             
-            await useCase.ExecutarAsync(ator, codigo, gateway, clienteExternalService, presenter, logger);
+            await useCase.ExecutarAsync(ator, codigo, gateway, veiculoExternalService, presenter, logger);
         }
 
         public async Task CriarOrdemServicoAsync(Ator ator, Guid veiculoId, IOrdemServicoGateway gateway, IVeiculoExternalService veiculoExternalService, IClienteExternalService clienteExternalService, ICriarOrdemServicoPresenter presenter, IMetricsService metricsService)
@@ -108,20 +108,20 @@ namespace Infrastructure.Handlers.OrdemServico
             await useCase.ExecutarAsync(ator, ordemServicoId, gateway, presenter, logger);
         }
 
-        public async Task AprovarOrcamentoAsync(Ator ator, Guid ordemServicoId, IOrdemServicoGateway gateway, IClienteExternalService clienteExternalService, IEstoqueExternalService estoqueExternalService, IOperacaoOrdemServicoPresenter presenter)
+        public async Task AprovarOrcamentoAsync(Ator ator, Guid ordemServicoId, IOrdemServicoGateway gateway, IVeiculoExternalService veiculoExternalService, IEstoqueExternalService estoqueExternalService, IOperacaoOrdemServicoPresenter presenter)
         {
             var useCase = new AprovarOrcamentoUseCase();
             var logger = CriarLoggerPara<AprovarOrcamentoUseCase>();
             
-            await useCase.ExecutarAsync(ator, ordemServicoId, gateway, clienteExternalService, estoqueExternalService, presenter, logger);
+            await useCase.ExecutarAsync(ator, ordemServicoId, gateway, veiculoExternalService, estoqueExternalService, presenter, logger);
         }
 
-        public async Task DesaprovarOrcamentoAsync(Ator ator, Guid ordemServicoId, IOrdemServicoGateway gateway, IClienteExternalService clienteExternalService, IOperacaoOrdemServicoPresenter presenter)
+        public async Task DesaprovarOrcamentoAsync(Ator ator, Guid ordemServicoId, IOrdemServicoGateway gateway, IVeiculoExternalService veiculoExternalService, IOperacaoOrdemServicoPresenter presenter)
         {
             var useCase = new DesaprovarOrcamentoUseCase();
             var logger = CriarLoggerPara<DesaprovarOrcamentoUseCase>();
             
-            await useCase.ExecutarAsync(ator, ordemServicoId, gateway, clienteExternalService, presenter, logger);
+            await useCase.ExecutarAsync(ator, ordemServicoId, gateway, veiculoExternalService, presenter, logger);
         }
 
         public async Task FinalizarExecucaoAsync(Ator ator, Guid ordemServicoId, IOrdemServicoGateway gateway, IOperacaoOrdemServicoPresenter presenter, IMetricsService metricsService)
