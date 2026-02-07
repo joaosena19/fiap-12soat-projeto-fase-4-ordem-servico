@@ -1,6 +1,7 @@
 using Application.OrdemServico.Interfaces.External;
 using Infrastructure.ExternalServices;
 using Infrastructure.ExternalServices.Cadastro;
+using Infrastructure.ExternalServices.Estoque;
 using Microsoft.Extensions.Options;
 
 namespace API.Configurations;
@@ -40,6 +41,18 @@ public static class ExternalServicesConfiguration
             sp.GetRequiredService<CadastroHttpClientService>());
         services.AddScoped<IVeiculoExternalService>(sp => 
             sp.GetRequiredService<CadastroHttpClientService>());
+
+        // Registrar HttpClient tipado para o serviço de Estoque
+        services.AddHttpClient<EstoqueHttpClientService>((sp, client) =>
+        {
+            var settings = sp.GetRequiredService<IOptions<ExternalServicesSettings>>().Value;
+            client.BaseAddress = new Uri(settings.EstoqueBaseUrl);
+            client.Timeout = TimeSpan.FromSeconds(30);
+        });
+
+        // Registrar a interface de serviço externo para o EstoqueHttpClientService
+        services.AddScoped<IEstoqueExternalService>(sp => 
+            sp.GetRequiredService<EstoqueHttpClientService>());
 
         return services;
     }
