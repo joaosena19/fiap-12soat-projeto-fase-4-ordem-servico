@@ -4,6 +4,7 @@ using Shared.Enums;
 using Tests.Application.OrdemServico.Helpers;
 using Tests.Application.SharedHelpers.AggregateBuilders;
 using Tests.Application.SharedHelpers.Gateways;
+using Tests.Application.SharedHelpers.ExternalServices;
 using Tests.Application.SharedHelpers;
 using OrdemServicoAggregate = Domain.OrdemServico.Aggregates.OrdemServico.OrdemServico;
 

@@ -7,6 +7,7 @@ using Tests.Application.OrdemServico.Helpers;
 using Tests.Application.SharedHelpers;
 using Tests.Application.SharedHelpers.AggregateBuilders;
 using Tests.Application.SharedHelpers.Gateways;
+using Tests.Application.SharedHelpers.ExternalServices;
 using Application.OrdemServico.Dtos;
 using Application.OrdemServico.Dtos.External;
 using OrdemServicoAggregate = Domain.OrdemServico.Aggregates.OrdemServico.OrdemServico;

@@ -67,12 +67,12 @@ namespace API.Endpoints.OrdemServico
         public async Task<IActionResult> GetById(Guid id)
         {
             var gateway = new OrdemServicoRepository(_context);
-            var clienteExternalService = new ClienteExternalServiceStub();
+            var veiculoExternalService = new VeiculoExternalServiceStub();
             var presenter = new BuscarOrdemServicoPorIdPresenter();
             var handler = new OrdemServicoHandler(_loggerFactory);
             var ator = BuscarAtorAtual();
 
-            await handler.BuscarOrdemServicoPorIdAsync(ator, id, gateway, clienteExternalService, presenter);
+            await handler.BuscarOrdemServicoPorIdAsync(ator, id, gateway, veiculoExternalService, presenter);
             return presenter.ObterResultado();
         }
 
@@ -93,12 +93,12 @@ namespace API.Endpoints.OrdemServico
         public async Task<IActionResult> GetByCodigo(string codigo)
         {
             var gateway = new OrdemServicoRepository(_context);
-            var clienteExternalService = new ClienteExternalServiceStub();
+            var veiculoExternalService = new VeiculoExternalServiceStub();
             var presenter = new BuscarOrdemServicoPorCodigoPresenter();
             var handler = new OrdemServicoHandler(_loggerFactory);
             var ator = BuscarAtorAtual();
 
-            await handler.BuscarOrdemServicoPorCodigoAsync(ator, codigo, gateway, clienteExternalService, presenter);
+            await handler.BuscarOrdemServicoPorCodigoAsync(ator, codigo, gateway, veiculoExternalService, presenter);
             return presenter.ObterResultado();
         }
 
@@ -384,13 +384,13 @@ namespace API.Endpoints.OrdemServico
         public async Task<IActionResult> AprovarOrcamento(Guid id)
         {
             var gateway = new OrdemServicoRepository(_context);
-            var clienteExternalService = new ClienteExternalServiceStub();
+            var veiculoExternalService = new VeiculoExternalServiceStub();
             var estoqueExternalService = new EstoqueExternalServiceStub();
             var presenter = new OperacaoOrdemServicoPresenter();
             var handler = new OrdemServicoHandler(_loggerFactory);
             var ator = BuscarAtorAtual();
 
-            await handler.AprovarOrcamentoAsync(ator, id, gateway, clienteExternalService, estoqueExternalService, presenter);
+            await handler.AprovarOrcamentoAsync(ator, id, gateway, veiculoExternalService, estoqueExternalService, presenter);
             return presenter.ObterResultado();
         }
 
@@ -413,12 +413,12 @@ namespace API.Endpoints.OrdemServico
         public async Task<IActionResult> DesaprovarOrcamento(Guid id)
         {
             var gateway = new OrdemServicoRepository(_context);
-            var clienteExternalService = new ClienteExternalServiceStub();
+            var veiculoExternalService = new VeiculoExternalServiceStub();
             var presenter = new OperacaoOrdemServicoPresenter();
             var handler = new OrdemServicoHandler(_loggerFactory);
             var ator = BuscarAtorAtual();
 
-            await handler.DesaprovarOrcamentoAsync(ator, id, gateway, clienteExternalService, presenter);
+            await handler.DesaprovarOrcamentoAsync(ator, id, gateway, veiculoExternalService, presenter);
             return presenter.ObterResultado();
         }
 
@@ -552,13 +552,13 @@ namespace API.Endpoints.OrdemServico
         public async Task<IActionResult> WebhookAprovarOrcamento([FromBody] WebhookIdDto dto)
         {
             var gateway = new OrdemServicoRepository(_context);
-            var clienteExternalService = new ClienteExternalServiceStub();
+            var veiculoExternalService = new VeiculoExternalServiceStub();
             var estoqueExternalService = new EstoqueExternalServiceStub();
             var presenter = new OperacaoOrdemServicoPresenter();
             var handler = new OrdemServicoHandler(_loggerFactory);
             var ator = Ator.Sistema();
 
-            await handler.AprovarOrcamentoAsync(ator, dto.Id, gateway, clienteExternalService, estoqueExternalService, presenter);
+            await handler.AprovarOrcamentoAsync(ator, dto.Id, gateway, veiculoExternalService, estoqueExternalService, presenter);
             return presenter.ObterResultado();
         }
 
@@ -585,12 +585,12 @@ namespace API.Endpoints.OrdemServico
         public async Task<IActionResult> WebhookDesaprovarOrcamento([FromBody] WebhookIdDto dto)
         {
             var gateway = new OrdemServicoRepository(_context);
-            var clienteExternalService = new ClienteExternalServiceStub();
+            var veiculoExternalService = new VeiculoExternalServiceStub();
             var presenter = new OperacaoOrdemServicoPresenter();
             var handler = new OrdemServicoHandler(_loggerFactory);
             var ator = Ator.Sistema();
 
-            await handler.DesaprovarOrcamentoAsync(ator, dto.Id, gateway, clienteExternalService, presenter);
+            await handler.DesaprovarOrcamentoAsync(ator, dto.Id, gateway, veiculoExternalService, presenter);
             return presenter.ObterResultado();
         }
 

@@ -70,7 +70,7 @@ public class CriarOrdemServicoCompletaUseCase
 
     private async Task<ClienteExternalDto> BuscarOuCriarCliente(ClienteDto clienteDto, IClienteExternalService clienteExternalService)
     {
-        var clienteExistente = await clienteExternalService.ObterClientePorDocumentoAsync(clienteDto.DocumentoIdentificador);
+        var clienteExistente = await clienteExternalService.ObterPorDocumentoAsync(clienteDto.DocumentoIdentificador);
         if (clienteExistente != null) return clienteExistente;
 
         var novoCliente = await clienteExternalService.CriarClienteAsync(new CriarClienteExternalDto

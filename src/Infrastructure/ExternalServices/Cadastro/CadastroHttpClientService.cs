@@ -128,7 +128,7 @@ public class CadastroHttpClientService : BaseExternalHttpClient,
     /// <summary>
     /// Obtém um cliente por documento (CPF ou CNPJ) do microsserviço de Cadastros.
     /// </summary>
-    public async Task<ClienteExternalDto?> ObterClientePorDocumentoAsync(string documentoIdentificador)
+    public async Task<ClienteExternalDto?> ObterPorDocumentoAsync(string documentoIdentificador)
     {
         PropagateHeaders();
         

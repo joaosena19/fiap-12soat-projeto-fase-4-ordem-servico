@@ -14,7 +14,7 @@ public class ClienteExternalServiceStub : IClienteExternalService
         throw new NotImplementedException("ClienteExternalService será implementado na Phase D com HTTP client");
     }
 
-    public Task<ClienteExternalDto?> ObterClientePorDocumentoAsync(string documentoIdentificador)
+    public Task<ClienteExternalDto?> ObterPorDocumentoAsync(string documentoIdentificador)
     {
         throw new NotImplementedException("ClienteExternalService será implementado na Phase D com HTTP client");
     }

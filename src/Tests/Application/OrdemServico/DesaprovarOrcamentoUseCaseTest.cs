@@ -3,6 +3,7 @@ using Tests.Application.OrdemServico.Helpers;
 using Tests.Application.SharedHelpers;
 using Tests.Application.SharedHelpers.AggregateBuilders;
 using Tests.Application.SharedHelpers.Gateways;
+using Tests.Application.SharedHelpers.ExternalServices;
 using Domain.OrdemServico.Enums;
 
 namespace Tests.Application.OrdemServico
@@ -32,7 +33,7 @@ namespace Tests.Application.OrdemServico
                 ator,
                 ordemServico.Id,
                 _fixture.OrdemServicoGatewayMock.Object,
-                _fixture.VeiculoGatewayMock.Object,
+                _fixture.VeiculoExternalServiceMock.Object,
                 _fixture.OperacaoOrdemServicoPresenterMock.Object, MockLogger.CriarSimples());
 
             // Assert
@@ -55,7 +56,7 @@ namespace Tests.Application.OrdemServico
                 ator,
                 ordemServicoId,
                 _fixture.OrdemServicoGatewayMock.Object,
-                _fixture.VeiculoGatewayMock.Object,
+                _fixture.VeiculoExternalServiceMock.Object,
                 _fixture.OperacaoOrdemServicoPresenterMock.Object, MockLogger.CriarSimples());
 
             // Assert
@@ -78,7 +79,7 @@ namespace Tests.Application.OrdemServico
                 ator,
                 ordemServico.Id,
                 _fixture.OrdemServicoGatewayMock.Object,
-                _fixture.VeiculoGatewayMock.Object,
+                _fixture.VeiculoExternalServiceMock.Object,
                 _fixture.OperacaoOrdemServicoPresenterMock.Object, MockLogger.CriarSimples());
 
             // Assert
@@ -102,7 +103,7 @@ namespace Tests.Application.OrdemServico
                 ator,
                 ordemServico.Id,
                 _fixture.OrdemServicoGatewayMock.Object,
-                _fixture.VeiculoGatewayMock.Object,
+                _fixture.VeiculoExternalServiceMock.Object,
                 _fixture.OperacaoOrdemServicoPresenterMock.Object, MockLogger.CriarSimples());
 
             // Assert
@@ -120,17 +121,17 @@ namespace Tests.Application.OrdemServico
             var ator = new AtorBuilder().ComoCliente(clienteId).Build();
             var ordemServico = new OrdemServicoBuilder().ComOrcamento().Build();
 
-            var veiculo = new VeiculoBuilder().ComClienteId(outroClienteId).Build();
+            var veiculo = new VeiculoExternalDtoBuilder().ComClienteId(outroClienteId).Build();
 
             _fixture.OrdemServicoGatewayMock.AoObterPorId(ordemServico.Id).Retorna(ordemServico);
-            _fixture.VeiculoGatewayMock.AoObterPorId(ordemServico.VeiculoId).Retorna(veiculo);
+            _fixture.VeiculoExternalServiceMock.AoObterPorId(ordemServico.VeiculoId).Retorna(veiculo);
 
             // Act
             await _fixture.DesaprovarOrcamentoUseCase.ExecutarAsync(
                 ator,
                 ordemServico.Id,
                 _fixture.OrdemServicoGatewayMock.Object,
-                _fixture.VeiculoGatewayMock.Object,
+                _fixture.VeiculoExternalServiceMock.Object,
                 _fixture.OperacaoOrdemServicoPresenterMock.Object, MockLogger.CriarSimples());
 
             // Assert
@@ -154,7 +155,7 @@ namespace Tests.Application.OrdemServico
                 ator,
                 ordemServicoId,
                 _fixture.OrdemServicoGatewayMock.Object,
-                _fixture.VeiculoGatewayMock.Object,
+                _fixture.VeiculoExternalServiceMock.Object,
                 _fixture.OperacaoOrdemServicoPresenterMock.Object,
                 mockLogger.Object);
 
@@ -170,12 +171,12 @@ namespace Tests.Application.OrdemServico
             var ator = new AtorBuilder().ComoAdministrador().Build();
             var ordemServicoId = Guid.NewGuid();
             var ordemServico = new OrdemServicoBuilder().ComStatus(StatusOrdemServicoEnum.AguardandoAprovacao).Build();
-            var veiculo = new VeiculoBuilder().ComClienteId(Guid.NewGuid()).Build();
+            var veiculo = new VeiculoExternalDtoBuilder().ComClienteId(Guid.NewGuid()).Build();
             var mockLogger = MockLogger.Criar();
             var excecaoEsperada = new InvalidOperationException("Erro de banco de dados");
 
             _fixture.OrdemServicoGatewayMock.AoObterPorId(ordemServicoId).Retorna(ordemServico);
-            _fixture.VeiculoGatewayMock.AoObterPorId(ordemServico.VeiculoId).Retorna(veiculo);
+            _fixture.VeiculoExternalServiceMock.AoObterPorId(ordemServico.VeiculoId).Retorna(veiculo);
             _fixture.OrdemServicoGatewayMock.AoAtualizar().LancaExcecao(excecaoEsperada);
 
             // Act
@@ -183,7 +184,7 @@ namespace Tests.Application.OrdemServico
                 ator,
                 ordemServicoId,
                 _fixture.OrdemServicoGatewayMock.Object,
-                _fixture.VeiculoGatewayMock.Object,
+                _fixture.VeiculoExternalServiceMock.Object,
                 _fixture.OperacaoOrdemServicoPresenterMock.Object,
                 mockLogger.Object);
 

@@ -6,6 +6,7 @@ using Shared.Exceptions;
 using Tests.Application.OrdemServico.Helpers;
 using Tests.Application.SharedHelpers;
 using Tests.Application.SharedHelpers.AggregateBuilders;
+using Tests.Application.SharedHelpers.ExternalServices;
 using Tests.Application.SharedHelpers.Gateways;
 using OrdemServicoAggregate = Domain.OrdemServico.Aggregates.OrdemServico.OrdemServico;
 
@@ -33,10 +34,10 @@ namespace Tests.Application.OrdemServico
                 ator,
                 dto,
                 _fixture.OrdemServicoGatewayMock.Object,
-                _fixture.ClienteGatewayMock.Object,
-                _fixture.VeiculoGatewayMock.Object,
-                _fixture.ServicoGatewayMock.Object,
-                _fixture.ItemEstoqueGatewayMock.Object,
+                _fixture.ClienteExternalServiceMock.Object,
+                _fixture.VeiculoExternalServiceMock.Object,
+                _fixture.ServicoExternalServiceMock.Object,
+                _fixture.EstoqueExternalServiceMock.Object,
                 _fixture.PresenterMock.Object, 
                 MockLogger.CriarSimples(),
                 _fixture.MetricsServiceMock.Object);
@@ -44,7 +45,7 @@ namespace Tests.Application.OrdemServico
             // Assert
             _fixture.PresenterMock.Verify(p => p.ApresentarErro("Acesso negado. Apenas administradores podem criar ordens de serviço completas.", ErrorType.NotAllowed), Times.Once);
             _fixture.PresenterMock.Verify(p => p.ApresentarSucesso(It.IsAny<OrdemServicoAggregate>()), Times.Never);
-            _fixture.ClienteGatewayMock.Verify(c => c.ObterPorDocumentoAsync(It.IsAny<string>()), Times.Never);
+            _fixture.ClienteExternalServiceMock.Verify(c => c.ObterPorDocumentoAsync(It.IsAny<string>()), Times.Never);
         }
 
         [Fact(DisplayName = "Deve criar ordem de serviço completa com cliente e veículo novos")]
@@ -54,14 +55,14 @@ namespace Tests.Application.OrdemServico
             // Arrange
             var ator = new AtorBuilder().ComoAdministrador().Build();
             var dto = new CriarOrdemServicoCompletaDtoBuilder().Build();
-            var clienteCriado = new ClienteBuilder().ComNome(dto.Cliente.Nome).Build();
-            var veiculoCriado = new VeiculoBuilder().ComClienteId(clienteCriado.Id).ComPlaca(dto.Veiculo.Placa).Build();
+            var clienteCriado = new ClienteExternalDtoBuilder().ComNome(dto.Cliente.Nome).Build();
+            var veiculoCriado = new VeiculoExternalDtoBuilder().ComClienteId(clienteCriado.Id).ComPlaca(dto.Veiculo.Placa).Build();
             OrdemServicoAggregate? ordemServicoSalva = null;
 
-            _fixture.ClienteGatewayMock.AoObterPorDocumento(dto.Cliente.DocumentoIdentificador).NaoRetornaNada();
-            _fixture.ClienteGatewayMock.AoSalvar().Retorna(clienteCriado);
-            _fixture.VeiculoGatewayMock.AoObterPorPlaca(dto.Veiculo.Placa).NaoRetornaNada();
-            _fixture.VeiculoGatewayMock.AoSalvar().Retorna(veiculoCriado);
+            _fixture.ClienteExternalServiceMock.AoObterPorDocumento(dto.Cliente.DocumentoIdentificador).NaoRetornaNada();
+            _fixture.ClienteExternalServiceMock.AoCriar().Retorna(clienteCriado);
+            _fixture.VeiculoExternalServiceMock.AoObterPorPlaca(dto.Veiculo.Placa).NaoRetornaNada();
+            _fixture.VeiculoExternalServiceMock.AoCriar().Retorna(veiculoCriado);
             _fixture.OrdemServicoGatewayMock.AoObterPorCodigo(It.IsAny<string>()).NaoRetornaNada();
             _fixture.OrdemServicoGatewayMock.AoSalvar().ComCallback(os => ordemServicoSalva = os);
 
@@ -70,18 +71,18 @@ namespace Tests.Application.OrdemServico
                 ator,
                 dto,
                 _fixture.OrdemServicoGatewayMock.Object,
-                _fixture.ClienteGatewayMock.Object,
-                _fixture.VeiculoGatewayMock.Object,
-                _fixture.ServicoGatewayMock.Object,
-                _fixture.ItemEstoqueGatewayMock.Object,
+                _fixture.ClienteExternalServiceMock.Object,
+                _fixture.VeiculoExternalServiceMock.Object,
+                _fixture.ServicoExternalServiceMock.Object,
+                _fixture.EstoqueExternalServiceMock.Object,
                 _fixture.PresenterMock.Object, MockLogger.CriarSimples(), _fixture.MetricsServiceMock.Object);
 
             // Assert
             ordemServicoSalva.Should().NotBeNull();
             ordemServicoSalva!.VeiculoId.Should().Be(veiculoCriado.Id);
             ordemServicoSalva.Status.Valor.Should().Be(StatusOrdemServicoEnum.Recebida);
-            _fixture.ClienteGatewayMock.DeveTerSalvadoCliente();
-            _fixture.VeiculoGatewayMock.DeveTerSalvadoVeiculo();
+            _fixture.ClienteExternalServiceMock.DeveTerCriadoCliente();
+            _fixture.VeiculoExternalServiceMock.DeveTerCriadoVeiculo();
             _fixture.OrdemServicoGatewayMock.DeveTerSalvoOrdemServico();
             _fixture.PresenterMock.Verify(p => p.ApresentarSucesso(ordemServicoSalva), Times.Once);
         }
@@ -93,12 +94,12 @@ namespace Tests.Application.OrdemServico
             // Arrange
             var ator = new AtorBuilder().ComoAdministrador().Build();
             var dto = new CriarOrdemServicoCompletaDtoBuilder().Build();
-            var clienteExistente = new ClienteBuilder().ComNome(dto.Cliente.Nome).Build();
-            var veiculoExistente = new VeiculoBuilder().ComClienteId(clienteExistente.Id).ComPlaca(dto.Veiculo.Placa).Build();
+            var clienteExistente = new ClienteExternalDtoBuilder().ComNome(dto.Cliente.Nome).Build();
+            var veiculoExistente = new VeiculoExternalDtoBuilder().ComClienteId(clienteExistente.Id).ComPlaca(dto.Veiculo.Placa).Build();
             OrdemServicoAggregate? ordemServicoSalva = null;
 
-            _fixture.ClienteGatewayMock.AoObterPorDocumento(dto.Cliente.DocumentoIdentificador).Retorna(clienteExistente);
-            _fixture.VeiculoGatewayMock.AoObterPorPlaca(dto.Veiculo.Placa).Retorna(veiculoExistente);
+            _fixture.ClienteExternalServiceMock.AoObterPorDocumento(dto.Cliente.DocumentoIdentificador).Retorna(clienteExistente);
+            _fixture.VeiculoExternalServiceMock.AoObterPorPlaca(dto.Veiculo.Placa).Retorna(veiculoExistente);
             _fixture.OrdemServicoGatewayMock.AoObterPorCodigo(It.IsAny<string>()).NaoRetornaNada();
             _fixture.OrdemServicoGatewayMock.AoSalvar().ComCallback(os => ordemServicoSalva = os);
 
@@ -107,17 +108,17 @@ namespace Tests.Application.OrdemServico
                 ator,
                 dto,
                 _fixture.OrdemServicoGatewayMock.Object,
-                _fixture.ClienteGatewayMock.Object,
-                _fixture.VeiculoGatewayMock.Object,
-                _fixture.ServicoGatewayMock.Object,
-                _fixture.ItemEstoqueGatewayMock.Object,
+                _fixture.ClienteExternalServiceMock.Object,
+                _fixture.VeiculoExternalServiceMock.Object,
+                _fixture.ServicoExternalServiceMock.Object,
+                _fixture.EstoqueExternalServiceMock.Object,
                 _fixture.PresenterMock.Object, MockLogger.CriarSimples(), _fixture.MetricsServiceMock.Object);
 
             // Assert
             ordemServicoSalva.Should().NotBeNull();
             ordemServicoSalva!.VeiculoId.Should().Be(veiculoExistente.Id);
-            _fixture.ClienteGatewayMock.NaoDeveTerSalvadoCliente();
-            _fixture.VeiculoGatewayMock.NaoDeveTerSalvadoVeiculo();
+            _fixture.ClienteExternalServiceMock.NaoDeveTerCriado();
+            _fixture.VeiculoExternalServiceMock.NaoDeveTerCriado();
             _fixture.OrdemServicoGatewayMock.DeveTerSalvoOrdemServico();
             _fixture.PresenterMock.Verify(p => p.ApresentarSucesso(ordemServicoSalva), Times.Once);
         }
@@ -128,29 +129,29 @@ namespace Tests.Application.OrdemServico
         {
             // Arrange
             var ator = new AtorBuilder().ComoAdministrador().Build();
-            var servico1 = new ServicoBuilder().Build();
-            var servico2 = new ServicoBuilder().Build();
+            var servico1 = new ServicoExternalDtoBuilder().Build();
+            var servico2 = new ServicoExternalDtoBuilder().Build();
             var dto = new CriarOrdemServicoCompletaDtoBuilder()
                 .ComServicos(servico1.Id, servico2.Id)
                 .Build();
-            var clienteExistente = new ClienteBuilder().Build();
-            var veiculoExistente = new VeiculoBuilder().ComClienteId(clienteExistente.Id).Build();
+            var clienteExistente = new ClienteExternalDtoBuilder().Build();
+            var veiculoExistente = new VeiculoExternalDtoBuilder().ComClienteId(clienteExistente.Id).Build();
             OrdemServicoAggregate? ordemServicoSalva = null;
 
-            _fixture.ClienteGatewayMock.AoObterPorDocumento(dto.Cliente.DocumentoIdentificador).Retorna(clienteExistente);
-            _fixture.VeiculoGatewayMock.AoObterPorPlaca(dto.Veiculo.Placa).Retorna(veiculoExistente);
-            _fixture.ServicoGatewayMock.AoObterPorId(servico1.Id).Retorna(servico1);
-            _fixture.ServicoGatewayMock.AoObterPorId(servico2.Id).Retorna(servico2);
+            _fixture.ClienteExternalServiceMock.AoObterPorDocumento(dto.Cliente.DocumentoIdentificador).Retorna(clienteExistente);
+            _fixture.VeiculoExternalServiceMock.AoObterPorPlaca(dto.Veiculo.Placa).Retorna(veiculoExistente);
+            _fixture.ServicoExternalServiceMock.AoObterPorId(servico1.Id).Retorna(servico1);
+            _fixture.ServicoExternalServiceMock.AoObterPorId(servico2.Id).Retorna(servico2);
             _fixture.OrdemServicoGatewayMock.AoObterPorCodigo(It.IsAny<string>()).NaoRetornaNada();
             _fixture.OrdemServicoGatewayMock.AoSalvar().ComCallback(os => ordemServicoSalva = os);
 
             // Act
             await _fixture.UseCase.ExecutarAsync(ator, dto,
                 _fixture.OrdemServicoGatewayMock.Object,
-                _fixture.ClienteGatewayMock.Object,
-                _fixture.VeiculoGatewayMock.Object,
-                _fixture.ServicoGatewayMock.Object,
-                _fixture.ItemEstoqueGatewayMock.Object,
+                _fixture.ClienteExternalServiceMock.Object,
+                _fixture.VeiculoExternalServiceMock.Object,
+                _fixture.ServicoExternalServiceMock.Object,
+                _fixture.EstoqueExternalServiceMock.Object,
                 _fixture.PresenterMock.Object, MockLogger.CriarSimples(), _fixture.MetricsServiceMock.Object);
 
             // Assert
@@ -172,24 +173,24 @@ namespace Tests.Application.OrdemServico
             var dto = new CriarOrdemServicoCompletaDtoBuilder()
                 .ComServicos(servicoInexistente1, servicoInexistente2)
                 .Build();
-            var clienteExistente = new ClienteBuilder().Build();
-            var veiculoExistente = new VeiculoBuilder().ComClienteId(clienteExistente.Id).Build();
+            var clienteExistente = new ClienteExternalDtoBuilder().Build();
+            var veiculoExistente = new VeiculoExternalDtoBuilder().ComClienteId(clienteExistente.Id).Build();
             OrdemServicoAggregate? ordemServicoSalva = null;
 
-            _fixture.ClienteGatewayMock.AoObterPorDocumento(dto.Cliente.DocumentoIdentificador).Retorna(clienteExistente);
-            _fixture.VeiculoGatewayMock.AoObterPorPlaca(dto.Veiculo.Placa).Retorna(veiculoExistente);
-            _fixture.ServicoGatewayMock.AoObterPorId(servicoInexistente1).NaoRetornaNada();
-            _fixture.ServicoGatewayMock.AoObterPorId(servicoInexistente2).NaoRetornaNada();
+            _fixture.ClienteExternalServiceMock.AoObterPorDocumento(dto.Cliente.DocumentoIdentificador).Retorna(clienteExistente);
+            _fixture.VeiculoExternalServiceMock.AoObterPorPlaca(dto.Veiculo.Placa).Retorna(veiculoExistente);
+            _fixture.ServicoExternalServiceMock.AoObterPorId(servicoInexistente1).NaoRetornaNada();
+            _fixture.ServicoExternalServiceMock.AoObterPorId(servicoInexistente2).NaoRetornaNada();
             _fixture.OrdemServicoGatewayMock.AoObterPorCodigo(It.IsAny<string>()).NaoRetornaNada();
             _fixture.OrdemServicoGatewayMock.AoSalvar().ComCallback(os => ordemServicoSalva = os);
 
             // Act
             await _fixture.UseCase.ExecutarAsync(ator, dto,
                 _fixture.OrdemServicoGatewayMock.Object,
-                _fixture.ClienteGatewayMock.Object,
-                _fixture.VeiculoGatewayMock.Object,
-                _fixture.ServicoGatewayMock.Object,
-                _fixture.ItemEstoqueGatewayMock.Object,
+                _fixture.ClienteExternalServiceMock.Object,
+                _fixture.VeiculoExternalServiceMock.Object,
+                _fixture.ServicoExternalServiceMock.Object,
+                _fixture.EstoqueExternalServiceMock.Object,
                 _fixture.PresenterMock.Object, MockLogger.CriarSimples(), _fixture.MetricsServiceMock.Object);
 
             // Assert
@@ -204,29 +205,29 @@ namespace Tests.Application.OrdemServico
         {
             // Arrange
             var ator = new AtorBuilder().ComoAdministrador().Build();
-            var item1 = new ItemEstoqueBuilder().Build();
-            var item2 = new ItemEstoqueBuilder().Build();
+            var item1 = new ItemEstoqueExternalDtoBuilder().Build();
+            var item2 = new ItemEstoqueExternalDtoBuilder().Build();
             var dto = new CriarOrdemServicoCompletaDtoBuilder()
                 .ComItens((item1.Id, 2), (item2.Id, 3))
                 .Build();
-            var clienteExistente = new ClienteBuilder().Build();
-            var veiculoExistente = new VeiculoBuilder().ComClienteId(clienteExistente.Id).Build();
+            var clienteExistente = new ClienteExternalDtoBuilder().Build();
+            var veiculoExistente = new VeiculoExternalDtoBuilder().ComClienteId(clienteExistente.Id).Build();
             OrdemServicoAggregate? ordemServicoSalva = null;
 
-            _fixture.ClienteGatewayMock.AoObterPorDocumento(dto.Cliente.DocumentoIdentificador).Retorna(clienteExistente);
-            _fixture.VeiculoGatewayMock.AoObterPorPlaca(dto.Veiculo.Placa).Retorna(veiculoExistente);
-            _fixture.ItemEstoqueGatewayMock.AoObterPorId(item1.Id).Retorna(item1);
-            _fixture.ItemEstoqueGatewayMock.AoObterPorId(item2.Id).Retorna(item2);
+            _fixture.ClienteExternalServiceMock.AoObterPorDocumento(dto.Cliente.DocumentoIdentificador).Retorna(clienteExistente);
+            _fixture.VeiculoExternalServiceMock.AoObterPorPlaca(dto.Veiculo.Placa).Retorna(veiculoExistente);
+            _fixture.EstoqueExternalServiceMock.AoObterPorId(item1.Id).Retorna(item1);
+            _fixture.EstoqueExternalServiceMock.AoObterPorId(item2.Id).Retorna(item2);
             _fixture.OrdemServicoGatewayMock.AoObterPorCodigo(It.IsAny<string>()).NaoRetornaNada();
             _fixture.OrdemServicoGatewayMock.AoSalvar().ComCallback(os => ordemServicoSalva = os);
 
             // Act
             await _fixture.UseCase.ExecutarAsync(ator, dto,
                 _fixture.OrdemServicoGatewayMock.Object,
-                _fixture.ClienteGatewayMock.Object,
-                _fixture.VeiculoGatewayMock.Object,
-                _fixture.ServicoGatewayMock.Object,
-                _fixture.ItemEstoqueGatewayMock.Object,
+                _fixture.ClienteExternalServiceMock.Object,
+                _fixture.VeiculoExternalServiceMock.Object,
+                _fixture.ServicoExternalServiceMock.Object,
+                _fixture.EstoqueExternalServiceMock.Object,
                 _fixture.PresenterMock.Object, MockLogger.CriarSimples(), _fixture.MetricsServiceMock.Object);
 
             // Assert
@@ -248,24 +249,24 @@ namespace Tests.Application.OrdemServico
             var dto = new CriarOrdemServicoCompletaDtoBuilder()
                 .ComItens((itemInexistente1, 2), (itemInexistente2, 3))
                 .Build();
-            var clienteExistente = new ClienteBuilder().Build();
-            var veiculoExistente = new VeiculoBuilder().ComClienteId(clienteExistente.Id).Build();
+            var clienteExistente = new ClienteExternalDtoBuilder().Build();
+            var veiculoExistente = new VeiculoExternalDtoBuilder().ComClienteId(clienteExistente.Id).Build();
             OrdemServicoAggregate? ordemServicoSalva = null;
 
-            _fixture.ClienteGatewayMock.AoObterPorDocumento(dto.Cliente.DocumentoIdentificador).Retorna(clienteExistente);
-            _fixture.VeiculoGatewayMock.AoObterPorPlaca(dto.Veiculo.Placa).Retorna(veiculoExistente);
-            _fixture.ItemEstoqueGatewayMock.AoObterPorId(itemInexistente1).NaoRetornaNada();
-            _fixture.ItemEstoqueGatewayMock.AoObterPorId(itemInexistente2).NaoRetornaNada();
+            _fixture.ClienteExternalServiceMock.AoObterPorDocumento(dto.Cliente.DocumentoIdentificador).Retorna(clienteExistente);
+            _fixture.VeiculoExternalServiceMock.AoObterPorPlaca(dto.Veiculo.Placa).Retorna(veiculoExistente);
+            _fixture.EstoqueExternalServiceMock.AoObterPorId(itemInexistente1).NaoRetornaNada();
+            _fixture.EstoqueExternalServiceMock.AoObterPorId(itemInexistente2).NaoRetornaNada();
             _fixture.OrdemServicoGatewayMock.AoObterPorCodigo(It.IsAny<string>()).NaoRetornaNada();
             _fixture.OrdemServicoGatewayMock.AoSalvar().ComCallback(os => ordemServicoSalva = os);
 
             // Act
             await _fixture.UseCase.ExecutarAsync(ator, dto,
                 _fixture.OrdemServicoGatewayMock.Object,
-                _fixture.ClienteGatewayMock.Object,
-                _fixture.VeiculoGatewayMock.Object,
-                _fixture.ServicoGatewayMock.Object,
-                _fixture.ItemEstoqueGatewayMock.Object,
+                _fixture.ClienteExternalServiceMock.Object,
+                _fixture.VeiculoExternalServiceMock.Object,
+                _fixture.ServicoExternalServiceMock.Object,
+                _fixture.EstoqueExternalServiceMock.Object,
                 _fixture.PresenterMock.Object, MockLogger.CriarSimples(), _fixture.MetricsServiceMock.Object);
 
             // Assert
@@ -284,22 +285,22 @@ namespace Tests.Application.OrdemServico
                 .SemServicos()
                 .SemItens()
                 .Build();
-            var clienteExistente = new ClienteBuilder().Build();
-            var veiculoExistente = new VeiculoBuilder().ComClienteId(clienteExistente.Id).Build();
+            var clienteExistente = new ClienteExternalDtoBuilder().Build();
+            var veiculoExistente = new VeiculoExternalDtoBuilder().ComClienteId(clienteExistente.Id).Build();
             OrdemServicoAggregate? ordemServicoSalva = null;
 
-            _fixture.ClienteGatewayMock.AoObterPorDocumento(dto.Cliente.DocumentoIdentificador).Retorna(clienteExistente);
-            _fixture.VeiculoGatewayMock.AoObterPorPlaca(dto.Veiculo.Placa).Retorna(veiculoExistente);
+            _fixture.ClienteExternalServiceMock.AoObterPorDocumento(dto.Cliente.DocumentoIdentificador).Retorna(clienteExistente);
+            _fixture.VeiculoExternalServiceMock.AoObterPorPlaca(dto.Veiculo.Placa).Retorna(veiculoExistente);
             _fixture.OrdemServicoGatewayMock.AoObterPorCodigo(It.IsAny<string>()).NaoRetornaNada();
             _fixture.OrdemServicoGatewayMock.AoSalvar().ComCallback(os => ordemServicoSalva = os);
 
             // Act
             await _fixture.UseCase.ExecutarAsync(ator, dto,
                 _fixture.OrdemServicoGatewayMock.Object,
-                _fixture.ClienteGatewayMock.Object,
-                _fixture.VeiculoGatewayMock.Object,
-                _fixture.ServicoGatewayMock.Object,
-                _fixture.ItemEstoqueGatewayMock.Object,
+                _fixture.ClienteExternalServiceMock.Object,
+                _fixture.VeiculoExternalServiceMock.Object,
+                _fixture.ServicoExternalServiceMock.Object,
+                _fixture.EstoqueExternalServiceMock.Object,
                 _fixture.PresenterMock.Object, MockLogger.CriarSimples(), _fixture.MetricsServiceMock.Object);
 
             // Assert
@@ -317,13 +318,13 @@ namespace Tests.Application.OrdemServico
             // Arrange
             var ator = new AtorBuilder().ComoAdministrador().Build();
             var dto = new CriarOrdemServicoCompletaDtoBuilder().Build();
-            var clienteExistente = new ClienteBuilder().Build();
-            var veiculoExistente = new VeiculoBuilder().ComClienteId(clienteExistente.Id).Build();
+            var clienteExistente = new ClienteExternalDtoBuilder().Build();
+            var veiculoExistente = new VeiculoExternalDtoBuilder().ComClienteId(clienteExistente.Id).Build();
             var ordemServicoExistente = new OrdemServicoBuilder().ComVeiculoId(Guid.NewGuid()).Build();
             OrdemServicoAggregate? ordemServicoSalva = null;
 
-            _fixture.ClienteGatewayMock.AoObterPorDocumento(dto.Cliente.DocumentoIdentificador).Retorna(clienteExistente);
-            _fixture.VeiculoGatewayMock.AoObterPorPlaca(dto.Veiculo.Placa).Retorna(veiculoExistente);
+            _fixture.ClienteExternalServiceMock.AoObterPorDocumento(dto.Cliente.DocumentoIdentificador).Retorna(clienteExistente);
+            _fixture.VeiculoExternalServiceMock.AoObterPorPlaca(dto.Veiculo.Placa).Retorna(veiculoExistente);
             
             // Simula que na primeira tentativa o código já existe, na segunda não
             _fixture.OrdemServicoGatewayMock.SetupSequence(g => g.ObterPorCodigoAsync(It.IsAny<string>()))
@@ -334,10 +335,10 @@ namespace Tests.Application.OrdemServico
             // Act
             await _fixture.UseCase.ExecutarAsync(ator, dto,
                 _fixture.OrdemServicoGatewayMock.Object,
-                _fixture.ClienteGatewayMock.Object,
-                _fixture.VeiculoGatewayMock.Object,
-                _fixture.ServicoGatewayMock.Object,
-                _fixture.ItemEstoqueGatewayMock.Object,
+                _fixture.ClienteExternalServiceMock.Object,
+                _fixture.VeiculoExternalServiceMock.Object,
+                _fixture.ServicoExternalServiceMock.Object,
+                _fixture.EstoqueExternalServiceMock.Object,
                 _fixture.PresenterMock.Object, MockLogger.CriarSimples(), _fixture.MetricsServiceMock.Object);
 
             // Assert
@@ -358,16 +359,16 @@ namespace Tests.Application.OrdemServico
             var mensagemErro = "Erro de domínio personalizado";
             var tipoErro = ErrorType.DomainRuleBroken;
 
-            _fixture.ClienteGatewayMock.AoObterPorDocumento(dto.Cliente.DocumentoIdentificador)
+            _fixture.ClienteExternalServiceMock.AoObterPorDocumento(dto.Cliente.DocumentoIdentificador)
                 .LancaExcecao(new DomainException(mensagemErro, tipoErro));
 
             // Act
             await _fixture.UseCase.ExecutarAsync(ator, dto,
                 _fixture.OrdemServicoGatewayMock.Object,
-                _fixture.ClienteGatewayMock.Object,
-                _fixture.VeiculoGatewayMock.Object,
-                _fixture.ServicoGatewayMock.Object,
-                _fixture.ItemEstoqueGatewayMock.Object,
+                _fixture.ClienteExternalServiceMock.Object,
+                _fixture.VeiculoExternalServiceMock.Object,
+                _fixture.ServicoExternalServiceMock.Object,
+                _fixture.EstoqueExternalServiceMock.Object,
                 _fixture.PresenterMock.Object, MockLogger.CriarSimples(), _fixture.MetricsServiceMock.Object);
 
             // Assert
@@ -383,21 +384,21 @@ namespace Tests.Application.OrdemServico
             // Arrange
             var ator = new AtorBuilder().ComoAdministrador().Build();
             var dto = new CriarOrdemServicoCompletaDtoBuilder().Build();
-            var clienteExistente = new ClienteBuilder().Build();
-            var veiculoExistente = new VeiculoBuilder().ComClienteId(clienteExistente.Id).Build();
+            var clienteExistente = new ClienteExternalDtoBuilder().Build();
+            var veiculoExistente = new VeiculoExternalDtoBuilder().ComClienteId(clienteExistente.Id).Build();
 
-            _fixture.ClienteGatewayMock.AoObterPorDocumento(dto.Cliente.DocumentoIdentificador).Retorna(clienteExistente);
-            _fixture.VeiculoGatewayMock.AoObterPorPlaca(dto.Veiculo.Placa).Retorna(veiculoExistente);
+            _fixture.ClienteExternalServiceMock.AoObterPorDocumento(dto.Cliente.DocumentoIdentificador).Retorna(clienteExistente);
+            _fixture.VeiculoExternalServiceMock.AoObterPorPlaca(dto.Veiculo.Placa).Retorna(veiculoExistente);
             _fixture.OrdemServicoGatewayMock.AoObterPorCodigo(It.IsAny<string>()).NaoRetornaNada();
             _fixture.OrdemServicoGatewayMock.AoSalvar().LancaExcecao(new InvalidOperationException("Erro de banco de dados"));
 
             // Act
             await _fixture.UseCase.ExecutarAsync(ator, dto,
                 _fixture.OrdemServicoGatewayMock.Object,
-                _fixture.ClienteGatewayMock.Object,
-                _fixture.VeiculoGatewayMock.Object,
-                _fixture.ServicoGatewayMock.Object,
-                _fixture.ItemEstoqueGatewayMock.Object,
+                _fixture.ClienteExternalServiceMock.Object,
+                _fixture.VeiculoExternalServiceMock.Object,
+                _fixture.ServicoExternalServiceMock.Object,
+                _fixture.EstoqueExternalServiceMock.Object,
                 _fixture.PresenterMock.Object, MockLogger.CriarSimples(), _fixture.MetricsServiceMock.Object);
 
             // Assert
@@ -419,10 +420,10 @@ namespace Tests.Application.OrdemServico
                 ator,
                 dto,
                 _fixture.OrdemServicoGatewayMock.Object,
-                _fixture.ClienteGatewayMock.Object,
-                _fixture.VeiculoGatewayMock.Object,
-                _fixture.ServicoGatewayMock.Object,
-                _fixture.ItemEstoqueGatewayMock.Object,
+                _fixture.ClienteExternalServiceMock.Object,
+                _fixture.VeiculoExternalServiceMock.Object,
+                _fixture.ServicoExternalServiceMock.Object,
+                _fixture.EstoqueExternalServiceMock.Object,
                 _fixture.PresenterMock.Object,
                 mockLogger.Object,
                 _fixture.MetricsServiceMock.Object);
@@ -438,13 +439,13 @@ namespace Tests.Application.OrdemServico
             // Arrange
             var ator = new AtorBuilder().ComoAdministrador().Build();
             var dto = new CriarOrdemServicoCompletaDtoBuilder().Build();
-            var clienteExistente = new ClienteBuilder().Build();
-            var veiculoExistente = new VeiculoBuilder().ComClienteId(clienteExistente.Id).Build();
+            var clienteExistente = new ClienteExternalDtoBuilder().Build();
+            var veiculoExistente = new VeiculoExternalDtoBuilder().ComClienteId(clienteExistente.Id).Build();
             var mockLogger = MockLogger.Criar();
             var excecaoEsperada = new InvalidOperationException("Erro de banco de dados");
 
-            _fixture.ClienteGatewayMock.AoObterPorDocumento(dto.Cliente.DocumentoIdentificador).Retorna(clienteExistente);
-            _fixture.VeiculoGatewayMock.AoObterPorPlaca(dto.Veiculo.Placa).Retorna(veiculoExistente);
+            _fixture.ClienteExternalServiceMock.AoObterPorDocumento(dto.Cliente.DocumentoIdentificador).Retorna(clienteExistente);
+            _fixture.VeiculoExternalServiceMock.AoObterPorPlaca(dto.Veiculo.Placa).Retorna(veiculoExistente);
             _fixture.OrdemServicoGatewayMock.AoObterPorCodigo(It.IsAny<string>()).NaoRetornaNada();
             _fixture.OrdemServicoGatewayMock.AoSalvar().LancaExcecao(excecaoEsperada);
 
@@ -453,10 +454,10 @@ namespace Tests.Application.OrdemServico
                 ator,
                 dto,
                 _fixture.OrdemServicoGatewayMock.Object,
-                _fixture.ClienteGatewayMock.Object,
-                _fixture.VeiculoGatewayMock.Object,
-                _fixture.ServicoGatewayMock.Object,
-                _fixture.ItemEstoqueGatewayMock.Object,
+                _fixture.ClienteExternalServiceMock.Object,
+                _fixture.VeiculoExternalServiceMock.Object,
+                _fixture.ServicoExternalServiceMock.Object,
+                _fixture.EstoqueExternalServiceMock.Object,
                 _fixture.PresenterMock.Object,
                 mockLogger.Object,
                 _fixture.MetricsServiceMock.Object);
@@ -472,14 +473,14 @@ namespace Tests.Application.OrdemServico
             // Arrange
             var ator = new AtorBuilder().ComoAdministrador().Build();
             var dto = new CriarOrdemServicoCompletaDtoBuilder().Build();
-            var clienteCriado = new ClienteBuilder().ComDocumento(dto.Cliente.DocumentoIdentificador).Build();
-            var veiculoCriado = new VeiculoBuilder().ComClienteId(clienteCriado.Id).ComPlaca(dto.Veiculo.Placa).Build();
+            var clienteCriado = new ClienteExternalDtoBuilder().ComDocumentoIdentificador(dto.Cliente.DocumentoIdentificador).Build();
+            var veiculoCriado = new VeiculoExternalDtoBuilder().ComClienteId(clienteCriado.Id).ComPlaca(dto.Veiculo.Placa).Build();
             OrdemServicoAggregate? ordemServicoSalva = null;
 
-            _fixture.ClienteGatewayMock.AoObterPorDocumento(dto.Cliente.DocumentoIdentificador).NaoRetornaNada();
-            _fixture.ClienteGatewayMock.AoSalvar().Retorna(clienteCriado);
-            _fixture.VeiculoGatewayMock.AoObterPorPlaca(dto.Veiculo.Placa).NaoRetornaNada();
-            _fixture.VeiculoGatewayMock.AoSalvar().Retorna(veiculoCriado);
+            _fixture.ClienteExternalServiceMock.AoObterPorDocumento(dto.Cliente.DocumentoIdentificador).NaoRetornaNada();
+            _fixture.ClienteExternalServiceMock.AoCriar().Retorna(clienteCriado);
+            _fixture.VeiculoExternalServiceMock.AoObterPorPlaca(dto.Veiculo.Placa).NaoRetornaNada();
+            _fixture.VeiculoExternalServiceMock.AoCriar().Retorna(veiculoCriado);
             _fixture.OrdemServicoGatewayMock.AoObterPorCodigo(It.IsAny<string>()).NaoRetornaNada();
             _fixture.OrdemServicoGatewayMock.AoSalvar().ComCallback(os => ordemServicoSalva = os);
 
@@ -488,10 +489,10 @@ namespace Tests.Application.OrdemServico
                 ator,
                 dto,
                 _fixture.OrdemServicoGatewayMock.Object,
-                _fixture.ClienteGatewayMock.Object,
-                _fixture.VeiculoGatewayMock.Object,
-                _fixture.ServicoGatewayMock.Object,
-                _fixture.ItemEstoqueGatewayMock.Object,
+                _fixture.ClienteExternalServiceMock.Object,
+                _fixture.VeiculoExternalServiceMock.Object,
+                _fixture.ServicoExternalServiceMock.Object,
+                _fixture.EstoqueExternalServiceMock.Object,
                 _fixture.PresenterMock.Object,
                 MockLogger.CriarSimples(),
                 _fixture.MetricsServiceMock.Object);
@@ -508,15 +509,15 @@ namespace Tests.Application.OrdemServico
             // Arrange
             var ator = new AtorBuilder().ComoAdministrador().Build();
             var dto = new CriarOrdemServicoCompletaDtoBuilder().Build();
-            var clienteCriado = new ClienteBuilder().ComDocumento(dto.Cliente.DocumentoIdentificador).Build();
-            var veiculoCriado = new VeiculoBuilder().ComClienteId(clienteCriado.Id).ComPlaca(dto.Veiculo.Placa).Build();
+            var clienteCriado = new ClienteExternalDtoBuilder().ComDocumentoIdentificador(dto.Cliente.DocumentoIdentificador).Build();
+            var veiculoCriado = new VeiculoExternalDtoBuilder().ComClienteId(clienteCriado.Id).ComPlaca(dto.Veiculo.Placa).Build();
             var mockLogger = MockLogger.Criar();
             var excecaoMetrica = new Exception("Erro ao registrar métrica");
 
-            _fixture.ClienteGatewayMock.AoObterPorDocumento(dto.Cliente.DocumentoIdentificador).NaoRetornaNada();
-            _fixture.ClienteGatewayMock.AoSalvar().Retorna(clienteCriado);
-            _fixture.VeiculoGatewayMock.AoObterPorPlaca(dto.Veiculo.Placa).NaoRetornaNada();
-            _fixture.VeiculoGatewayMock.AoSalvar().Retorna(veiculoCriado);
+            _fixture.ClienteExternalServiceMock.AoObterPorDocumento(dto.Cliente.DocumentoIdentificador).NaoRetornaNada();
+            _fixture.ClienteExternalServiceMock.AoCriar().Retorna(clienteCriado);
+            _fixture.VeiculoExternalServiceMock.AoObterPorPlaca(dto.Veiculo.Placa).NaoRetornaNada();
+            _fixture.VeiculoExternalServiceMock.AoCriar().Retorna(veiculoCriado);
             _fixture.OrdemServicoGatewayMock.AoObterPorCodigo(It.IsAny<string>()).NaoRetornaNada();
             _fixture.OrdemServicoGatewayMock.AoSalvar().ComCallback(os => { });
             _fixture.MetricsServiceMock.AoRegistrarOrdemServicoCriada().LancaExcecao(excecaoMetrica);
@@ -526,10 +527,10 @@ namespace Tests.Application.OrdemServico
                 ator,
                 dto,
                 _fixture.OrdemServicoGatewayMock.Object,
-                _fixture.ClienteGatewayMock.Object,
-                _fixture.VeiculoGatewayMock.Object,
-                _fixture.ServicoGatewayMock.Object,
-                _fixture.ItemEstoqueGatewayMock.Object,
+                _fixture.ClienteExternalServiceMock.Object,
+                _fixture.VeiculoExternalServiceMock.Object,
+                _fixture.ServicoExternalServiceMock.Object,
+                _fixture.EstoqueExternalServiceMock.Object,
                 _fixture.PresenterMock.Object,
                 mockLogger.Object,
                 _fixture.MetricsServiceMock.Object);
