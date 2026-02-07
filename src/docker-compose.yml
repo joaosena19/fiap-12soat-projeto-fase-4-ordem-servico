@@ -9,12 +9,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
-      # Database Configuration using new nested structure
-      - DatabaseConnection__Host=${DatabaseConnection__Host}
-      - DatabaseConnection__Port=${DatabaseConnection__Port}
-      - DatabaseConnection__DatabaseName=${DatabaseConnection__DatabaseName}
-      - DatabaseConnection__User=${DatabaseConnection__User}
-      - DatabaseConnection__Password=${DatabaseConnection__Password}
+      # MongoDB Configuration
+      - MongoDB__ConnectionString=${MongoDB__ConnectionString}
+      - MongoDB__DatabaseName=${MongoDB__DatabaseName}
       # JWT Configuration
       - Jwt__Key=${Jwt__Key}
       - Jwt__Issuer=${Jwt__Issuer}
@@ -25,28 +22,26 @@ services:
       # Webhook HMAC Secret
       - Webhook__HmacSecret=${Webhook__HmacSecret}
     depends_on:
-      postgres_db:
+      mongo_db:
         condition: service_healthy
 
-  postgres_db:
-    image: postgres:16-alpine
-    container_name: oficina_mecanica_postgres_db
+  mongo_db:
+    image: mongo:7
+    container_name: ordemservico_mongo_db
     environment:
-      # Uses variables from .env file for PostgreSQL configuration
-      POSTGRES_DB: ${DatabaseConnection__DatabaseName}
-      POSTGRES_USER: ${DatabaseConnection__User}
-      POSTGRES_PASSWORD: ${DatabaseConnection__Password}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MongoDB__DatabaseName}
     ports:
-      - "5432:5432"
+      - "27017:27017"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mongo_data:/data/db
     healthcheck:
-      # Uses variables from .env file for consistency
-      test: ["CMD-SHELL", "pg_isready -U ${DatabaseConnection__User} -d ${DatabaseConnection__DatabaseName}"]
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
 
 volumes:
-  postgres_data:
+  mongo_data:

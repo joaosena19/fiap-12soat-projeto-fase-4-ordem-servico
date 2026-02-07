@@ -21,9 +21,9 @@ namespace API.Endpoints.OrdemServico
     [Produces("application/json")]
     public class OrdemServicoController : BaseController
     {
-        private readonly AppDbContext _context;
+        private readonly MongoDbContext _context;
 
-        public OrdemServicoController(AppDbContext context, ILoggerFactory loggerFactory) : base(loggerFactory)
+        public OrdemServicoController(MongoDbContext context, ILoggerFactory loggerFactory) : base(loggerFactory)
         {
             _context = context;
         }

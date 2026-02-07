@@ -1,5 +1,4 @@
 using Infrastructure.Database;
-using Microsoft.EntityFrameworkCore;
 
 namespace API.Configurations
 {
@@ -29,12 +28,11 @@ namespace API.Configurations
                     return;
 
                 using var scope = app.Services.CreateScope();
-                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var mongoContext = scope.ServiceProvider.GetRequiredService<MongoDbContext>();
 
-                // Garante que o banco está criado e as migrations aplicadas
-                dbContext.Database.Migrate();
-
-                SeedData.SeedAll(dbContext);
+                // MongoDB não precisa de migrations - as collections são criadas automaticamente
+                // O seed de dados pode ser implementado aqui se necessário no futuro
+                Console.WriteLine("MongoDB conectado - seed de dados pode ser implementado aqui");
             }
             catch (Exception ex)
             {

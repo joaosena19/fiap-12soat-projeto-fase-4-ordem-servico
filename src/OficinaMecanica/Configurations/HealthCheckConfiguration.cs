@@ -18,13 +18,13 @@ namespace API.Configurations
         /// <remarks>
         /// Configura dois tipos de verificações de saúde:
         /// - Self: Verifica se a aplicação está respondendo (usado pelo liveness probe)
-        /// - Database: Verifica conectividade com o banco de dados PostgreSQL (usado pelos probes de readiness e startup)
+        /// - Database: Verifica conectividade com o banco de dados MongoDB (usado pelos probes de readiness e startup)
         /// </remarks>
         public static IServiceCollection AddHealthChecks(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddHealthChecks()
                 .AddCheck("self", () => HealthCheckResult.Healthy("A aplicação está viva."), tags: new[] { "live" })
-                .AddDbContextCheck<AppDbContext>("database", HealthStatus.Unhealthy, tags: new[] { "ready" });
+                .AddCheck<MongoDbHealthCheck>("database", HealthStatus.Unhealthy, tags: new[] { "ready" });
 
             return services;
         }
@@ -93,6 +93,33 @@ namespace API.Configurations
             };
 
             await context.Response.WriteAsync(JsonSerializer.Serialize(response, options));
+        }
+    }
+    
+    /// <summary>
+    /// Health check customizado para MongoDB
+    /// </summary>
+    public class MongoDbHealthCheck : IHealthCheck
+    {
+        private readonly MongoDbContext _context;
+
+        public MongoDbHealthCheck(MongoDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                // Tenta fazer uma operação simples para verificar a conexão
+                await _context.OrdensServico.EstimatedDocumentCountAsync(cancellationToken: cancellationToken);
+                return HealthCheckResult.Healthy("MongoDB está acessível.");
+            }
+            catch (Exception ex)
+            {
+                return HealthCheckResult.Unhealthy("MongoDB não está acessível.", ex);
+            }
         }
     }
 }
