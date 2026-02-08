@@ -22,4 +22,19 @@ public class MockMetricsService : IMetricsService
     {
         // Mock não faz nada - apenas para testes não quebrarem
     }
+
+    public void RegistrarEstoqueConfirmado(Guid ordemServicoId, string statusAtual, Guid correlationId)
+    {
+        // Mock não faz nada - apenas para testes não quebrarem
+    }
+
+    public void RegistrarCompensacaoSagaFalhaEstoque(Guid ordemServicoId, string motivo, Guid correlationId)
+    {
+        // Mock não faz nada - apenas para testes não quebrarem
+    }
+
+    public void RegistrarCompensacaoSagaFalhaCritica(Guid ordemServicoId, string erro, Guid correlationId)
+    {
+        // Mock não faz nada - apenas para testes não quebrarem
+    }
 }

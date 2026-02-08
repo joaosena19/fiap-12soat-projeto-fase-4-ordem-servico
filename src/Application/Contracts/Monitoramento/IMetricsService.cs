@@ -16,5 +16,20 @@ namespace Application.Contracts.Monitoramento
         /// Registra compensação de saga por timeout de estoque
         /// </summary>
         void RegistrarCompensacaoSagaTimeout(Guid ordemServicoId, string motivo, DateTime? dataInicioExecucao);
+
+        /// <summary>
+        /// Registra confirmação de redução de estoque recebida pelo consumer
+        /// </summary>
+        void RegistrarEstoqueConfirmado(Guid ordemServicoId, string statusAtual, Guid correlationId);
+
+        /// <summary>
+        /// Registra compensação de saga executada pelo consumer (falha do estoque)
+        /// </summary>
+        void RegistrarCompensacaoSagaFalhaEstoque(Guid ordemServicoId, string motivo, Guid correlationId);
+
+        /// <summary>
+        /// Registra falha crítica na compensação da saga
+        /// </summary>
+        void RegistrarCompensacaoSagaFalhaCritica(Guid ordemServicoId, string erro, Guid correlationId);
     }
 }

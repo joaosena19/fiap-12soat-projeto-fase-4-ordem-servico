@@ -42,5 +42,44 @@ namespace Infrastructure.Monitoramento
 
             NR.NewRelic.RecordCustomEvent("SagaCompensacaoTimeout", atributos);
         }
+
+        public void RegistrarEstoqueConfirmado(Guid ordemServicoId, string statusAtual, Guid correlationId)
+        {
+            var atributos = new Dictionary<string, object>
+            {
+                { "ordemServicoId", ordemServicoId },
+                { "statusAtual", statusAtual },
+                { "correlationId", correlationId },
+                { "timestamp", DateTime.UtcNow }
+            };
+
+            NR.NewRelic.RecordCustomEvent("SagaEstoqueConfirmado", atributos);
+        }
+
+        public void RegistrarCompensacaoSagaFalhaEstoque(Guid ordemServicoId, string motivo, Guid correlationId)
+        {
+            var atributos = new Dictionary<string, object>
+            {
+                { "ordemServicoId", ordemServicoId },
+                { "motivo", motivo },
+                { "correlationId", correlationId },
+                { "timestamp", DateTime.UtcNow }
+            };
+
+            NR.NewRelic.RecordCustomEvent("SagaCompensacaoFalhaEstoque", atributos);
+        }
+
+        public void RegistrarCompensacaoSagaFalhaCritica(Guid ordemServicoId, string erro, Guid correlationId)
+        {
+            var atributos = new Dictionary<string, object>
+            {
+                { "ordemServicoId", ordemServicoId },
+                { "erro", erro },
+                { "correlationId", correlationId },
+                { "timestamp", DateTime.UtcNow }
+            };
+
+            NR.NewRelic.RecordCustomEvent("SagaCompensacaoFalhaCritica", atributos);
+        }
     }
 }
