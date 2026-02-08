@@ -39,6 +39,7 @@ builder.Services.AddSwaggerDocumentation();
 builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddExternalServices(builder.Configuration);
+builder.Services.AddMessaging(builder.Configuration);
 builder.Services.AddHealthChecks();
 
 
