@@ -15,6 +15,7 @@ namespace Domain.OrdemServico.Aggregates.OrdemServico
         public Codigo Codigo { get; private set; } = null!;
         public Status Status { get; private set; } = null!;
         public HistoricoTemporal Historico { get; private set; }
+        public InteracaoEstoque InteracaoEstoque { get; private set; } = InteracaoEstoque.SemInteracao();
 
 
         private readonly List<ServicoIncluido> _servicosIncluidos = new();
@@ -54,6 +55,18 @@ namespace Domain.OrdemServico.Aggregates.OrdemServico
         {
             var statusPermitidos = new List<StatusOrdemServicoEnum>() { StatusOrdemServicoEnum.Recebida, StatusOrdemServicoEnum.EmDiagnostico };
             return statusPermitidos.Contains(Status.Valor);            
+        }
+
+        public bool PermiteCancelar()
+        {
+            var statusBloqueados = new[]
+            {
+                StatusOrdemServicoEnum.Aprovada,
+                StatusOrdemServicoEnum.EmExecucao,
+                StatusOrdemServicoEnum.Finalizada,
+                StatusOrdemServicoEnum.Entregue
+            };
+            return !statusBloqueados.Contains(Status.Valor);
         }
 
         public void AdicionarServico(Guid servicoOriginalId, string nome, decimal preco)
@@ -115,6 +128,9 @@ namespace Domain.OrdemServico.Aggregates.OrdemServico
 
         public void Cancelar()
         {
+            if (!PermiteCancelar())
+                throw new DomainException($"Não é possível cancelar ordem de serviço com status {Status.Valor}.", ErrorType.DomainRuleBroken);
+
             Status = new Status(StatusOrdemServicoEnum.Cancelada);
         }
 
@@ -146,7 +162,10 @@ namespace Domain.OrdemServico.Aggregates.OrdemServico
             if (Orcamento == null)
                 throw new DomainException("Não existe orçamento para aprovar. É necessário gerar o orçamento primeiro.", ErrorType.DomainRuleBroken);
 
-            IniciarExecucao();
+            if (Status.Valor != StatusOrdemServicoEnum.AguardandoAprovacao)
+                throw new DomainException($"Não é possível aprovar orçamento com status {Status.Valor}.", ErrorType.DomainRuleBroken);
+
+            Status = new Status(StatusOrdemServicoEnum.Aprovada);
         }
 
         public void DesaprovarOrcamento()
@@ -159,8 +178,13 @@ namespace Domain.OrdemServico.Aggregates.OrdemServico
 
         public void IniciarExecucao()
         {
-            if (Status.Valor != StatusOrdemServicoEnum.AguardandoAprovacao)
-                throw new DomainException($"Só é possível iniciar execução para uma ordem de serviço com o status '{StatusOrdemServicoEnum.AguardandoAprovacao}'", ErrorType.DomainRuleBroken);
+            if (Status.Valor != StatusOrdemServicoEnum.Aprovada)
+                throw new DomainException($"Só é possível iniciar execução para uma ordem de serviço com o status '{StatusOrdemServicoEnum.Aprovada}'", ErrorType.DomainRuleBroken);
+
+            // Seta InteracaoEstoque baseado na presença de itens
+            InteracaoEstoque = ItensIncluidos.Any()
+                ? InteracaoEstoque.AguardandoReducao()
+                : InteracaoEstoque.SemInteracao();
 
             Status = new Status(StatusOrdemServicoEnum.EmExecucao);
             Historico = Historico.MarcarDataInicioExecucao();
@@ -170,6 +194,9 @@ namespace Domain.OrdemServico.Aggregates.OrdemServico
         {
             if (Status.Valor != StatusOrdemServicoEnum.EmExecucao)
                 throw new DomainException($"Só é possível finalizar execução para uma ordem de serviço com o status '{StatusOrdemServicoEnum.EmExecucao}'", ErrorType.DomainRuleBroken);
+
+            if (!InteracaoEstoque.EstoqueFoiConfirmado)
+                throw new DomainException("Não é possível finalizar execução enquanto aguardando confirmação do estoque.", ErrorType.DomainRuleBroken);
 
             Status = new Status(StatusOrdemServicoEnum.Finalizada);
             Historico = Historico.MarcarDataFinalizadaExecucao();
@@ -184,6 +211,19 @@ namespace Domain.OrdemServico.Aggregates.OrdemServico
             Historico = Historico.MarcarDataEntrega();
         }
 
+        public void ConfirmarReducaoEstoque()
+        {
+            InteracaoEstoque = InteracaoEstoque.ConfirmarReducao();
+        }
+
+        public void CompensarFalhaSaga()
+        {
+            if (Status.Valor == StatusOrdemServicoEnum.EmExecucao)
+                Status = new Status(StatusOrdemServicoEnum.Aprovada);
+
+            InteracaoEstoque = InteracaoEstoque.MarcarFalha();
+        }
+
         public void AlterarStatus(StatusOrdemServicoEnum novoStatus)
         {
             switch (novoStatus)
@@ -196,6 +236,9 @@ namespace Domain.OrdemServico.Aggregates.OrdemServico
                     break;
                 case StatusOrdemServicoEnum.AguardandoAprovacao:
                     GerarOrcamento();
+                    break;
+                case StatusOrdemServicoEnum.Aprovada:
+                    AprovarOrcamento();
                     break;
                 case StatusOrdemServicoEnum.EmExecucao:
                     IniciarExecucao();
