@@ -23,7 +23,6 @@ public class EstoqueMessagePublisherTests
         {
             CorrelationId = Guid.NewGuid(),
             OrdemServicoId = Guid.NewGuid(),
-            StatusAnterior = "AguardandoAprovacao",
             Itens = new List<ItemReducao>
             {
                 new ItemReducao { ItemEstoqueId = Guid.NewGuid(), Quantidade = 5 }
@@ -77,7 +76,6 @@ public class EstoqueMessagePublisherTests
         {
             CorrelationId = correlationId,
             OrdemServicoId = ordemServicoId,
-            StatusAnterior = "AguardandoAprovacao",
             Itens = new List<ItemReducao>
             {
                 new ItemReducao { ItemEstoqueId = itemId1, Quantidade = 3 },
@@ -104,7 +102,6 @@ public class EstoqueMessagePublisherTests
         Assert.NotNull(capturedMessage);
         Assert.Equal(correlationId, capturedMessage.CorrelationId);
         Assert.Equal(ordemServicoId, capturedMessage.OrdemServicoId);
-        Assert.Equal("AguardandoAprovacao", capturedMessage.StatusAnterior);
         Assert.Equal(2, capturedMessage.Itens.Count);
         Assert.Equal(itemId1, capturedMessage.Itens[0].ItemEstoqueId);
         Assert.Equal(3, capturedMessage.Itens[0].Quantidade);
@@ -158,7 +155,6 @@ public class EstoqueMessagePublisherTests
         {
             CorrelationId = Guid.NewGuid(),
             OrdemServicoId = Guid.NewGuid(),
-            StatusAnterior = "AguardandoAprovacao",
             Itens = new List<ItemReducao>()
         };
 
@@ -180,7 +176,6 @@ public class EstoqueMessagePublisherTests
         {
             CorrelationId = Guid.NewGuid(),
             OrdemServicoId = Guid.NewGuid(),
-            StatusAnterior = "AguardandoAprovacao",
             Itens = new List<ItemReducao>() // Lista vazia
         };
 
@@ -198,44 +193,4 @@ public class EstoqueMessagePublisherTests
             Times.Once);
     }
 
-    [Theory]
-    [InlineData("AguardandoAprovacao")]
-    [InlineData("Aprovada")]
-    [InlineData("EmExecucao")]
-    public async Task PublicarSolicitacaoReducaoAsync_WithDifferentStatusAnterior_PublicaCorretamente(string statusAnterior)
-    {
-        // Arrange
-        var publishEndpointMock = new Mock<IPublishEndpoint>();
-        var publisher = new EstoqueMessagePublisher(publishEndpointMock.Object);
-
-        var solicitacao = new ReducaoEstoqueSolicitacao
-        {
-            CorrelationId = Guid.NewGuid(),
-            OrdemServicoId = Guid.NewGuid(),
-            StatusAnterior = statusAnterior,
-            Itens = new List<ItemReducao>
-            {
-                new ItemReducao { ItemEstoqueId = Guid.NewGuid(), Quantidade = 1 }
-            }
-        };
-
-        ReducaoEstoqueSolicitacao? capturedMessage = null;
-        publishEndpointMock
-            .Setup(x => x.Publish(
-                It.IsAny<ReducaoEstoqueSolicitacao>(),
-                It.IsAny<Action<PublishContext<ReducaoEstoqueSolicitacao>>>(),
-                It.IsAny<CancellationToken>()))
-            .Callback<object, Action<PublishContext>, CancellationToken>((msg, _, _) =>
-            {
-                capturedMessage = msg as ReducaoEstoqueSolicitacao;
-            })
-            .Returns(Task.CompletedTask);
-
-        // Act
-        await publisher.PublicarSolicitacaoReducaoAsync(solicitacao);
-
-        // Assert
-        Assert.NotNull(capturedMessage);
-        Assert.Equal(statusAnterior, capturedMessage.StatusAnterior);
-    }
 }
