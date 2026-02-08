@@ -29,10 +29,10 @@ namespace Tests.Application.SharedHelpers.AggregateBuilders
             return this;
         }
 
-        public OrdemServicoBuilder ComOrcamento()
+        public OrdemServicoBuilder ComOrcamento(bool comItens = true)
         {
             // Adiciona itens e serviços se não foram especificados
-            if (_itens.Count == 0)
+            if (comItens && _itens.Count == 0)
                 ComItens();
             if (_servicos.Count == 0)
                 ComServicos();

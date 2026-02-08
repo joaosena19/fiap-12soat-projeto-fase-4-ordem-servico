@@ -1,8 +1,10 @@
 using Application.Contracts.Gateways;
 using Application.Contracts.Presenters;
+using Application.Contracts.Messaging;
 using Application.Identidade.Services;
 using Application.Identidade.Services.Extensions;
 using Application.OrdemServico.Interfaces.External;
+using Domain.OrdemServico.Enums;
 using Shared.Enums;
 using Shared.Exceptions;
 using Application.Extensions;
@@ -12,7 +14,7 @@ namespace Application.OrdemServico.UseCases;
 
 public class AprovarOrcamentoUseCase
 {
-    public async Task ExecutarAsync(Ator ator, Guid ordemServicoId, IOrdemServicoGateway gateway, IVeiculoExternalService veiculoExternalService, IEstoqueExternalService estoqueExternalService, IOperacaoOrdemServicoPresenter presenter, IAppLogger logger)
+    public async Task ExecutarAsync(Ator ator, Guid ordemServicoId, IOrdemServicoGateway gateway, IVeiculoExternalService veiculoExternalService, IEstoqueMessagePublisher estoqueMessagePublisher, IOperacaoOrdemServicoPresenter presenter, IAppLogger logger)
     {
         try
         {
@@ -22,29 +24,53 @@ public class AprovarOrcamentoUseCase
 
             // Verificar autorização usando serviço externo
             if (!await ator.PodeAprovarDesaprovarOrcamento(ordemServico, veiculoExternalService))
-                throw new DomainException("Acesso negado. Apenas administradores ou donos da ordem de serviço podem aprovar orçamentos.", ErrorType.NotAllowed, "Acesso negado para aprovar orçamento da ordem de serviço {OrdemServicoId} para usuário {Ator_UsuarioId}", ordemServicoId, ator.UsuarioId);
+                throw new DomainException("Acesso negado. Apenas administradores ou donos da ordem de serviço podem aprovar orçamentos.", ErrorType.NotAllowed, "Acesso negado para aprovar orçamento da ordem de serviço {OrdemServicoId} para usuário {Ator_UsuarioId}",
+                    ordemServicoId, ator.UsuarioId);
 
-            // Verificar disponibilidade dos itens no estoque antes de aprovar o orçamento
-            foreach (var itemIncluido in ordemServico.ItensIncluidos)
+            if (ordemServico.Status.Valor == StatusOrdemServicoEnum.AguardandoAprovacao)
+                ordemServico.AprovarOrcamento();   // AguardandoAprovacao → Aprovada
+
+            else if (ordemServico.Status.Valor != StatusOrdemServicoEnum.Aprovada)
             {
-                var disponivel = await estoqueExternalService.VerificarDisponibilidadeAsync(itemIncluido.ItemEstoqueOriginalId, itemIncluido.Quantidade.Valor);
-
-                if (!disponivel)
-                    throw new DomainException($"Item '{itemIncluido.Nome.Valor}' não está disponível no estoque na quantidade necessária ({itemIncluido.Quantidade.Valor}).", ErrorType.DomainRuleBroken, "Item {ItemId} não disponível no estoque para quantidade {Quantidade} na ordem {OrdemServicoId}", itemIncluido.ItemEstoqueOriginalId, itemIncluido.Quantidade.Valor, ordemServicoId);
+                throw new DomainException(
+                    $"Só é possível aprovar orçamento para uma OS com status '{StatusOrdemServicoEnum.AguardandoAprovacao}' ou '{StatusOrdemServicoEnum.Aprovada}'.",
+                    ErrorType.DomainRuleBroken,
+                    "Tentativa de aprovar OS {OrdemServicoId} com status inválido {Status}",
+                    ordemServicoId, ordemServico.Status.Valor);
             }
+            // Se já está Aprovada (retry), pula AprovarOrcamento() e vai direto para IniciarExecucao()
 
-            // Se todos os itens estão disponíveis - pode aprovar o orçamento
-            ordemServico.AprovarOrcamento();
+            // Transição automática: Aprovada → EmExecucao (sempre)
+            ordemServico.IniciarExecucao();
 
-            // Atualizar as quantidades no estoque após aprovar o orçamento
-            foreach (var itemIncluido in ordemServico.ItensIncluidos)
+            // Enviar mensagem SQS apenas se:
+            // - OS tem itens de estoque (DeveRemoverEstoque == true)
+            // - Estoque ainda não foi confirmado de uma tentativa anterior (EstoqueRemovidoComSucesso != true)
+            if (ordemServico.InteracaoEstoque.DeveRemoverEstoque && ordemServico.InteracaoEstoque.EstoqueRemovidoComSucesso != true)
             {
-                var itemEstoque = await estoqueExternalService.ObterItemEstoquePorIdAsync(itemIncluido.ItemEstoqueOriginalId);
-                if (itemEstoque != null)
+                var solicitacao = new ReducaoEstoqueSolicitacao
                 {
-                    var novaQuantidade = itemEstoque.Quantidade - itemIncluido.Quantidade.Valor;
-                    await estoqueExternalService.AtualizarQuantidadeEstoqueAsync(itemIncluido.ItemEstoqueOriginalId, novaQuantidade);
-                }
+                    CorrelationId = Guid.NewGuid(),
+                    OrdemServicoId = ordemServico.Id,
+                    Itens = ordemServico.ItensIncluidos.Select(i => new ItemReducao
+                    {
+                        ItemEstoqueId = i.ItemEstoqueOriginalId,
+                        Quantidade = i.Quantidade.Valor
+                    }).ToList()
+                };
+
+                await estoqueMessagePublisher.PublicarSolicitacaoReducaoAsync(solicitacao);
+
+                logger.LogInformation(
+                    "Mensagem de redução de estoque publicada para OS {OsId}. CorrelationId: {CorrelationId}. Itens: {QtdItens}",
+                    ordemServico.Id, solicitacao.CorrelationId, solicitacao.Itens.Count);
+            }
+            else
+            {
+                logger.LogInformation(
+                    "OS {OsId} não requer interação com estoque (DeveRemover={Deve}, JaConfirmado={Conf}). Prosseguindo direto.",
+                    ordemServico.Id, ordemServico.InteracaoEstoque.DeveRemoverEstoque,
+                    ordemServico.InteracaoEstoque.EstoqueRemovidoComSucesso);
             }
 
             await gateway.AtualizarAsync(ordemServico);

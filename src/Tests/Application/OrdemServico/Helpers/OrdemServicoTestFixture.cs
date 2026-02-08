@@ -1,5 +1,6 @@
 using Application.Contracts.Gateways;
 using Application.Contracts.Presenters;
+using Application.Contracts.Messaging;
 using Application.OrdemServico.Interfaces.External;
 using Application.OrdemServico.UseCases;
 using Application.Contracts.Monitoramento;
@@ -11,6 +12,7 @@ namespace Tests.Application.OrdemServico.Helpers
     {
         public Mock<IOrdemServicoGateway> OrdemServicoGatewayMock { get; }
         public Mock<IEstoqueExternalService> EstoqueExternalServiceMock { get; }
+        public Mock<IEstoqueMessagePublisher> EstoqueMessagePublisherMock { get; }
         public Mock<IServicoExternalService> ServicoExternalServiceMock { get; }
         public Mock<IClienteExternalService> ClienteExternalServiceMock { get; }
         public Mock<IAdicionarItemPresenter> AdicionarItemPresenterMock { get; }
@@ -49,6 +51,7 @@ namespace Tests.Application.OrdemServico.Helpers
         {
             OrdemServicoGatewayMock = new Mock<IOrdemServicoGateway>();
             EstoqueExternalServiceMock = new Mock<IEstoqueExternalService>();
+            EstoqueMessagePublisherMock = new Mock<IEstoqueMessagePublisher>();
             ServicoExternalServiceMock = new Mock<IServicoExternalService>();
             ClienteExternalServiceMock = new Mock<IClienteExternalService>();
             AdicionarItemPresenterMock = new Mock<IAdicionarItemPresenter>();

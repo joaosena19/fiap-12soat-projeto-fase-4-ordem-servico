@@ -1,6 +1,7 @@
 using Application.OrdemServico.UseCases;
 using Application.Contracts.Gateways;
 using Application.Contracts.Presenters;
+using Application.Contracts.Messaging;
 using Application.OrdemServico.Interfaces.External;
 using Application.Identidade.Services;
 using Application.Contracts.Monitoramento;
@@ -108,12 +109,12 @@ namespace Infrastructure.Handlers.OrdemServico
             await useCase.ExecutarAsync(ator, ordemServicoId, gateway, presenter, logger);
         }
 
-        public async Task AprovarOrcamentoAsync(Ator ator, Guid ordemServicoId, IOrdemServicoGateway gateway, IVeiculoExternalService veiculoExternalService, IEstoqueExternalService estoqueExternalService, IOperacaoOrdemServicoPresenter presenter)
+        public async Task AprovarOrcamentoAsync(Ator ator, Guid ordemServicoId, IOrdemServicoGateway gateway, IVeiculoExternalService veiculoExternalService, IEstoqueMessagePublisher estoqueMessagePublisher, IOperacaoOrdemServicoPresenter presenter)
         {
             var useCase = new AprovarOrcamentoUseCase();
             var logger = CriarLoggerPara<AprovarOrcamentoUseCase>();
             
-            await useCase.ExecutarAsync(ator, ordemServicoId, gateway, veiculoExternalService, estoqueExternalService, presenter, logger);
+            await useCase.ExecutarAsync(ator, ordemServicoId, gateway, veiculoExternalService, estoqueMessagePublisher, presenter, logger);
         }
 
         public async Task DesaprovarOrcamentoAsync(Ator ator, Guid ordemServicoId, IOrdemServicoGateway gateway, IVeiculoExternalService veiculoExternalService, IOperacaoOrdemServicoPresenter presenter)

@@ -1,6 +1,7 @@
 using API.Attributes;
 using API.Dtos;
 using API.Presenters.OrdemServico;
+using Application.Contracts.Messaging;
 using Application.Identidade.Services;
 using Application.OrdemServico.Dtos;
 using Infrastructure.Database;
@@ -22,10 +23,12 @@ namespace API.Endpoints.OrdemServico
     public class OrdemServicoController : BaseController
     {
         private readonly MongoDbContext _context;
+        private readonly IEstoqueMessagePublisher _estoqueMessagePublisher;
 
-        public OrdemServicoController(MongoDbContext context, ILoggerFactory loggerFactory) : base(loggerFactory)
+        public OrdemServicoController(MongoDbContext context, IEstoqueMessagePublisher estoqueMessagePublisher, ILoggerFactory loggerFactory) : base(loggerFactory)
         {
             _context = context;
+            _estoqueMessagePublisher = estoqueMessagePublisher;
         }
 
         /// <summary>
@@ -385,12 +388,11 @@ namespace API.Endpoints.OrdemServico
         {
             var gateway = new OrdemServicoRepository(_context);
             var veiculoExternalService = new VeiculoExternalServiceStub();
-            var estoqueExternalService = new EstoqueExternalServiceStub();
             var presenter = new OperacaoOrdemServicoPresenter();
             var handler = new OrdemServicoHandler(_loggerFactory);
             var ator = BuscarAtorAtual();
 
-            await handler.AprovarOrcamentoAsync(ator, id, gateway, veiculoExternalService, estoqueExternalService, presenter);
+            await handler.AprovarOrcamentoAsync(ator, id, gateway, veiculoExternalService, _estoqueMessagePublisher, presenter);
             return presenter.ObterResultado();
         }
 
@@ -553,12 +555,11 @@ namespace API.Endpoints.OrdemServico
         {
             var gateway = new OrdemServicoRepository(_context);
             var veiculoExternalService = new VeiculoExternalServiceStub();
-            var estoqueExternalService = new EstoqueExternalServiceStub();
             var presenter = new OperacaoOrdemServicoPresenter();
             var handler = new OrdemServicoHandler(_loggerFactory);
-            var ator = Ator.Sistema();
+            var ator = BuscarAtorAtual();
 
-            await handler.AprovarOrcamentoAsync(ator, dto.Id, gateway, veiculoExternalService, estoqueExternalService, presenter);
+            await handler.AprovarOrcamentoAsync(ator, dto.Id, gateway, veiculoExternalService, _estoqueMessagePublisher, presenter);
             return presenter.ObterResultado();
         }
 
