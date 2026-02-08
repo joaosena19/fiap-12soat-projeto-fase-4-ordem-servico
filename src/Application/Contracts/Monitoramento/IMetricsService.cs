@@ -11,5 +11,10 @@ namespace Application.Contracts.Monitoramento
         /// Registra a transição de status e quanto tempo a OS ficou no status anterior (Para dashboard de Tempo Médio)
         /// </summary>
         void RegistrarMudancaOrdemServicoStatus(Guid ordemServicoId, string statusAnterior, string statusNovo, double duracaoMs);
+
+        /// <summary>
+        /// Registra compensação de saga por timeout de estoque
+        /// </summary>
+        void RegistrarCompensacaoSagaTimeout(Guid ordemServicoId, string motivo, DateTime? dataInicioExecucao);
     }
 }

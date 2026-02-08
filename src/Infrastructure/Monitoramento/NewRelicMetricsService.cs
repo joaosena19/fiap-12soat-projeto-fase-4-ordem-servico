@@ -29,5 +29,18 @@ namespace Infrastructure.Monitoramento
 
             NR.NewRelic.RecordCustomEvent("OrdemServicoMudancaStatus", atributos);
         }
+
+        public void RegistrarCompensacaoSagaTimeout(Guid ordemServicoId, string motivo, DateTime? dataInicioExecucao)
+        {
+            var atributos = new Dictionary<string, object>
+            {
+                { "ordemServicoId", ordemServicoId },
+                { "motivo", motivo },
+                { "dataInicioExecucao", dataInicioExecucao?.ToString("o") ?? "N/A" },
+                { "sucesso", true }
+            };
+
+            NR.NewRelic.RecordCustomEvent("SagaCompensacaoTimeout", atributos);
+        }
     }
 }

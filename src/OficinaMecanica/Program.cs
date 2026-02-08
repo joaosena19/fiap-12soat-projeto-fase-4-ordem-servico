@@ -41,6 +41,7 @@ builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddExternalServices(builder.Configuration);
 builder.Services.AddMessaging(builder.Configuration);
 builder.Services.AddHealthChecks();
+builder.Services.AddHostedService<Infrastructure.BackgroundServices.SagaTimeoutBackgroundService>();
 
 
 var app = builder.Build();
