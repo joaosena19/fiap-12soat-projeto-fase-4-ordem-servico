@@ -1,4 +1,4 @@
-using Infrastructure.Messaging.Contracts;
+using Application.Contracts.Messaging;
 using System.Text.Json;
 using Xunit;
 

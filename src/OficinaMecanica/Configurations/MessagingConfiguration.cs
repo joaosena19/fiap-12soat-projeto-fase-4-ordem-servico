@@ -1,3 +1,5 @@
+using Application.Contracts.Messaging;
+using Infrastructure.Messaging;
 using Infrastructure.Messaging.Consumers;
 using MassTransit;
 
@@ -36,6 +38,9 @@ public static class MessagingConfiguration
                 });
             });
         });
+
+        // Registrar publisher de mensagens de estoque
+        services.AddScoped<IEstoqueMessagePublisher, EstoqueMessagePublisher>();
 
         return services;
     }

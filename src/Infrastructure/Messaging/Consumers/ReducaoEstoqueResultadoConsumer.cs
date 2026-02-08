@@ -1,6 +1,6 @@
-using Infrastructure.Messaging.Contracts;
-using MassTransit;
+using Application.Contracts.Messaging;
 using Application.Contracts.Monitoramento;
+using MassTransit;
 
 namespace Infrastructure.Messaging.Consumers;
 
