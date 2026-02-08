@@ -6,8 +6,9 @@
         Recebida = 1,
         EmDiagnostico = 2,
         AguardandoAprovacao = 3,
-        EmExecucao = 4,
-        Finalizada = 5,
-        Entregue = 6
+        Aprovada = 4,
+        EmExecucao = 5,
+        Finalizada = 6,
+        Entregue = 7
     }
 }
