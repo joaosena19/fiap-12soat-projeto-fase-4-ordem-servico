@@ -17,4 +17,9 @@ public class MockMetricsService : IMetricsService
     {
         // Mock não faz nada - apenas para testes não quebrarem
     }
+
+    public void RegistrarCompensacaoSagaTimeout(Guid ordemServicoId, string motivo, DateTime? dataInicioExecucao)
+    {
+        // Mock não faz nada - apenas para testes não quebrarem
+    }
 }

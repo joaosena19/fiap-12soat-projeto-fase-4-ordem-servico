@@ -10,4 +10,5 @@ public interface IOrdemServicoGateway
     Task<OrdemServicoAggregate> AtualizarAsync(OrdemServicoAggregate ordemServico);
     Task<IEnumerable<OrdemServicoAggregate>> ObterTodosAsync();
     Task<IEnumerable<OrdemServicoAggregate>> ObterEntreguesUltimosDiasAsync(int quantidadeDias);
+    Task<IEnumerable<OrdemServicoAggregate>> ObterOrdensAguardandoEstoqueComTimeoutAsync(DateTime timeoutLimit);
 }

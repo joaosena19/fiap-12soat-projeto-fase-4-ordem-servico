@@ -74,5 +74,17 @@ namespace Infrastructure.Repositories.OrdemServico
                 .Find(filter)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<OrdemServicoAggregate>> ObterOrdensAguardandoEstoqueComTimeoutAsync(DateTime timeoutLimit)
+        {
+            var filter = Builders<OrdemServicoAggregate>.Filter.And(
+                Builders<OrdemServicoAggregate>.Filter.Eq(x => x.Status.Valor, StatusOrdemServicoEnum.EmExecucao),
+                Builders<OrdemServicoAggregate>.Filter.Eq(x => x.InteracaoEstoque.DeveRemoverEstoque, true),
+                Builders<OrdemServicoAggregate>.Filter.Eq(x => x.InteracaoEstoque.EstoqueRemovidoComSucesso, (bool?)null),
+                Builders<OrdemServicoAggregate>.Filter.Lte(x => x.Historico.DataInicioExecucao, timeoutLimit)
+            );
+
+            return await _collection.Find(filter).ToListAsync();
+        }
     }
 }
