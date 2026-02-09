@@ -14,7 +14,15 @@ namespace Application.OrdemServico.UseCases;
 
 public class AprovarOrcamentoUseCase
 {
-    public async Task ExecutarAsync(Ator ator, Guid ordemServicoId, IOrdemServicoGateway gateway, IVeiculoExternalService veiculoExternalService, IEstoqueMessagePublisher estoqueMessagePublisher, IOperacaoOrdemServicoPresenter presenter, IAppLogger logger)
+    public async Task ExecutarAsync(
+        Ator ator, 
+        Guid ordemServicoId, 
+        IOrdemServicoGateway gateway, 
+        IVeiculoExternalService veiculoExternalService, 
+        IEstoqueMessagePublisher estoqueMessagePublisher, 
+        ICorrelationIdAccessor correlationIdAccessor,
+        IOperacaoOrdemServicoPresenter presenter, 
+        IAppLogger logger)
     {
         try
         {
@@ -40,7 +48,7 @@ public class AprovarOrcamentoUseCase
             }
             // Se já está Aprovada (retry), pula AprovarOrcamento() e vai direto para IniciarExecucao()
 
-            // Transição automática: Aprovada → EmExecucao (sempre)
+            // Transição automática: Aprovada → EmExecucao (always)
             ordemServico.IniciarExecucao();
 
             // Enviar mensagem SQS apenas se:
@@ -50,7 +58,7 @@ public class AprovarOrcamentoUseCase
             {
                 var solicitacao = new ReducaoEstoqueSolicitacao
                 {
-                    CorrelationId = Guid.NewGuid(),
+                    CorrelationId = correlationIdAccessor.GetCorrelationId(),
                     OrdemServicoId = ordemServico.Id,
                     Itens = ordemServico.ItensIncluidos.Select(i => new ItemReducao
                     {

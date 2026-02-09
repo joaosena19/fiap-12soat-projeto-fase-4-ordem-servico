@@ -2,6 +2,7 @@ using API.Attributes;
 using API.Dtos;
 using API.Presenters.OrdemServico;
 using Application.Contracts.Messaging;
+using Application.Contracts.Monitoramento;
 using Application.Identidade.Services;
 using Application.OrdemServico.Dtos;
 using Infrastructure.Database;
@@ -24,11 +25,13 @@ namespace API.Endpoints.OrdemServico
     {
         private readonly MongoDbContext _context;
         private readonly IEstoqueMessagePublisher _estoqueMessagePublisher;
+        private readonly ICorrelationIdAccessor _correlationIdAccessor;
 
-        public OrdemServicoController(MongoDbContext context, IEstoqueMessagePublisher estoqueMessagePublisher, ILoggerFactory loggerFactory) : base(loggerFactory)
+        public OrdemServicoController(MongoDbContext context, IEstoqueMessagePublisher estoqueMessagePublisher, ILoggerFactory loggerFactory, ICorrelationIdAccessor correlationIdAccessor) : base(loggerFactory)
         {
             _context = context;
             _estoqueMessagePublisher = estoqueMessagePublisher;
+            _correlationIdAccessor = correlationIdAccessor;
         }
 
         /// <summary>
@@ -392,7 +395,7 @@ namespace API.Endpoints.OrdemServico
             var handler = new OrdemServicoHandler(_loggerFactory);
             var ator = BuscarAtorAtual();
 
-            await handler.AprovarOrcamentoAsync(ator, id, gateway, veiculoExternalService, _estoqueMessagePublisher, presenter);
+            await handler.AprovarOrcamentoAsync(ator, id, gateway, veiculoExternalService, _estoqueMessagePublisher, _correlationIdAccessor, presenter);
             return presenter.ObterResultado();
         }
 
@@ -559,7 +562,7 @@ namespace API.Endpoints.OrdemServico
             var handler = new OrdemServicoHandler(_loggerFactory);
             var ator = BuscarAtorAtual();
 
-            await handler.AprovarOrcamentoAsync(ator, dto.Id, gateway, veiculoExternalService, _estoqueMessagePublisher, presenter);
+            await handler.AprovarOrcamentoAsync(ator, dto.Id, gateway, veiculoExternalService, _estoqueMessagePublisher, _correlationIdAccessor, presenter);
             return presenter.ObterResultado();
         }
 

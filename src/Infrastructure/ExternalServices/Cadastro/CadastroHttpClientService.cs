@@ -1,5 +1,6 @@
 using Application.OrdemServico.Dtos.External;
 using Application.OrdemServico.Interfaces.External;
+using Application.Contracts.Monitoramento;
 using Microsoft.AspNetCore.Http;
 using System.Net.Http.Json;
 
@@ -12,8 +13,11 @@ namespace Infrastructure.ExternalServices.Cadastro;
 public class CadastroHttpClientService : BaseExternalHttpClient,
     IClienteExternalService, IServicoExternalService, IVeiculoExternalService
 {
-    public CadastroHttpClientService(HttpClient httpClient, IHttpContextAccessor httpContextAccessor)
-        : base(httpClient, httpContextAccessor)
+    public CadastroHttpClientService(
+        HttpClient httpClient, 
+        IHttpContextAccessor httpContextAccessor,
+        ICorrelationIdAccessor correlationIdAccessor)
+        : base(httpClient, httpContextAccessor, correlationIdAccessor)
     {
     }
 

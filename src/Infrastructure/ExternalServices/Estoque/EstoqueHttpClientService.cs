@@ -1,5 +1,6 @@
 using Application.OrdemServico.Dtos.External;
 using Application.OrdemServico.Interfaces.External;
+using Application.Contracts.Monitoramento;
 using Microsoft.AspNetCore.Http;
 using System.Net.Http.Json;
 
@@ -13,8 +14,11 @@ namespace Infrastructure.ExternalServices.Estoque;
 /// </summary>
 public class EstoqueHttpClientService : BaseExternalHttpClient, IEstoqueExternalService
 {
-    public EstoqueHttpClientService(HttpClient httpClient, IHttpContextAccessor httpContextAccessor)
-        : base(httpClient, httpContextAccessor)
+    public EstoqueHttpClientService(
+        HttpClient httpClient, 
+        IHttpContextAccessor httpContextAccessor,
+        ICorrelationIdAccessor correlationIdAccessor)
+        : base(httpClient, httpContextAccessor, correlationIdAccessor)
     {
     }
 

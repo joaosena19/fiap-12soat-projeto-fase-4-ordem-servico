@@ -46,6 +46,7 @@ builder.Services.AddHostedService<Infrastructure.BackgroundServices.SagaTimeoutB
 
 var app = builder.Build();
 
+app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseSwaggerDocumentation();
 app.UseHttpsRedirection();

@@ -1,3 +1,4 @@
+using Application.Contracts.Monitoramento;
 using Microsoft.AspNetCore.Http;
 using System.Net.Http.Headers;
 
@@ -11,11 +12,16 @@ public abstract class BaseExternalHttpClient
 {
     protected readonly HttpClient _httpClient;
     protected readonly IHttpContextAccessor _httpContextAccessor;
+    protected readonly ICorrelationIdAccessor _correlationIdAccessor;
 
-    protected BaseExternalHttpClient(HttpClient httpClient, IHttpContextAccessor httpContextAccessor)
+    protected BaseExternalHttpClient(
+        HttpClient httpClient, 
+        IHttpContextAccessor httpContextAccessor,
+        ICorrelationIdAccessor correlationIdAccessor)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+        _correlationIdAccessor = correlationIdAccessor ?? throw new ArgumentNullException(nameof(correlationIdAccessor));
     }
 
     /// <summary>
@@ -34,16 +40,11 @@ public abstract class BaseExternalHttpClient
 
     /// <summary>
     /// Propaga o correlation ID da requisição atual para o HttpClient.
-    /// Se não existir, gera um novo.
+    /// Utiliza o ICorrelationIdAccessor para garantir consistência.
     /// </summary>
     protected void PropagateCorrelationId()
     {
-        var correlationId = _httpContextAccessor.HttpContext?.Request.Headers["X-Correlation-ID"].ToString();
-        
-        if (string.IsNullOrEmpty(correlationId))
-        {
-            correlationId = Guid.NewGuid().ToString();
-        }
+        var correlationId = _correlationIdAccessor.GetCorrelationId().ToString();
 
         // Remove existente antes de adicionar
         if (_httpClient.DefaultRequestHeaders.Contains("X-Correlation-ID"))

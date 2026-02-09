@@ -2,6 +2,7 @@ using Application.Contracts.Gateways;
 using Application.Contracts.Messaging;
 using Application.Contracts.Monitoramento;
 using MassTransit;
+using SerilogContext = Serilog.Context.LogContext;
 
 namespace Infrastructure.Messaging.Consumers;
 
@@ -29,6 +30,15 @@ public class ReducaoEstoqueResultadoConsumer : IConsumer<ReducaoEstoqueResultado
     {
         var msg = context.Message;
 
+        // Enriquecer todos os logs do consumer com o CorrelationId da mensagem
+        using (SerilogContext.PushProperty("CorrelationId", msg.CorrelationId))
+        {
+            await ProcessarMensagemAsync(msg);
+        }
+    }
+
+    private async Task ProcessarMensagemAsync(ReducaoEstoqueResultado msg)
+    {
         var os = await _gateway.ObterPorIdAsync(msg.OrdemServicoId);
         if (os == null)
         {

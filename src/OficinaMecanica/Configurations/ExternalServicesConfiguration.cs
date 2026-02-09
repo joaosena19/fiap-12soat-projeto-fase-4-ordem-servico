@@ -1,7 +1,9 @@
 using Application.OrdemServico.Interfaces.External;
+using Application.Contracts.Monitoramento;
 using Infrastructure.ExternalServices;
 using Infrastructure.ExternalServices.Cadastro;
 using Infrastructure.ExternalServices.Estoque;
+using Infrastructure.Monitoramento;
 using Microsoft.Extensions.Options;
 
 namespace API.Configurations;
@@ -21,6 +23,9 @@ public static class ExternalServicesConfiguration
     {
         // Registrar HttpContextAccessor para acesso ao contexto HTTP
         services.AddHttpContextAccessor();
+
+        // Registrar o Accessor de Correlation ID
+        services.AddScoped<ICorrelationIdAccessor, CorrelationIdAccessor>();
 
         // Configurar settings de serviços externos
         services.Configure<ExternalServicesSettings>(

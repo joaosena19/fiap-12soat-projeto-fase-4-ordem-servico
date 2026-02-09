@@ -27,6 +27,7 @@ namespace Tests.Application.OrdemServico.Helpers
         public Mock<IVeiculoExternalService> VeiculoExternalServiceMock { get; }
         public Mock<ICriarOrdemServicoPresenter> CriarOrdemServicoPresenterMock { get; }
         public Mock<IMetricsService> MetricsServiceMock { get; }
+        public Mock<ICorrelationIdAccessor> CorrelationIdAccessorMock { get; }
 
         public AdicionarItemUseCase AdicionarItemUseCase { get; }
         public AdicionarServicosUseCase AdicionarServicosUseCase { get; }
@@ -66,6 +67,7 @@ namespace Tests.Application.OrdemServico.Helpers
             VeiculoExternalServiceMock = new Mock<IVeiculoExternalService>();
             CriarOrdemServicoPresenterMock = new Mock<ICriarOrdemServicoPresenter>();
             MetricsServiceMock = new Mock<IMetricsService>();
+            CorrelationIdAccessorMock = new Mock<ICorrelationIdAccessor>();
 
             AdicionarItemUseCase = new AdicionarItemUseCase();
             AdicionarServicosUseCase = new AdicionarServicosUseCase();

@@ -44,6 +44,7 @@ namespace Tests.Application.OrdemServico
                 _fixture.OrdemServicoGatewayMock.Object,
                 _fixture.VeiculoExternalServiceMock.Object,
                 _fixture.EstoqueMessagePublisherMock.Object,
+                _fixture.CorrelationIdAccessorMock.Object,
                 _fixture.OperacaoOrdemServicoPresenterMock.Object, 
                 MockLogger.CriarSimples());
 
@@ -85,6 +86,7 @@ namespace Tests.Application.OrdemServico
                 _fixture.OrdemServicoGatewayMock.Object,
                 _fixture.VeiculoExternalServiceMock.Object,
                 _fixture.EstoqueMessagePublisherMock.Object,
+                _fixture.CorrelationIdAccessorMock.Object,
                 _fixture.OperacaoOrdemServicoPresenterMock.Object, 
                 MockLogger.CriarSimples());
 
@@ -125,6 +127,7 @@ namespace Tests.Application.OrdemServico
                 _fixture.OrdemServicoGatewayMock.Object,
                 _fixture.VeiculoExternalServiceMock.Object,
                 _fixture.EstoqueMessagePublisherMock.Object,
+                _fixture.CorrelationIdAccessorMock.Object,
                 _fixture.OperacaoOrdemServicoPresenterMock.Object, 
                 MockLogger.CriarSimples());
 
@@ -160,6 +163,7 @@ namespace Tests.Application.OrdemServico
                 _fixture.OrdemServicoGatewayMock.Object,
                 _fixture.VeiculoExternalServiceMock.Object,
                 _fixture.EstoqueMessagePublisherMock.Object,
+                _fixture.CorrelationIdAccessorMock.Object,
                 _fixture.OperacaoOrdemServicoPresenterMock.Object, 
                 MockLogger.CriarSimples());
 
@@ -192,6 +196,7 @@ namespace Tests.Application.OrdemServico
                 _fixture.OrdemServicoGatewayMock.Object,
                 _fixture.VeiculoExternalServiceMock.Object,
                 _fixture.EstoqueMessagePublisherMock.Object,
+                _fixture.CorrelationIdAccessorMock.Object,
                 _fixture.OperacaoOrdemServicoPresenterMock.Object, 
                 MockLogger.CriarSimples());
 
@@ -218,6 +223,7 @@ namespace Tests.Application.OrdemServico
                 _fixture.OrdemServicoGatewayMock.Object,
                 _fixture.VeiculoExternalServiceMock.Object,
                 _fixture.EstoqueMessagePublisherMock.Object,
+                _fixture.CorrelationIdAccessorMock.Object,
                 _fixture.OperacaoOrdemServicoPresenterMock.Object, 
                 MockLogger.CriarSimples());
 
@@ -246,6 +252,7 @@ namespace Tests.Application.OrdemServico
                 _fixture.OrdemServicoGatewayMock.Object,
                 _fixture.VeiculoExternalServiceMock.Object,
                 _fixture.EstoqueMessagePublisherMock.Object,
+                _fixture.CorrelationIdAccessorMock.Object,
                 _fixture.OperacaoOrdemServicoPresenterMock.Object, 
                 MockLogger.CriarSimples());
 
@@ -278,6 +285,7 @@ namespace Tests.Application.OrdemServico
                 _fixture.OrdemServicoGatewayMock.Object,
                 _fixture.VeiculoExternalServiceMock.Object,
                 _fixture.EstoqueMessagePublisherMock.Object,
+                _fixture.CorrelationIdAccessorMock.Object,
                 _fixture.OperacaoOrdemServicoPresenterMock.Object, 
                 MockLogger.CriarSimples());
 
@@ -306,6 +314,7 @@ namespace Tests.Application.OrdemServico
                 _fixture.OrdemServicoGatewayMock.Object,
                 _fixture.VeiculoExternalServiceMock.Object,
                 _fixture.EstoqueMessagePublisherMock.Object,
+                _fixture.CorrelationIdAccessorMock.Object,
                 _fixture.OperacaoOrdemServicoPresenterMock.Object, 
                 MockLogger.CriarSimples());
 
@@ -330,6 +339,7 @@ namespace Tests.Application.OrdemServico
                 _fixture.OrdemServicoGatewayMock.Object,
                 _fixture.VeiculoExternalServiceMock.Object,
                 _fixture.EstoqueMessagePublisherMock.Object,
+                _fixture.CorrelationIdAccessorMock.Object,
                 _fixture.OperacaoOrdemServicoPresenterMock.Object,
                 mockLogger.Object);
 
@@ -355,6 +365,7 @@ namespace Tests.Application.OrdemServico
                 _fixture.OrdemServicoGatewayMock.Object,
                 _fixture.VeiculoExternalServiceMock.Object,
                 _fixture.EstoqueMessagePublisherMock.Object,
+                _fixture.CorrelationIdAccessorMock.Object,
                 _fixture.OperacaoOrdemServicoPresenterMock.Object,
                 mockLogger.Object);
 
