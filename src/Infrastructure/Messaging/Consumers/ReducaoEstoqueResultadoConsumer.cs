@@ -42,7 +42,7 @@ public class ReducaoEstoqueResultadoConsumer : IConsumer<ReducaoEstoqueResultado
         var os = await _gateway.ObterPorIdAsync(msg.OrdemServicoId);
         if (os == null)
         {
-            _logger.LogError(
+            _logger.LogCritical(
                 "OS {OsId} não encontrada ao processar resultado de estoque! CorrelationId: {CorrelationId}",
                 msg.OrdemServicoId, msg.CorrelationId);
             return;
@@ -84,7 +84,7 @@ public class ReducaoEstoqueResultadoConsumer : IConsumer<ReducaoEstoqueResultado
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex,
+            _logger.LogCritical(ex,
                 "FALHA NA COMPENSAÇÃO para OS {OsId}! Dados possivelmente INCONSISTENTES. CorrelationId: {CorrelationId}",
                 os.Id, msg.CorrelationId);
 
