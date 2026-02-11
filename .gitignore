@@ -83,6 +83,9 @@ Thumbs.db
 # Rider
 .idea/
 
+# Atlas/Conductor agent plans
+plans/
+
 # Terraform
 .terraform/
 .terraform.lock.hcl

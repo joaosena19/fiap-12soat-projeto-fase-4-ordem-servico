@@ -30,9 +30,10 @@ namespace API.Configurations
                 using var scope = app.Services.CreateScope();
                 var mongoContext = scope.ServiceProvider.GetRequiredService<MongoDbContext>();
 
-                // MongoDB não precisa de migrations - as collections são criadas automaticamente
-                // O seed de dados pode ser implementado aqui se necessário no futuro
-                Console.WriteLine("MongoDB conectado - seed de dados pode ser implementado aqui");
+                // Executa o seed de forma síncrona no startup
+                SeedData.SeedAllAsync(mongoContext).GetAwaiter().GetResult();
+                
+                Console.WriteLine("Seed de dados de desenvolvimento executado com sucesso");
             }
             catch (Exception ex)
             {
