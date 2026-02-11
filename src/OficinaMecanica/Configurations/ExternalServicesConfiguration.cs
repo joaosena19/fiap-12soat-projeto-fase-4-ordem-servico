@@ -27,37 +27,41 @@ public static class ExternalServicesConfiguration
         // Registrar o Accessor de Correlation ID
         services.AddScoped<ICorrelationIdAccessor, CorrelationIdAccessor>();
 
-        // Configurar settings de serviços externos
-        services.Configure<ExternalServicesSettings>(
-            configuration.GetSection("ExternalServices"));
+        // Vincular e validar settings de serviços externos
+        var externalServicesSection = configuration.GetSection("ExternalServices");
+        var settings = externalServicesSection.Get<ExternalServicesSettings>();
+        
+        if (settings == null || string.IsNullOrWhiteSpace(settings.CadastroBaseUrl))
+            throw new InvalidOperationException("ExternalServices:CadastroBaseUrl não está configurado");
+        
+        if (string.IsNullOrWhiteSpace(settings.EstoqueBaseUrl))
+            throw new InvalidOperationException("ExternalServices:EstoqueBaseUrl não está configurado");
 
-        // Registrar HttpClient tipado para o serviço de Cadastros
-        services.AddHttpClient<CadastroHttpClientService>((sp, client) =>
+        // Registrar HttpClient tipado para os serviços de Cadastros
+        services.AddHttpClient<IClienteExternalService, CadastroHttpClientService>(client =>
         {
-            var settings = sp.GetRequiredService<IOptions<ExternalServicesSettings>>().Value;
             client.BaseAddress = new Uri(settings.CadastroBaseUrl);
             client.Timeout = TimeSpan.FromSeconds(30);
         });
 
-        // Registrar as interfaces de serviço externo para o CadastroHttpClientService
-        services.AddScoped<IClienteExternalService>(sp => 
-            sp.GetRequiredService<CadastroHttpClientService>());
-        services.AddScoped<IServicoExternalService>(sp => 
-            sp.GetRequiredService<CadastroHttpClientService>());
-        services.AddScoped<IVeiculoExternalService>(sp => 
-            sp.GetRequiredService<CadastroHttpClientService>());
-
-        // Registrar HttpClient tipado para o serviço de Estoque
-        services.AddHttpClient<EstoqueHttpClientService>((sp, client) =>
+        services.AddHttpClient<IServicoExternalService, CadastroHttpClientService>(client =>
         {
-            var settings = sp.GetRequiredService<IOptions<ExternalServicesSettings>>().Value;
-            client.BaseAddress = new Uri(settings.EstoqueBaseUrl);
+            client.BaseAddress = new Uri(settings.CadastroBaseUrl);
             client.Timeout = TimeSpan.FromSeconds(30);
         });
 
-        // Registrar a interface de serviço externo para o EstoqueHttpClientService
-        services.AddScoped<IEstoqueExternalService>(sp => 
-            sp.GetRequiredService<EstoqueHttpClientService>());
+        services.AddHttpClient<IVeiculoExternalService, CadastroHttpClientService>(client =>
+        {
+            client.BaseAddress = new Uri(settings.CadastroBaseUrl);
+            client.Timeout = TimeSpan.FromSeconds(30);
+        });
+
+        // Registrar HttpClient tipado para o serviço de Estoque
+        services.AddHttpClient<IEstoqueExternalService, EstoqueHttpClientService>(client =>
+        {
+            client.BaseAddress = new Uri(settings.EstoqueBaseUrl);
+            client.Timeout = TimeSpan.FromSeconds(30);
+        });
 
         return services;
     }
