@@ -1,5 +1,5 @@
 using Application.Contracts.Messaging;
-using Application.Contracts.Messaging.DTOs;
+using Infrastructure.Messaging.DTOs;
 using Infrastructure.Messaging;
 using MassTransit;
 using Moq;

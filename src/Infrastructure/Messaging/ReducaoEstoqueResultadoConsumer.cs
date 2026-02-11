@@ -1,9 +1,7 @@
 using Application.Contracts.Gateways;
-using Application.Contracts.Messaging;
-using Application.Contracts.Messaging.DTOs;
+using Infrastructure.Messaging.DTOs;
 using Application.Contracts.Monitoramento;
 using MassTransit;
-using SerilogContext = Serilog.Context.LogContext;
 
 namespace Infrastructure.Messaging;
 
@@ -30,22 +28,21 @@ public class ReducaoEstoqueResultadoConsumer : IConsumer<ReducaoEstoqueResultado
     public async Task Consume(ConsumeContext<ReducaoEstoqueResultado> context)
     {
         var msg = context.Message;
-
-        // Enriquecer todos os logs do consumer com o CorrelationId da mensagem
-        using (SerilogContext.PushProperty("CorrelationId", msg.CorrelationId))
-        {
-            await ProcessarMensagemAsync(msg);
-        }
+        await ProcessarMensagemAsync(msg);
     }
 
     private async Task ProcessarMensagemAsync(ReducaoEstoqueResultado msg)
     {
+        var log = _logger
+            .ComPropriedade("Consumer", nameof(ReducaoEstoqueResultadoConsumer))
+            .ComPropriedade("CorrelationId", msg.CorrelationId)
+            .ComPropriedade("OsId", msg.OrdemServicoId);
+        
         var os = await _gateway.ObterPorIdAsync(msg.OrdemServicoId);
         if (os == null)
         {
-            _logger.LogCritical(
-                "OS {OsId} não encontrada ao processar resultado de estoque! CorrelationId: {CorrelationId}",
-                msg.OrdemServicoId, msg.CorrelationId);
+            log.LogError(
+                "Ordem Serviço não encontrada ao processar resultado de estoque.");
             return;
         }
 
@@ -55,9 +52,9 @@ public class ReducaoEstoqueResultadoConsumer : IConsumer<ReducaoEstoqueResultado
             os.ConfirmarReducaoEstoque();
             await _gateway.AtualizarAsync(os);
 
-            _logger.LogInformation(
-                "Redução de estoque confirmada para OS {OsId}. Status atual: {Status}. CorrelationId: {CorrelationId}",
-                os.Id, os.Status.Valor, msg.CorrelationId);
+            log.LogInformation(
+                "Redução de estoque confirmada para Ordem Serviço. Status atual: {Status}.",
+                os.Status.Valor);
 
             _metrics.RegistrarEstoqueConfirmado(os.Id, os.Status.Valor.ToString(), msg.CorrelationId);
 
@@ -66,20 +63,19 @@ public class ReducaoEstoqueResultadoConsumer : IConsumer<ReducaoEstoqueResultado
 
         try
         {
-            os.CompensarFalhaSaga();
+            os.RegistrarFalhaReducaoEstoque();
             await _gateway.AtualizarAsync(os);
 
             _metrics.RegistrarCompensacaoSagaFalhaEstoque(os.Id, msg.MotivoFalha ?? "desconhecido", msg.CorrelationId);
 
-            _logger.LogWarning(
-                "Falha na redução de estoque para OS {OsId}. Motivo: {Motivo}. Status atual: {Status}. CorrelationId: {CorrelationId}. Compensação aplicada para OS {OsId}. Status revertido para Aprovada. CorrelationId: {CorrelationId}",
-                os.Id, msg.CorrelationId);
+            log.LogWarning(
+                "Falha na redução de estoque para Ordem Serviço. Motivo: {Motivo}. Status atual: {Status}. Compensação aplicada, status revertido para Aprovada.",
+                msg.MotivoFalha ?? "desconhecido", os.Status.Valor);
         }
         catch (Exception ex)
         {
-            _logger.LogCritical(ex,
-                "FALHA NA COMPENSAÇÃO para OS {OsId}! Dados possivelmente INCONSISTENTES. CorrelationId: {CorrelationId}",
-                os.Id, msg.CorrelationId);
+            log.LogError(ex,
+                "FALHA NA COMPENSAÇÃO para Ordem Serviço! Dados possivelmente INCONSISTENTES.");
 
             _metrics.RegistrarCompensacaoSagaFalhaCritica(os.Id, ex.Message, msg.CorrelationId);
         }

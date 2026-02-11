@@ -1,7 +1,7 @@
 using Application.Contracts.Gateways;
 using Application.Contracts.Presenters;
 using Application.Contracts.Messaging;
-using Application.Contracts.Messaging.DTOs;
+using Infrastructure.Messaging.DTOs;
 using Application.Identidade.Services;
 using Application.Identidade.Services.Extensions;
 using Application.OrdemServico.Interfaces.External;
@@ -17,6 +17,8 @@ public class AprovarOrcamentoUseCase
 {
     public async Task ExecutarAsync(Ator ator, Guid ordemServicoId, IOrdemServicoGateway gateway, IVeiculoExternalService veiculoExternalService, IEstoqueMessagePublisher estoqueMessagePublisher, ICorrelationIdAccessor correlationIdAccessor, IOperacaoOrdemServicoPresenter presenter, IAppLogger logger)
     {
+        var log = logger.ComUseCase(this).ComAtor(ator);
+        
         try
         {
             var ordemServico = await gateway.ObterPorIdAsync(ordemServicoId) 
@@ -51,14 +53,14 @@ public class AprovarOrcamentoUseCase
 
                 await estoqueMessagePublisher.PublicarSolicitacaoReducaoAsync(solicitacao);
 
-                logger.LogInformation(
-                    "Mensagem de redução de estoque publicada para OS {OsId}. CorrelationId: {CorrelationId}. Itens: {QtdItens}",
+                log.LogInformation(
+                    "Mensagem de redução de estoque publicada para Ordem Serviço {OsId}. CorrelationId: {CorrelationId}. Itens: {QtdItens}",
                     ordemServico.Id, solicitacao.CorrelationId, solicitacao.Itens.Count);
             }
             else
             {
-                logger.LogInformation(
-                    "OS {OsId} não requer interação com estoque (DeveRemover={Deve}, JaConfirmado={Conf}). Prosseguindo direto.",
+                log.LogInformation(
+                    "Ordem Serviço {OsId} não requer interação com estoque (DeveRemover={Deve}, JaConfirmado={Conf}). Prosseguindo direto.",
                     ordemServico.Id, ordemServico.InteracaoEstoque.DeveRemoverEstoque,
                     ordemServico.InteracaoEstoque?.EstoqueRemovidoComSucesso ?? false);
             }
@@ -68,18 +70,14 @@ public class AprovarOrcamentoUseCase
         }
         catch (DomainException ex)
         {
-            logger.ComUseCase(this)
-                  .ComAtor(ator)
-                  .ComDomainErrorType(ex)
+            log.ComDomainErrorType(ex)
                   .LogInformation(ex.LogTemplate, ex.LogArgs);
 
             presenter.ApresentarErro(ex.Message, ex.ErrorType);
         }
         catch (Exception ex)
         {
-            logger.ComUseCase(this)
-                  .ComAtor(ator)
-                  .LogError(ex, "Erro interno do servidor.");
+            log.LogError(ex, "Erro interno do servidor.");
 
             presenter.ApresentarErro("Erro interno do servidor.", ErrorType.UnexpectedError);
         }

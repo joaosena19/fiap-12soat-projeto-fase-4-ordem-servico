@@ -216,7 +216,7 @@ namespace Domain.OrdemServico.Aggregates.OrdemServico
             InteracaoEstoque = InteracaoEstoque.ConfirmarReducao();
         }
 
-        public void CompensarFalhaSaga()
+        public void RegistrarFalhaReducaoEstoque()
         {
             if (Status.Valor == StatusOrdemServicoEnum.EmExecucao)
                 Status = new Status(StatusOrdemServicoEnum.Aprovada);

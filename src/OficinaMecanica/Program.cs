@@ -43,6 +43,11 @@ builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddExternalServices(builder.Configuration);
 builder.Services.AddMessaging(builder.Configuration);
 builder.Services.AddHealthChecks();
+
+// Registrar dependências como Singleton para o BackgroundService
+builder.Services.AddSingleton<Application.Contracts.Gateways.IOrdemServicoGateway, Infrastructure.Repositories.OrdemServico.OrdemServicoRepository>();
+builder.Services.AddSingleton<Application.Contracts.Monitoramento.IMetricsService, Infrastructure.Monitoramento.NewRelicMetricsService>();
+
 builder.Services.AddHostedService<Infrastructure.BackgroundServices.SagaTimeoutBackgroundService>();
 
 

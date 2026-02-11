@@ -265,7 +265,7 @@ namespace Tests.Domain.OrdemServico
             var os = CriarOrdemServicoComOrcamento();
             os.AprovarOrcamento();
             os.IniciarExecucao();
-            os.CompensarFalhaSaga(); // Volta para Aprovada
+            os.RegistrarFalhaReducaoEstoque(); // Volta para Aprovada
 
             // Act - Estoque responde com sucesso (race condition)
             os.ConfirmarReducaoEstoque();
@@ -277,11 +277,11 @@ namespace Tests.Domain.OrdemServico
 
         #endregion
 
-        #region Testes CompensarFalhaSaga
+        #region Testes RegistrarFalhaReducaoEstoque
 
-        [Fact(DisplayName = "CompensarFalhaSaga quando EmExecucao deve voltar para Aprovada")]
-        [Trait("Método", "CompensarFalhaSaga")]
-        public void CompensarFalhaSaga_QuandoEmExecucao_VoltaParaAprovada()
+        [Fact(DisplayName = "RegistrarFalhaReducaoEstoque quando EmExecucao deve voltar para Aprovada")]
+        [Trait("Método", "RegistrarFalhaReducaoEstoque")]
+        public void RegistrarFalhaReducaoEstoque_QuandoEmExecucao_VoltaParaAprovada()
         {
             // Arrange
             var os = CriarOrdemServicoComOrcamento();
@@ -289,7 +289,7 @@ namespace Tests.Domain.OrdemServico
             os.IniciarExecucao();
 
             // Act
-            os.CompensarFalhaSaga();
+            os.RegistrarFalhaReducaoEstoque();
 
             // Assert
             os.Status.Valor.Should().Be(StatusOrdemServicoEnum.Aprovada);
@@ -297,31 +297,31 @@ namespace Tests.Domain.OrdemServico
             os.InteracaoEstoque.EstoqueFoiConfirmado.Should().BeFalse();
         }
 
-        [Fact(DisplayName = "CompensarFalhaSaga quando já Aprovada não deve alterar status")]
-        [Trait("Método", "CompensarFalhaSaga")]
-        public void CompensarFalhaSaga_QuandoJaAprovada_NaoAlteraStatus()
+        [Fact(DisplayName = "RegistrarFalhaReducaoEstoque quando já Aprovada não deve alterar status")]
+        [Trait("Método", "RegistrarFalhaReducaoEstoque")]
+        public void RegistrarFalhaReducaoEstoque_QuandoJaAprovada_NaoAlteraStatus()
         {
             // Arrange
             var os = CriarOrdemServicoComOrcamento();
             os.AprovarOrcamento();
 
             // Act
-            os.CompensarFalhaSaga();
+            os.RegistrarFalhaReducaoEstoque();
 
             // Assert
             os.Status.Valor.Should().Be(StatusOrdemServicoEnum.Aprovada);
             os.InteracaoEstoque.EstoqueRemovidoComSucesso.Should().BeFalse();
         }
 
-        [Fact(DisplayName = "CompensarFalhaSaga quando Recebida não altera status")]
-        [Trait("Método", "CompensarFalhaSaga")]
-        public void CompensarFalhaSaga_QuandoRecebida_NaoAlteraStatus()
+        [Fact(DisplayName = "RegistrarFalhaReducaoEstoque quando Recebida não altera status")]
+        [Trait("Método", "RegistrarFalhaReducaoEstoque")]
+        public void RegistrarFalhaReducaoEstoque_QuandoRecebida_NaoAlteraStatus()
         {
             // Arrange
             var os = OrdemServicoAggregate.Criar(Guid.NewGuid());
 
             // Act
-            os.CompensarFalhaSaga();
+            os.RegistrarFalhaReducaoEstoque();
 
             // Assert
             os.Status.Valor.Should().Be(StatusOrdemServicoEnum.Recebida);
@@ -440,7 +440,7 @@ namespace Tests.Domain.OrdemServico
             os.IniciarExecucao();
 
             // Estoque falha ou timeout
-            os.CompensarFalhaSaga();
+            os.RegistrarFalhaReducaoEstoque();
             os.Status.Valor.Should().Be(StatusOrdemServicoEnum.Aprovada);
             os.InteracaoEstoque.EstoqueRemovidoComSucesso.Should().BeFalse();
 

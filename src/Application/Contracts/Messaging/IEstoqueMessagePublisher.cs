@@ -1,4 +1,4 @@
-using Application.Contracts.Messaging.DTOs;
+using Infrastructure.Messaging.DTOs;
 
 namespace Application.Contracts.Messaging;
 

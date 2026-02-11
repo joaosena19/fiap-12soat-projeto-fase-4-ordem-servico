@@ -17,6 +17,7 @@ namespace Tests.Application.SharedHelpers
         private void ConfigurarComportamentoBasico()
         {
             // Setup básico que permite verificação depois
+            Mock.Setup(x => x.LogDebug(It.IsAny<string>(), It.IsAny<object[]>()));
             Mock.Setup(x => x.LogInformation(It.IsAny<string>(), It.IsAny<object[]>()));
             Mock.Setup(x => x.LogWarning(It.IsAny<string>(), It.IsAny<object[]>()));
             Mock.Setup(x => x.LogError(It.IsAny<string>(), It.IsAny<object[]>()));
@@ -30,6 +31,7 @@ namespace Tests.Application.SharedHelpers
         private void ConfigurarMockRecursivo(Mock<IAppLogger> mockToSetup)
         {
             // Configura os métodos de log no mock da cadeia
+            mockToSetup.Setup(x => x.LogDebug(It.IsAny<string>(), It.IsAny<object[]>()));
             mockToSetup.Setup(x => x.LogInformation(It.IsAny<string>(), It.IsAny<object[]>()));
             mockToSetup.Setup(x => x.LogWarning(It.IsAny<string>(), It.IsAny<object[]>()));
             mockToSetup.Setup(x => x.LogError(It.IsAny<string>(), It.IsAny<object[]>()));
@@ -48,6 +50,11 @@ namespace Tests.Application.SharedHelpers
         public static MockLogger Criar() => new MockLogger();
 
         // Métodos de verificação fluentes - apenas verificam se foram chamados
+        public void DeveTerLogadoDebug()
+        {
+            Mock.Verify(x => x.LogDebug(It.IsAny<string>(), It.IsAny<object[]>()), Times.AtLeastOnce);
+        }
+
         public void DeveTerLogadoInformation()
         {
             Mock.Verify(x => x.LogInformation(It.IsAny<string>(), It.IsAny<object[]>()), Times.AtLeastOnce);

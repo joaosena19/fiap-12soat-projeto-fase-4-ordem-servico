@@ -13,6 +13,14 @@ public class LoggerAdapter<T> : IAppLogger
         _logger = logger;
     }
 
+    public void LogDebug(string messageTemplate, params object[] args)
+    {
+        using (LogContext.PushProperty("message_template", messageTemplate))
+        {
+            _logger.LogDebug(messageTemplate, args);
+        }
+    }
+
     public void LogInformation(string messageTemplate, params object[] args)
     {
         using (LogContext.PushProperty("message_template", messageTemplate))

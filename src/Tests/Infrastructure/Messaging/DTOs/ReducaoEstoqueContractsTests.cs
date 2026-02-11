@@ -1,4 +1,4 @@
-using Application.Contracts.Messaging.DTOs;
+using Infrastructure.Messaging.DTOs;
 using System.Text.Json;
 using Xunit;
 

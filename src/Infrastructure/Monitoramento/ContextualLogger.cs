@@ -43,6 +43,11 @@ public class ContextualLogger : IAppLogger
         }
     }
 
+    public void LogDebug(string messageTemplate, params object[] args)
+    {
+        LogWithContext(messageTemplate, () => _logger.LogDebug(messageTemplate, args));
+    }
+
     public void LogInformation(string messageTemplate, params object[] args)
     {
         LogWithContext(messageTemplate, () => _logger.LogInformation(messageTemplate, args));

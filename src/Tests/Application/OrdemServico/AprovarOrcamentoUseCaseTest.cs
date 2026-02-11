@@ -1,6 +1,6 @@
 using Application.Contracts.Presenters;
 using Application.Contracts.Messaging;
-using Application.Contracts.Messaging.DTOs;
+using Infrastructure.Messaging.DTOs;
 using FluentAssertions;
 using Moq;
 using Shared.Enums;

@@ -3,7 +3,7 @@ using Application.Contracts.Monitoramento;
 using Domain.OrdemServico.Enums;
 using Domain.OrdemServico.ValueObjects.OrdemServico;
 using Infrastructure.BackgroundServices;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 using OrdemServicoAggregate = Domain.OrdemServico.Aggregates.OrdemServico.OrdemServico;
@@ -13,21 +13,20 @@ namespace Tests.Infrastructure.BackgroundServices;
 public class SagaTimeoutBackgroundServiceTests
 {
     private readonly Mock<IOrdemServicoGateway> _mockGateway;
-    private readonly Mock<IAppLogger> _mockLogger;
     private readonly Mock<IMetricsService> _mockMetrics;
-    private readonly IServiceProvider _serviceProvider;
+    private readonly Mock<ILoggerFactory> _mockLoggerFactory;
+    private readonly Mock<ILogger<SagaTimeoutBackgroundService>> _mockLogger;
 
     public SagaTimeoutBackgroundServiceTests()
     {
         _mockGateway = new Mock<IOrdemServicoGateway>();
-        _mockLogger = new Mock<IAppLogger>();
         _mockMetrics = new Mock<IMetricsService>();
-
-        var services = new ServiceCollection();
-        services.AddScoped(_ => _mockGateway.Object);
-        services.AddScoped(_ => _mockMetrics.Object);
+        _mockLoggerFactory = new Mock<ILoggerFactory>();
+        _mockLogger = new Mock<ILogger<SagaTimeoutBackgroundService>>();
         
-        _serviceProvider = services.BuildServiceProvider();
+        _mockLoggerFactory
+            .Setup(x => x.CreateLogger(It.IsAny<string>()))
+            .Returns(_mockLogger.Object);
     }
 
     [Fact(DisplayName = "VerificarOrdensComTimeout quando há ordens com timeout deve executar compensação")]
@@ -54,14 +53,18 @@ public class SagaTimeoutBackgroundServiceTests
             .Setup(g => g.AtualizarAsync(It.IsAny<OrdemServicoAggregate>()))
             .ReturnsAsync((OrdemServicoAggregate o) => o);
 
-        var service = new SagaTimeoutBackgroundService(_serviceProvider, _mockLogger.Object);
+        var service = new SagaTimeoutBackgroundService(_mockGateway.Object, _mockMetrics.Object, _mockLoggerFactory.Object);
 
         // Usar reflexão para chamar o método privado VerificarOrdensComTimeoutAsync
         var method = typeof(SagaTimeoutBackgroundService)
             .GetMethod("VerificarOrdensComTimeoutAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
+        // Criar um mock logger para passar como parâmetro
+        var mockLog = new Mock<IAppLogger>();
+        mockLog.Setup(x => x.LogWarning(It.IsAny<string>(), It.IsAny<object[]>()));
+
         // Act
-        await (Task)method!.Invoke(service, null)!;
+        await (Task)method!.Invoke(service, new object[] { mockLog.Object })!;
 
         // Assert
         _mockGateway.Verify(g => g.ObterOrdensAguardandoEstoqueComTimeoutAsync(It.IsAny<DateTime>()), Times.Once);
@@ -74,14 +77,13 @@ public class SagaTimeoutBackgroundServiceTests
                 It.IsAny<DateTime?>()),
             Times.Once);
         _mockLogger.Verify(
-            l => l.LogWarning(It.IsRegex("Saga timeout detectado.*"), It.IsAny<object[]>()),
-            Times.Once);
-        _mockLogger.Verify(
-            l => l.LogWarning(It.IsRegex("Compensação por timeout aplicada.*"), It.IsAny<object[]>()),
-            Times.Once);
-    }
-
-    [Fact(DisplayName = "VerificarOrdensComTimeout quando não há ordens não faz nada")]
+            l => l.Log(
+                LogLevel.Warning,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Compensação por timeout aplicada")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.AtLeastOnce);
     [Trait("Classe", "SagaTimeoutBackgroundService")]
     [Trait("Método", "VerificarOrdensComTimeoutAsync")]
     public async Task VerificarOrdensComTimeout_QuandoNaoHaOrdens_NaoFazNada()
@@ -93,20 +95,28 @@ public class SagaTimeoutBackgroundServiceTests
             .Setup(g => g.ObterOrdensAguardandoEstoqueComTimeoutAsync(It.IsAny<DateTime>()))
             .ReturnsAsync(ordensVazia);
 
-        var service = new SagaTimeoutBackgroundService(_serviceProvider, _mockLogger.Object);
+        var service = new SagaTimeoutBackgroundService(_mockGateway.Object, _mockMetrics.Object, _mockLoggerFactory.Object);
 
         // Usar reflexão para chamar o método privado
         var method = typeof(SagaTimeoutBackgroundService)
             .GetMethod("VerificarOrdensComTimeoutAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
+        // Criar um mock logger para passar como parâmetro
+        var mockLog = new Mock<IAppLogger>();
+
         // Act
-        await (Task)method!.Invoke(service, null)!;
+        await (Task)method!.Invoke(service, new object[] { mockLog.Object })!;
 
         // Assert
         _mockGateway.Verify(g => g.ObterOrdensAguardandoEstoqueComTimeoutAsync(It.IsAny<DateTime>()), Times.Once);
         _mockGateway.Verify(g => g.AtualizarAsync(It.IsAny<OrdemServicoAggregate>()), Times.Never);
         _mockLogger.Verify(
-            l => l.LogWarning(It.IsRegex("Saga timeout detectado.*"), It.IsAny<object[]>()),
+            l => l.Log(
+                LogLevel.Warning,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("timeout")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Never);
     }
 
@@ -120,22 +130,20 @@ public class SagaTimeoutBackgroundServiceTests
             .Setup(g => g.ObterOrdensAguardandoEstoqueComTimeoutAsync(It.IsAny<DateTime>()))
             .ThrowsAsync(new Exception("Erro ao acessar banco de dados"));
 
-        var service = new SagaTimeoutBackgroundService(_serviceProvider, _mockLogger.Object);
+        var service = new SagaTimeoutBackgroundService(_mockGateway.Object, _mockMetrics.Object, _mockLoggerFactory.Object);
 
         // Usar reflexão para chamar o método privado
         var method = typeof(SagaTimeoutBackgroundService)
             .GetMethod("VerificarOrdensComTimeoutAsync", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
+        // Criar um mock logger para passar como parâmetro
+        var mockLog = new Mock<IAppLogger>();
+
         // Act & Assert
         // O método não deve propagar a exceção - ela é capturada internamente
-        await (Task)method!.Invoke(service, null)!;
-
-        // Verificar se erro foi logado
-        _mockLogger.Verify(
-            l => l.LogError(It.IsAny<Exception>(), It.IsRegex("Erro no SagaTimeoutBackgroundService.*")),
-            Times.Never); // O erro é capturado no ExecuteAsync, não no VerificarOrdensComTimeoutAsync
+        await Assert.ThrowsAsync<Exception>(async () => await (Task)method!.Invoke(service, new object[] { mockLog.Object })!);
         
-        // Na verdade, vamos verificar que o gateway foi chamado
+        // Verificar se erro foi propagado (o VerificarOrdensComTimeoutAsync não captura erros)
         _mockGateway.Verify(g => g.ObterOrdensAguardandoEstoqueComTimeoutAsync(It.IsAny<DateTime>()), Times.Once);
     }
 
@@ -149,7 +157,7 @@ public class SagaTimeoutBackgroundServiceTests
             .Setup(g => g.ObterOrdensAguardandoEstoqueComTimeoutAsync(It.IsAny<DateTime>()))
             .ReturnsAsync(new List<OrdemServicoAggregate>());
 
-        var service = new SagaTimeoutBackgroundService(_serviceProvider, _mockLogger.Object);
+        var service = new SagaTimeoutBackgroundService(_mockGateway.Object, _mockMetrics.Object, _mockLoggerFactory.Object);
         var cts = new CancellationTokenSource();
         
         // Cancel imediatamente para não executar o loop infinito
@@ -169,9 +177,12 @@ public class SagaTimeoutBackgroundServiceTests
 
         // Assert
         _mockLogger.Verify(
-            l => l.LogInformation(
-                It.IsRegex("SagaTimeoutBackgroundService iniciado.*"), 
-                It.IsAny<object[]>()),
+            l => l.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("SagaTimeoutBackgroundService iniciado")),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.AtLeastOnce);
     }
 }

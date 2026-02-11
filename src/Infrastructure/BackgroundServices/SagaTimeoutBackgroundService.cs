@@ -1,64 +1,65 @@
 using Application.Contracts.Gateways;
 using Application.Contracts.Monitoramento;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Infrastructure.Monitoramento;
 
 namespace Infrastructure.BackgroundServices;
 
 public class SagaTimeoutBackgroundService : BackgroundService
 {
-    private readonly IServiceProvider _serviceProvider;
+    private readonly IOrdemServicoGateway _gateway;
+    private readonly IMetricsService _metricsService;
     private readonly IAppLogger _logger;
     private static readonly TimeSpan PollingInterval = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan TimeoutThreshold = TimeSpan.FromSeconds(90);
 
-    public SagaTimeoutBackgroundService(IServiceProvider serviceProvider, IAppLogger logger)
+    public SagaTimeoutBackgroundService(IOrdemServicoGateway gateway, IMetricsService metricsService, ILoggerFactory loggerFactory)
     {
-        _serviceProvider = serviceProvider;
-        _logger = logger;
+        _gateway = gateway;
+        _metricsService = metricsService;
+        _logger = new LoggerAdapter<SagaTimeoutBackgroundService>(loggerFactory.CreateLogger<SagaTimeoutBackgroundService>());
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _logger.LogInformation("SagaTimeoutBackgroundService iniciado. Polling a cada {Interval}s, threshold de {Threshold}s.",
+        var log = _logger.ComPropriedade("BackgroundService", nameof(SagaTimeoutBackgroundService));
+        
+        log.LogDebug("SagaTimeoutBackgroundService iniciado. Polling a cada {Interval}s, threshold de {Threshold}s.",
             PollingInterval.TotalSeconds, TimeoutThreshold.TotalSeconds);
 
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
-                await VerificarOrdensComTimeoutAsync();
+                await VerificarOrdensComTimeoutAsync(log);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Erro no SagaTimeoutBackgroundService ao verificar ordens com timeout.");
+                log.LogError(ex, "Erro no SagaTimeoutBackgroundService ao verificar ordens com timeout.");
             }
 
             await Task.Delay(PollingInterval, stoppingToken);
         }
     }
 
-    private async Task VerificarOrdensComTimeoutAsync()
+    private async Task VerificarOrdensComTimeoutAsync(IAppLogger log)
     {
-        using var scope = _serviceProvider.CreateScope();
-        var gateway = scope.ServiceProvider.GetRequiredService<IOrdemServicoGateway>();
-        var metrics = scope.ServiceProvider.GetRequiredService<IMetricsService>();
-
         var timeoutLimit = DateTime.UtcNow.Subtract(TimeoutThreshold);
-        var ordensComTimeout = await gateway.ObterOrdensAguardandoEstoqueComTimeoutAsync(timeoutLimit);
+        var ordensComTimeout = await _gateway.ObterOrdensAguardandoEstoqueComTimeoutAsync(timeoutLimit);
 
         foreach (var os in ordensComTimeout)
         {
-            os.CompensarFalhaSaga();
-            await gateway.AtualizarAsync(os);
+            os.RegistrarFalhaReducaoEstoque();
+            await _gateway.AtualizarAsync(os);
 
-            metrics.RegistrarCompensacaoSagaTimeout(
+            _metricsService.RegistrarCompensacaoSagaTimeout(
                 os.Id,
                 "timeout_estoque_indisponivel",
                 os.Historico.DataInicioExecucao);
 
-            _logger.LogWarning(
-                "Compensação por timeout aplicada para OS {OsId}. Status revertido para Aprovada. Motivo: timeout_estoque_indisponivel",
+            log.LogWarning(
+                "Compensação por timeout aplicada para Ordem Serviço {OsId}. Status revertido para Aprovada. Motivo: timeout_estoque_indisponivel",
                 os.Id);
         }
     }
