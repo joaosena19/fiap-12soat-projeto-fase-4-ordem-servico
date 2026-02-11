@@ -1,6 +1,7 @@
 using Application.Contracts.Gateways;
 using Application.Contracts.Presenters;
 using Application.Contracts.Messaging;
+using Application.Contracts.Messaging.DTOs;
 using Application.Identidade.Services;
 using Application.Identidade.Services.Extensions;
 using Application.OrdemServico.Interfaces.External;
@@ -14,37 +15,20 @@ namespace Application.OrdemServico.UseCases;
 
 public class AprovarOrcamentoUseCase
 {
-    public async Task ExecutarAsync(
-        Ator ator, 
-        Guid ordemServicoId, 
-        IOrdemServicoGateway gateway, 
-        IVeiculoExternalService veiculoExternalService, 
-        IEstoqueMessagePublisher estoqueMessagePublisher, 
-        ICorrelationIdAccessor correlationIdAccessor,
-        IOperacaoOrdemServicoPresenter presenter, 
-        IAppLogger logger)
+    public async Task ExecutarAsync(Ator ator, Guid ordemServicoId, IOrdemServicoGateway gateway, IVeiculoExternalService veiculoExternalService, IEstoqueMessagePublisher estoqueMessagePublisher, ICorrelationIdAccessor correlationIdAccessor, IOperacaoOrdemServicoPresenter presenter, IAppLogger logger)
     {
         try
         {
-            var ordemServico = await gateway.ObterPorIdAsync(ordemServicoId);
-            if (ordemServico == null)
-                throw new DomainException("Ordem de serviço não encontrada.", ErrorType.ResourceNotFound, "Ordem de serviço não encontrada para Id {OrdemServicoId}", ordemServicoId);
+            var ordemServico = await gateway.ObterPorIdAsync(ordemServicoId) 
+                ?? throw new DomainException("Ordem de serviço não encontrada.", ErrorType.ResourceNotFound, "Ordem de serviço não encontrada para Id {OrdemServicoId}", ordemServicoId);
 
             if (!await ator.PodeAprovarDesaprovarOrcamento(ordemServico, veiculoExternalService))
-                throw new DomainException("Acesso negado. Apenas administradores ou donos da ordem de serviço podem aprovar orçamentos.", ErrorType.NotAllowed, "Acesso negado para aprovar orçamento da ordem de serviço {OrdemServicoId} para usuário {Ator_UsuarioId}",
-                    ordemServicoId, ator.UsuarioId);
+                throw new DomainException("Acesso negado. Apenas administradores ou donos da ordem de serviço podem aprovar orçamentos.", ErrorType.NotAllowed, "Acesso negado para aprovar orçamento da ordem de serviço {OrdemServicoId} para usuário {Ator_UsuarioId}", ordemServicoId, ator.UsuarioId);
 
             if (ordemServico.Status.Valor == StatusOrdemServicoEnum.AguardandoAprovacao)
                 ordemServico.AprovarOrcamento();
-
             else if (ordemServico.Status.Valor != StatusOrdemServicoEnum.Aprovada)
-            {
-                throw new DomainException(
-                    $"Só é possível aprovar orçamento para uma OS com status '{StatusOrdemServicoEnum.AguardandoAprovacao}' ou '{StatusOrdemServicoEnum.Aprovada}'.",
-                    ErrorType.DomainRuleBroken,
-                    "Tentativa de aprovar OS {OrdemServicoId} com status inválido {Status}",
-                    ordemServicoId, ordemServico.Status.Valor);
-            }
+                throw new DomainException($"Só é possível aprovar orçamento para uma OS com status '{StatusOrdemServicoEnum.AguardandoAprovacao}' ou '{StatusOrdemServicoEnum.Aprovada}'.", ErrorType.DomainRuleBroken, "Tentativa de aprovar OS {OrdemServicoId} com status inválido {Status}", ordemServicoId, ordemServico.Status.Valor);
             // Se já está Aprovada (retry), pula AprovarOrcamento() e vai direto para IniciarExecucao()
 
             ordemServico.IniciarExecucao();

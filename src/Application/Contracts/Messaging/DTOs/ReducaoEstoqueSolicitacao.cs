@@ -1,4 +1,4 @@
-namespace Infrastructure.Messaging.Contracts;
+namespace Application.Contracts.Messaging.DTOs;
 
 /// <summary>
 /// Mensagem de solicitação de redução de estoque enviada pelo serviço de Ordem de Serviço

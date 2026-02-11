@@ -1,3 +1,5 @@
+using Application.Contracts.Messaging.DTOs;
+
 namespace Application.Contracts.Messaging;
 
 /// <summary>

@@ -2,6 +2,7 @@ using Application.OrdemServico.UseCases;
 using Application.Contracts.Gateways;
 using Application.Contracts.Presenters;
 using Application.Contracts.Messaging;
+using Application.Contracts.Messaging.DTOs;
 using Application.OrdemServico.Interfaces.External;
 using Application.Identidade.Services;
 using Application.Contracts.Monitoramento;

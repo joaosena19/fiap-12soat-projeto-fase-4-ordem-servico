@@ -1,8 +1,8 @@
-namespace Application.Contracts.Messaging;
+namespace Infrastructure.Messaging.DTOs;
 
 /// <summary>
-/// Mensagem de resultado de redução de estoque enviada pelo serviço de Estoque
-/// de volta ao serviço de Ordem de Serviço via Amazon SQS.
+/// Mensagem de resultado da redução de estoque enviada pelo serviço de Estoque
+/// para o serviço de Ordem de Serviço via Amazon SQS.
 /// </summary>
 public record ReducaoEstoqueResultado
 {

@@ -2,6 +2,7 @@ using API.Attributes;
 using API.Dtos;
 using API.Presenters.OrdemServico;
 using Application.Contracts.Messaging;
+using Application.Contracts.Messaging.DTOs;
 using Application.Contracts.Monitoramento;
 using Application.Identidade.Services;
 using Application.OrdemServico.Dtos;

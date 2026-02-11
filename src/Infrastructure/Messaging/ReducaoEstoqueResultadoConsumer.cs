@@ -1,5 +1,6 @@
 using Application.Contracts.Gateways;
 using Application.Contracts.Messaging;
+using Application.Contracts.Messaging.DTOs;
 using Application.Contracts.Monitoramento;
 using MassTransit;
 using SerilogContext = Serilog.Context.LogContext;

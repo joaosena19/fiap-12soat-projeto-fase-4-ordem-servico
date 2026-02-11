@@ -1,14 +1,13 @@
-namespace Infrastructure.Messaging.Contracts;
+namespace Application.Contracts.Messaging.DTOs;
 
 /// <summary>
-/// Mensagem de resultado de redução de estoque enviada pelo serviço de Estoque
-/// de volta ao serviço de Ordem de Serviço via Amazon SQS.
+/// Mensagem de resultado da redução de estoque enviada pelo serviço de Estoque
+/// para o serviço de Ordem de Serviço via Amazon SQS.
 /// </summary>
 public record ReducaoEstoqueResultado
 {
     /// <summary>
     /// ID de correlação para rastreamento distribuído da saga.
-    /// Deve corresponder ao CorrelationId da solicitação.
     /// </summary>
     public Guid CorrelationId { get; init; }
 
@@ -18,7 +17,7 @@ public record ReducaoEstoqueResultado
     public Guid OrdemServicoId { get; init; }
 
     /// <summary>
-    /// Indica se a redução de estoque foi bem-sucedida.
+    /// Indica se a operação foi bem-sucedida.
     /// </summary>
     public bool Sucesso { get; init; }
 
