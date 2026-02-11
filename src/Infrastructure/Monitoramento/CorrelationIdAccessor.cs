@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Http;
 namespace Infrastructure.Monitoramento;
 
 /// <summary>
-/// Implementação do ICorrelationIdAccessor que extrai o ID do header HTTP ou gera um novo.
+/// Implementação do ICorrelationIdAccessor que extrai o ID do header HTTP.
+/// Alinhado com CorrelationIdMiddleware: assume que o middleware já garantiu que
+/// o header X-Correlation-ID sempre contém um GUID válido quando há contexto HTTP.
 /// </summary>
 public class CorrelationIdAccessor : ICorrelationIdAccessor
 {
@@ -20,13 +22,14 @@ public class CorrelationIdAccessor : ICorrelationIdAccessor
     {
         var correlationIdStr = _httpContextAccessor.HttpContext?.Request.Headers[CorrelationIdHeader].ToString();
 
-        if (string.IsNullOrEmpty(correlationIdStr) || !Guid.TryParse(correlationIdStr, out var correlationId))
+        // Em contexto HTTP, o middleware já garantiu que é um GUID válido
+        if (!string.IsNullOrEmpty(correlationIdStr) && Guid.TryParse(correlationIdStr, out var correlationId))
         {
-            // Se não encontrar ou não for GUID válido (ex: background service sem HTTP context), 
-            // tenta buscar do LogContext que o middleware pode ter populado ou gera um novo.
-            return Guid.NewGuid();
+            return correlationId;
         }
 
-        return correlationId;
+        // Fallback para contextos sem HTTP (ex: background services, testes)
+        // onde o middleware não foi executado
+        return Guid.NewGuid();
     }
 }

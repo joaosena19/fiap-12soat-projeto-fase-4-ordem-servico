@@ -1,6 +1,7 @@
 using Application.OrdemServico.Interfaces.External;
 using Application.Contracts.Monitoramento;
 using Infrastructure.ExternalServices;
+using Infrastructure.ExternalServices.Http;
 using Infrastructure.ExternalServices.Cadastro;
 using Infrastructure.ExternalServices.Estoque;
 using Infrastructure.Monitoramento;
@@ -27,6 +28,9 @@ public static class ExternalServicesConfiguration
         // Registrar o Accessor de Correlation ID
         services.AddScoped<ICorrelationIdAccessor, CorrelationIdAccessor>();
 
+        // Registrar o handler para propagar headers
+        services.AddTransient<PropagateHeadersHandler>();
+
         // Vincular e validar settings de serviços externos
         var externalServicesSection = configuration.GetSection("ExternalServices");
         var settings = externalServicesSection.Get<ExternalServicesSettings>();
@@ -42,26 +46,30 @@ public static class ExternalServicesConfiguration
         {
             client.BaseAddress = new Uri(settings.CadastroBaseUrl);
             client.Timeout = TimeSpan.FromSeconds(30);
-        });
+        })
+        .AddHttpMessageHandler<PropagateHeadersHandler>();
 
         services.AddHttpClient<IServicoExternalService, CadastroHttpClientService>(client =>
         {
             client.BaseAddress = new Uri(settings.CadastroBaseUrl);
             client.Timeout = TimeSpan.FromSeconds(30);
-        });
+        })
+        .AddHttpMessageHandler<PropagateHeadersHandler>();
 
         services.AddHttpClient<IVeiculoExternalService, CadastroHttpClientService>(client =>
         {
             client.BaseAddress = new Uri(settings.CadastroBaseUrl);
             client.Timeout = TimeSpan.FromSeconds(30);
-        });
+        })
+        .AddHttpMessageHandler<PropagateHeadersHandler>();
 
         // Registrar HttpClient tipado para o serviço de Estoque
         services.AddHttpClient<IEstoqueExternalService, EstoqueHttpClientService>(client =>
         {
             client.BaseAddress = new Uri(settings.EstoqueBaseUrl);
             client.Timeout = TimeSpan.FromSeconds(30);
-        });
+        })
+        .AddHttpMessageHandler<PropagateHeadersHandler>();
 
         return services;
     }

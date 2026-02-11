@@ -41,6 +41,11 @@ namespace Shared.Enums
         NotAllowed,
 
         /// <summary>
+        /// Falha de dependência externa (serviço upstream indisponível ou com erro)
+        /// </summary>
+        BadGateway,
+
+        /// <summary>
         /// Erro inesperado (erro padrão)
         /// </summary>
         UnexpectedError

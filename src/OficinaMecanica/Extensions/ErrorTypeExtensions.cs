@@ -23,6 +23,8 @@ namespace API.Extensions
                 ErrorType.DomainRuleBroken => HttpStatusCode.UnprocessableEntity,
                 ErrorType.Conflict => HttpStatusCode.Conflict,
                 ErrorType.Unauthorized => HttpStatusCode.Unauthorized,
+                ErrorType.NotAllowed => HttpStatusCode.Forbidden,
+                ErrorType.BadGateway => HttpStatusCode.BadGateway,
                 ErrorType.UnexpectedError => HttpStatusCode.InternalServerError,
                 _ => HttpStatusCode.InternalServerError
             };

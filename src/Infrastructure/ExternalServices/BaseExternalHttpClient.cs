@@ -1,12 +1,15 @@
 using Application.Contracts.Monitoramento;
 using Microsoft.AspNetCore.Http;
+using System.Net;
 using System.Net.Http.Headers;
+using Shared.Exceptions;
+using Shared.Enums;
 
 namespace Infrastructure.ExternalServices;
 
 /// <summary>
 /// Cliente HTTP base para comunicação com serviços externos.
-/// Propaga automaticamente o token de autenticação e o correlation ID da requisição atual.
+/// Fornece métodos utilitários para tratamento de erros HTTP padronizado.
 /// </summary>
 public abstract class BaseExternalHttpClient
 {
@@ -25,42 +28,89 @@ public abstract class BaseExternalHttpClient
     }
 
     /// <summary>
-    /// Propaga o token de autorização da requisição atual para o HttpClient.
+    /// Verifica se a resposta HTTP foi bem-sucedida ou lança exceção apropriada.
+    /// - 5xx: DomainException com ErrorType.BadGateway (502)
+    /// - 4xx: Relança como DomainException com detalhes
+    /// - HttpRequestException: DomainException com ErrorType.BadGateway (502)
     /// </summary>
-    protected void PropagateAuthToken()
+    /// <param name="response">Resposta HTTP a ser verificada</param>
+    /// <param name="operation">Nome da operação para contexto de log</param>
+    /// <param name="logger">Logger para registrar erros</param>
+    /// <exception cref="DomainException">Para erros upstream (5xx) ou cliente (4xx)</exception>
+    public static async Task EnsureSuccessOrThrowAsync(HttpResponseMessage response, string operation, IAppLogger? logger = null)
     {
-        var authHeader = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].ToString();
-        
-        if (!string.IsNullOrEmpty(authHeader))
+        if (response.IsSuccessStatusCode)
+            return;
+
+        var statusCode = response.StatusCode;
+        var reasonPhrase = response.ReasonPhrase ?? "Unknown";
+        var content = await response.Content.ReadAsStringAsync();
+
+        if ((int)statusCode >= 500)
         {
-            var token = authHeader.Replace("Bearer ", "", StringComparison.OrdinalIgnoreCase);
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            // 5xx - Erro do servidor upstream, mapear para BadGateway
+            var message = $"Falha no serviço externo durante operação '{operation}': {statusCode} {reasonPhrase}";
+            
+            logger?.LogError(message + ". Conteúdo: {Content}", content);
+            
+            throw new DomainException(message, ErrorType.BadGateway);
+        }
+        else if ((int)statusCode >= 400)
+        {
+            // 4xx - Erro do cliente, logar como Information e relançar
+            var message = $"Erro de cliente na operação '{operation}': {statusCode} {reasonPhrase}";
+            
+            logger?.LogInformation(message + ". Conteúdo: {Content}", content);
+            
+            // Manter como DomainException mas pode ser mapeado para o status original
+            var errorType = statusCode switch
+            {
+                HttpStatusCode.NotFound => ErrorType.ResourceNotFound,
+                HttpStatusCode.Unauthorized => ErrorType.Unauthorized,
+                HttpStatusCode.Forbidden => ErrorType.NotAllowed,
+                HttpStatusCode.Conflict => ErrorType.Conflict,
+                HttpStatusCode.UnprocessableEntity => ErrorType.DomainRuleBroken,
+                _ => ErrorType.InvalidInput
+            };
+            
+            throw new DomainException(message, errorType);
         }
     }
 
     /// <summary>
-    /// Propaga o correlation ID da requisição atual para o HttpClient.
-    /// Utiliza o ICorrelationIdAccessor para garantir consistência.
+    /// Executa uma operação HTTP e trata erros de rede/transporte.
+    /// HttpRequestException é convertida para DomainException com ErrorType.BadGateway.
     /// </summary>
-    protected void PropagateCorrelationId()
+    /// <param name="httpOperation">Operação HTTP a ser executada</param>
+    /// <param name="operationName">Nome da operação para contexto</param>
+    /// <param name="logger">Logger para registrar erros</param>
+    /// <returns>Resposta HTTP</returns>
+    /// <exception cref="DomainException">Para erros de rede/transporte</exception>
+    public static async Task<HttpResponseMessage> ExecuteHttpOperationAsync(
+        Func<Task<HttpResponseMessage>> httpOperation, 
+        string operationName, 
+        IAppLogger? logger = null)
     {
-        var correlationId = _correlationIdAccessor.GetCorrelationId().ToString();
-
-        // Remove existente antes de adicionar
-        if (_httpClient.DefaultRequestHeaders.Contains("X-Correlation-ID"))
+        try
         {
-            _httpClient.DefaultRequestHeaders.Remove("X-Correlation-ID");
+            return await httpOperation();
         }
-
-        _httpClient.DefaultRequestHeaders.Add("X-Correlation-ID", correlationId);
+        catch (HttpRequestException ex)
+        {
+            var message = $"Erro de conectividade na operação '{operationName}': {ex.Message}";
+            
+            logger?.LogError(ex, message);
+            
+            throw new DomainException(message, ErrorType.BadGateway);
+        }
+        catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
+        {
+            var message = $"Timeout na operação '{operationName}': {ex.Message}";
+            
+            logger?.LogError(ex, message);
+            
+            throw new DomainException(message, ErrorType.BadGateway);
+        }
     }
 
-    /// <summary>
-    /// Propaga token de autenticação e correlation ID em uma única chamada.
-    /// </summary>
-    protected void PropagateHeaders()
-    {
-        PropagateAuthToken();
-        PropagateCorrelationId();
-    }
 }

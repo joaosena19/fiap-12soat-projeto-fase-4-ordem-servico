@@ -1,7 +1,7 @@
 using Application.OrdemServico.Dtos.External;
 using Application.OrdemServico.Interfaces.External;
 using Application.Contracts.Monitoramento;
-using Microsoft.AspNetCore.Http;
+using Infrastructure.ExternalServices;
 using System.Net.Http.Json;
 
 namespace Infrastructure.ExternalServices.Cadastro;
@@ -9,16 +9,19 @@ namespace Infrastructure.ExternalServices.Cadastro;
 /// <summary>
 /// Implementação HTTP dos serviços externos de Cadastro.
 /// Faz chamadas REST ao microsserviço de Cadastros para obter dados de Clientes, Veículos e Serviços.
+/// Headers são propagados automaticamente pelo PropagateHeadersHandler.
+/// Erros HTTP são tratados de forma padronizada (5xx → 502, 4xx → status original).
 /// </summary>
-public class CadastroHttpClientService : BaseExternalHttpClient,
+public class CadastroHttpClientService : 
     IClienteExternalService, IServicoExternalService, IVeiculoExternalService
 {
-    public CadastroHttpClientService(
-        HttpClient httpClient, 
-        IHttpContextAccessor httpContextAccessor,
-        ICorrelationIdAccessor correlationIdAccessor)
-        : base(httpClient, httpContextAccessor, correlationIdAccessor)
+    private readonly HttpClient _httpClient;
+    private readonly IAppLogger _logger;
+
+    public CadastroHttpClientService(HttpClient httpClient, IAppLogger logger)
     {
+        _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     #region IServicoExternalService
@@ -28,12 +31,16 @@ public class CadastroHttpClientService : BaseExternalHttpClient,
     /// </summary>
     public async Task<ServicoExternalDto?> ObterServicoPorIdAsync(Guid servicoId)
     {
-        PropagateHeaders();
-        
-        var response = await _httpClient.GetAsync($"/api/cadastros/servicos/{servicoId}");
-        
-        if (!response.IsSuccessStatusCode)
+        var response = await BaseExternalHttpClient.ExecuteHttpOperationAsync(
+            () => _httpClient.GetAsync($"/api/cadastros/servicos/{servicoId}"),
+            nameof(ObterServicoPorIdAsync),
+            _logger);
+            
+        // 404 é esperado para recursos não encontrados - retornar null
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             return null;
+            
+        await BaseExternalHttpClient.EnsureSuccessOrThrowAsync(response, nameof(ObterServicoPorIdAsync), _logger);
         
         var result = await response.Content.ReadFromJsonAsync<ServicoExternalDto>();
         return result;
@@ -48,11 +55,18 @@ public class CadastroHttpClientService : BaseExternalHttpClient,
     /// </summary>
     public async Task<bool> VerificarExistenciaVeiculo(Guid veiculoId)
     {
-        PropagateHeaders();
+        var response = await BaseExternalHttpClient.ExecuteHttpOperationAsync(
+            () => _httpClient.GetAsync($"/api/cadastros/veiculos/{veiculoId}"),
+            nameof(VerificarExistenciaVeiculo),
+            _logger);
+            
+        // 404 significa que o veículo não existe - retornar false
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            return false;
+            
+        await BaseExternalHttpClient.EnsureSuccessOrThrowAsync(response, nameof(VerificarExistenciaVeiculo), _logger);
         
-        var response = await _httpClient.GetAsync($"/api/cadastros/veiculos/{veiculoId}");
-        
-        return response.IsSuccessStatusCode;
+        return true;
     }
 
     /// <summary>
@@ -60,12 +74,16 @@ public class CadastroHttpClientService : BaseExternalHttpClient,
     /// </summary>
     public async Task<VeiculoExternalDto?> ObterVeiculoPorIdAsync(Guid veiculoId)
     {
-        PropagateHeaders();
-        
-        var response = await _httpClient.GetAsync($"/api/cadastros/veiculos/{veiculoId}");
-        
-        if (!response.IsSuccessStatusCode)
+        var response = await BaseExternalHttpClient.ExecuteHttpOperationAsync(
+            () => _httpClient.GetAsync($"/api/cadastros/veiculos/{veiculoId}"),
+            nameof(ObterVeiculoPorIdAsync),
+            _logger);
+            
+        // 404 é esperado para veículos não encontrados - retornar null
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             return null;
+            
+        await BaseExternalHttpClient.EnsureSuccessOrThrowAsync(response, nameof(ObterVeiculoPorIdAsync), _logger);
         
         var result = await response.Content.ReadFromJsonAsync<VeiculoExternalDto>();
         return result;
@@ -76,12 +94,16 @@ public class CadastroHttpClientService : BaseExternalHttpClient,
     /// </summary>
     public async Task<VeiculoExternalDto?> ObterVeiculoPorPlacaAsync(string placa)
     {
-        PropagateHeaders();
-        
-        var response = await _httpClient.GetAsync($"/api/cadastros/veiculos/placa/{Uri.EscapeDataString(placa)}");
-        
-        if (!response.IsSuccessStatusCode)
+        var response = await BaseExternalHttpClient.ExecuteHttpOperationAsync(
+            () => _httpClient.GetAsync($"/api/cadastros/veiculos/placa/{Uri.EscapeDataString(placa)}"),
+            nameof(ObterVeiculoPorPlacaAsync),
+            _logger);
+            
+        // 404 é esperado para placas não encontradas - retornar null
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             return null;
+            
+        await BaseExternalHttpClient.EnsureSuccessOrThrowAsync(response, nameof(ObterVeiculoPorPlacaAsync), _logger);
         
         var result = await response.Content.ReadFromJsonAsync<VeiculoExternalDto>();
         return result;
@@ -92,11 +114,12 @@ public class CadastroHttpClientService : BaseExternalHttpClient,
     /// </summary>
     public async Task<VeiculoExternalDto> CriarVeiculoAsync(CriarVeiculoExternalDto dto)
     {
-        PropagateHeaders();
-        
-        var response = await _httpClient.PostAsJsonAsync("/api/cadastros/veiculos", dto);
-        
-        response.EnsureSuccessStatusCode();
+        var response = await BaseExternalHttpClient.ExecuteHttpOperationAsync(
+            () => _httpClient.PostAsJsonAsync("/api/cadastros/veiculos", dto),
+            nameof(CriarVeiculoAsync),
+            _logger);
+            
+        await BaseExternalHttpClient.EnsureSuccessOrThrowAsync(response, nameof(CriarVeiculoAsync), _logger);
         
         var result = await response.Content.ReadFromJsonAsync<VeiculoExternalDto>();
         return result ?? throw new InvalidOperationException("Falha ao criar veículo: resposta vazia do serviço.");
@@ -112,18 +135,22 @@ public class CadastroHttpClientService : BaseExternalHttpClient,
     /// </summary>
     public async Task<ClienteExternalDto?> ObterClientePorVeiculoIdAsync(Guid veiculoId)
     {
-        PropagateHeaders();
-        
         // Primeiro busca o veículo para obter o ClienteId
         var veiculo = await ObterVeiculoPorIdAsync(veiculoId);
         if (veiculo == null)
             return null;
         
         // Depois busca o cliente
-        var clienteResponse = await _httpClient.GetAsync($"/api/cadastros/clientes/{veiculo.ClienteId}");
-        
-        if (!clienteResponse.IsSuccessStatusCode)
+        var clienteResponse = await BaseExternalHttpClient.ExecuteHttpOperationAsync(
+            () => _httpClient.GetAsync($"/api/cadastros/clientes/{veiculo.ClienteId}"),
+            nameof(ObterClientePorVeiculoIdAsync),
+            _logger);
+            
+        // 404 é esperado para clientes não encontrados - retornar null
+        if (clienteResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
             return null;
+            
+        await BaseExternalHttpClient.EnsureSuccessOrThrowAsync(clienteResponse, nameof(ObterClientePorVeiculoIdAsync), _logger);
         
         var result = await clienteResponse.Content.ReadFromJsonAsync<ClienteExternalDto>();
         return result;
@@ -134,12 +161,16 @@ public class CadastroHttpClientService : BaseExternalHttpClient,
     /// </summary>
     public async Task<ClienteExternalDto?> ObterPorDocumentoAsync(string documentoIdentificador)
     {
-        PropagateHeaders();
-        
-        var response = await _httpClient.GetAsync($"/api/cadastros/clientes/documento/{Uri.EscapeDataString(documentoIdentificador)}");
-        
-        if (!response.IsSuccessStatusCode)
+        var response = await BaseExternalHttpClient.ExecuteHttpOperationAsync(
+            () => _httpClient.GetAsync($"/api/cadastros/clientes/documento/{Uri.EscapeDataString(documentoIdentificador)}"),
+            nameof(ObterPorDocumentoAsync),
+            _logger);
+            
+        // 404 é esperado para documentos não encontrados - retornar null
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             return null;
+            
+        await BaseExternalHttpClient.EnsureSuccessOrThrowAsync(response, nameof(ObterPorDocumentoAsync), _logger);
         
         var result = await response.Content.ReadFromJsonAsync<ClienteExternalDto>();
         return result;
@@ -150,11 +181,12 @@ public class CadastroHttpClientService : BaseExternalHttpClient,
     /// </summary>
     public async Task<ClienteExternalDto> CriarClienteAsync(CriarClienteExternalDto dto)
     {
-        PropagateHeaders();
-        
-        var response = await _httpClient.PostAsJsonAsync("/api/cadastros/clientes", dto);
-        
-        response.EnsureSuccessStatusCode();
+        var response = await BaseExternalHttpClient.ExecuteHttpOperationAsync(
+            () => _httpClient.PostAsJsonAsync("/api/cadastros/clientes", dto),
+            nameof(CriarClienteAsync),
+            _logger);
+            
+        await BaseExternalHttpClient.EnsureSuccessOrThrowAsync(response, nameof(CriarClienteAsync), _logger);
         
         var result = await response.Content.ReadFromJsonAsync<ClienteExternalDto>();
         return result ?? throw new InvalidOperationException("Falha ao criar cliente: resposta vazia do serviço.");
