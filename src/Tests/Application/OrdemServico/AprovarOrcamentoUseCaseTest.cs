@@ -1,6 +1,6 @@
 using Application.Contracts.Presenters;
 using Application.Contracts.Messaging;
-using Infrastructure.Messaging.DTOs;
+using Application.Contracts.Messaging.DTOs;
 using FluentAssertions;
 using Moq;
 using Shared.Enums;
@@ -113,7 +113,7 @@ namespace Tests.Application.OrdemServico
             ordemServico.AprovarOrcamento(); // → Aprovada
             ordemServico.IniciarExecucao(); // → EmExecucao + aguardando estoque
             ordemServico.ConfirmarReducaoEstoque(); // estoque confirmado
-            ordemServico.CompensarFalhaSaga(); // volta para Aprovada, mas mantém EstoqueRemovidoComSucesso = true
+            ordemServico.RegistrarFalhaReducaoEstoque(); // volta para Aprovada, mas mantém EstoqueRemovidoComSucesso = true
 
             OrdemServicoAggregate? ordemServicoAtualizada = null;
 

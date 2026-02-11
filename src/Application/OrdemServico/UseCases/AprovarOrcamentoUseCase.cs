@@ -1,7 +1,7 @@
 using Application.Contracts.Gateways;
 using Application.Contracts.Presenters;
 using Application.Contracts.Messaging;
-using Infrastructure.Messaging.DTOs;
+using Application.Contracts.Messaging.DTOs;
 using Application.Identidade.Services;
 using Application.Identidade.Services.Extensions;
 using Application.OrdemServico.Interfaces.External;

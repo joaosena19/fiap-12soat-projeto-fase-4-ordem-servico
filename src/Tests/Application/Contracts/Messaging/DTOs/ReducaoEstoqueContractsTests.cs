@@ -1,8 +1,8 @@
-using Infrastructure.Messaging.DTOs;
+using Application.Contracts.Messaging.DTOs;
 using System.Text.Json;
 using Xunit;
 
-namespace Tests.Infrastructure.Messaging.DTOs;
+namespace Tests.Application.Contracts.Messaging.DTOs;
 
 /// <summary>
 /// Testes unitários para os contratos de mensageria relacionados à redução de estoque.

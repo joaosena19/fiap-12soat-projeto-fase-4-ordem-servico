@@ -1,5 +1,5 @@
 using Application.Contracts.Gateways;
-using Infrastructure.Messaging.DTOs;
+using Application.Contracts.Messaging.DTOs;
 using Application.Contracts.Monitoramento;
 using MassTransit;
 

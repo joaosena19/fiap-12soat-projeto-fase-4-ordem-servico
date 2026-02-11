@@ -60,17 +60,5 @@ public class EstoqueHttpClientService : BaseExternalHttpClient, IEstoqueExternal
         return result?.Disponivel ?? false;
     }
 
-    /// <summary>
-    /// NOTA: A atualização de quantidade de estoque NÃO é feita via REST.
-    /// É feita através de mensageria assíncrona (Amazon SQS + MassTransit).
-    /// Este método será implementado via eventos de mensageria nas fases E/F do plano de execução.
-    /// </summary>
-    /// <exception cref="NotImplementedException">Atualização via REST não suportada</exception>
-    public Task AtualizarQuantidadeEstoqueAsync(Guid itemId, int novaQuantidade)
-    {
-        throw new NotImplementedException(
-            "AtualizarQuantidadeEstoqueAsync não é implementado via REST. " +
-            "A redução de estoque é feita via mensageria assíncrona (Amazon SQS) " +
-            "através do padrão Saga implementado nas fases E/F.");
-    }
+
 }

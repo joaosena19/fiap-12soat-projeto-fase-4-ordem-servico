@@ -1,5 +1,5 @@
 using Application.Contracts.Messaging;
-using Infrastructure.Messaging.DTOs;
+using Application.Contracts.Messaging.DTOs;
 using MassTransit;
 
 namespace Infrastructure.Messaging;

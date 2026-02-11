@@ -40,23 +40,7 @@ namespace Tests.Application.SharedHelpers.ExternalServices
         public void LancaExcecao(Exception excecao) => _mock.Setup(s => s.VerificarDisponibilidadeAsync(_itemId, _quantidade)).ThrowsAsync(excecao);
     }
 
-    public class EstoqueExternalServiceAtualizarQuantidadeSetupBuilder
-    {
-        private readonly Mock<IEstoqueExternalService> _mock;
-        private readonly Guid _itemId;
-        private readonly int _novaQuantidade;
 
-        public EstoqueExternalServiceAtualizarQuantidadeSetupBuilder(Mock<IEstoqueExternalService> mock, Guid itemId, int novaQuantidade)
-        {
-            _mock = mock;
-            _itemId = itemId;
-            _novaQuantidade = novaQuantidade;
-        }
-
-        public void Completa() => _mock.Setup(s => s.AtualizarQuantidadeEstoqueAsync(_itemId, _novaQuantidade)).Returns(Task.CompletedTask);
-
-        public void LancaExcecao(Exception excecao) => _mock.Setup(s => s.AtualizarQuantidadeEstoqueAsync(_itemId, _novaQuantidade)).ThrowsAsync(excecao);
-    }
 
     public static class EstoqueExternalServiceMockExtensions
     {
@@ -69,8 +53,7 @@ namespace Tests.Application.SharedHelpers.ExternalServices
         public static EstoqueExternalServiceVerificarDisponibilidadeSetupBuilder AoVerificarDisponibilidade(this Mock<IEstoqueExternalService> mock, Guid itemId, int quantidade)
             => new EstoqueExternalServiceVerificarDisponibilidadeSetupBuilder(mock, itemId, quantidade);
 
-        public static EstoqueExternalServiceAtualizarQuantidadeSetupBuilder AoAtualizarQuantidade(this Mock<IEstoqueExternalService> mock, Guid itemId, int novaQuantidade)
-            => new EstoqueExternalServiceAtualizarQuantidadeSetupBuilder(mock, itemId, novaQuantidade);
+
     }
 
     public static class EstoqueExternalServiceMockVerifyExtensions
@@ -85,14 +68,6 @@ namespace Tests.Application.SharedHelpers.ExternalServices
             mock.Verify(x => x.VerificarDisponibilidadeAsync(itemId, quantidadeNecessaria), Times.Exactly(vezes));
         }
 
-        public static void DeveTerAtualizadoQuantidade(this Mock<IEstoqueExternalService> mock, Guid itemId, int novaQuantidade, int vezes = 1)
-        {
-            mock.Verify(x => x.AtualizarQuantidadeEstoqueAsync(itemId, novaQuantidade), Times.Exactly(vezes));
-        }
 
-        public static void NaoDeveTerAtualizadoQuantidade(this Mock<IEstoqueExternalService> mock)
-        {
-            mock.Verify(x => x.AtualizarQuantidadeEstoqueAsync(It.IsAny<Guid>(), It.IsAny<int>()), Times.Never);
-        }
     }
 }

@@ -420,27 +420,4 @@ public class EstoqueHttpClientServiceTests
     }
 
     #endregion
-
-    #region AtualizarQuantidadeEstoqueAsync Tests
-
-    [Fact]
-    public async Task AtualizarQuantidadeEstoqueAsync_ThrowsNotImplementedException()
-    {
-        // Arrange
-        var itemId = Guid.NewGuid();
-        var novaQuantidade = 50;
-        SetupHttpContext("test-token");
-
-        var service = new EstoqueHttpClientService(_httpClient, _httpContextAccessorMock.Object);
-
-        // Act & Assert
-        var exception = await Assert.ThrowsAsync<NotImplementedException>(
-            () => service.AtualizarQuantidadeEstoqueAsync(itemId, novaQuantidade));
-
-        Assert.Contains("não é implementado via REST", exception.Message);
-        Assert.Contains("mensageria assíncrona", exception.Message);
-        Assert.Contains("SQS", exception.Message);
-    }
-
-    #endregion
 }

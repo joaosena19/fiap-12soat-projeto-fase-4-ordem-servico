@@ -10,6 +10,5 @@ namespace Application.OrdemServico.Interfaces.External
     {
         Task<ItemEstoqueExternalDto?> ObterItemEstoquePorIdAsync(Guid itemId);
         Task<bool> VerificarDisponibilidadeAsync(Guid itemId, int quantidadeNecessaria);
-        Task AtualizarQuantidadeEstoqueAsync(Guid itemId, int novaQuantidade);
     }
 }

@@ -84,6 +84,9 @@ public class SagaTimeoutBackgroundServiceTests
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.AtLeastOnce);
+    }
+
+    [Fact(DisplayName = "VerificarOrdensComTimeout quando não há ordens não faz nada")]
     [Trait("Classe", "SagaTimeoutBackgroundService")]
     [Trait("Método", "VerificarOrdensComTimeoutAsync")]
     public async Task VerificarOrdensComTimeout_QuandoNaoHaOrdens_NaoFazNada()
