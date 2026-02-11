@@ -4,7 +4,7 @@ using Application.Contracts.Monitoramento;
 using MassTransit;
 using SerilogContext = Serilog.Context.LogContext;
 
-namespace Infrastructure.Messaging.Consumers;
+namespace Infrastructure.Messaging;
 
 /// <summary>
 /// Consumer que recebe resultado da redução de estoque e executa confirmação ou compensação conforme necessário.
@@ -50,10 +50,7 @@ public class ReducaoEstoqueResultadoConsumer : IConsumer<ReducaoEstoqueResultado
 
         if (msg.Sucesso)
         {
-            // SEMPRE confirma, independente do status atual da OS.
-            // Cobre race condition: BackgroundService pode ter compensado a OS para Aprovada,
-            // mas o Estoque processou a redução a tempo. O flag EstoqueRemovidoComSucesso = true
-            // garante que a re-tentativa (dual-path em F-01) NÃO envia nova mensagem SQS.
+            // Sempre confirma, independente do status atual da OS. Caso a OS passe por um retry, já estará confirmado.
             os.ConfirmarReducaoEstoque();
             await _gateway.AtualizarAsync(os);
 
@@ -66,20 +63,15 @@ public class ReducaoEstoqueResultadoConsumer : IConsumer<ReducaoEstoqueResultado
             return;
         }
 
-        // FALHA: Compensar apenas se a OS ainda está em EmExecucao
-        _logger.LogWarning(
-            "Falha na redução de estoque para OS {OsId}. Motivo: {Motivo}. Status atual: {Status}. CorrelationId: {CorrelationId}",
-            os.Id, msg.MotivoFalha, os.Status.Valor, msg.CorrelationId);
-
         try
         {
-            os.CompensarFalhaSaga(); // EmExecucao → Aprovada + InteracaoEstoque.MarcarFalha()
+            os.CompensarFalhaSaga();
             await _gateway.AtualizarAsync(os);
 
             _metrics.RegistrarCompensacaoSagaFalhaEstoque(os.Id, msg.MotivoFalha ?? "desconhecido", msg.CorrelationId);
 
             _logger.LogWarning(
-                "Compensação aplicada para OS {OsId}. Status revertido para Aprovada. CorrelationId: {CorrelationId}",
+                "Falha na redução de estoque para OS {OsId}. Motivo: {Motivo}. Status atual: {Status}. CorrelationId: {CorrelationId}. Compensação aplicada para OS {OsId}. Status revertido para Aprovada. CorrelationId: {CorrelationId}",
                 os.Id, msg.CorrelationId);
         }
         catch (Exception ex)

@@ -49,10 +49,6 @@ public class SagaTimeoutBackgroundService : BackgroundService
 
         foreach (var os in ordensComTimeout)
         {
-            _logger.LogWarning(
-                "Saga timeout detectado para OS {OsId}. DataInicioExecucao: {DataInicio}. Executando compensação.",
-                os.Id, os.Historico.DataInicioExecucao);
-
             os.CompensarFalhaSaga();
             await gateway.AtualizarAsync(os);
 

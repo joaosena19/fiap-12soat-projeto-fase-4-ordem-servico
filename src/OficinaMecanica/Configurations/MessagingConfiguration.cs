@@ -1,6 +1,5 @@
 using Application.Contracts.Messaging;
 using Infrastructure.Messaging;
-using Infrastructure.Messaging.Consumers;
 using MassTransit;
 
 namespace API.Configurations;

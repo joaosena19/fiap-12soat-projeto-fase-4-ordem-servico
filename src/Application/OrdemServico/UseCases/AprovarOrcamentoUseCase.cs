@@ -30,13 +30,12 @@ public class AprovarOrcamentoUseCase
             if (ordemServico == null)
                 throw new DomainException("Ordem de serviço não encontrada.", ErrorType.ResourceNotFound, "Ordem de serviço não encontrada para Id {OrdemServicoId}", ordemServicoId);
 
-            // Verificar autorização usando serviço externo
             if (!await ator.PodeAprovarDesaprovarOrcamento(ordemServico, veiculoExternalService))
                 throw new DomainException("Acesso negado. Apenas administradores ou donos da ordem de serviço podem aprovar orçamentos.", ErrorType.NotAllowed, "Acesso negado para aprovar orçamento da ordem de serviço {OrdemServicoId} para usuário {Ator_UsuarioId}",
                     ordemServicoId, ator.UsuarioId);
 
             if (ordemServico.Status.Valor == StatusOrdemServicoEnum.AguardandoAprovacao)
-                ordemServico.AprovarOrcamento();   // AguardandoAprovacao → Aprovada
+                ordemServico.AprovarOrcamento();
 
             else if (ordemServico.Status.Valor != StatusOrdemServicoEnum.Aprovada)
             {
@@ -48,7 +47,6 @@ public class AprovarOrcamentoUseCase
             }
             // Se já está Aprovada (retry), pula AprovarOrcamento() e vai direto para IniciarExecucao()
 
-            // Transição automática: Aprovada → EmExecucao (always)
             ordemServico.IniciarExecucao();
 
             // Enviar mensagem SQS apenas se:
@@ -78,7 +76,7 @@ public class AprovarOrcamentoUseCase
                 logger.LogInformation(
                     "OS {OsId} não requer interação com estoque (DeveRemover={Deve}, JaConfirmado={Conf}). Prosseguindo direto.",
                     ordemServico.Id, ordemServico.InteracaoEstoque.DeveRemoverEstoque,
-                    ordemServico.InteracaoEstoque.EstoqueRemovidoComSucesso);
+                    ordemServico.InteracaoEstoque?.EstoqueRemovidoComSucesso ?? false);
             }
 
             await gateway.AtualizarAsync(ordemServico);

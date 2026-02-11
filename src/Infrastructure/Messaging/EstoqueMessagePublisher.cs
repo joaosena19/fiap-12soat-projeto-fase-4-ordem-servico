@@ -38,8 +38,6 @@ public class EstoqueMessagePublisher : IEstoqueMessagePublisher
 
         await _publishEndpoint.Publish(solicitacao, context =>
         {
-            // Configura TTL de 60 segundos por mensagem
-            // Se o Estoque não processar dentro desse tempo, a mensagem expira
             context.TimeToLive = MessageTtl;
         });
     }
