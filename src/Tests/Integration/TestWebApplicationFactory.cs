@@ -1,35 +1,47 @@
 using Infrastructure.Database;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System.Diagnostics;
 using Tests.Helpers;
+using Tests.Integration.Fixtures;
+using Tests.Integration.Mocks;
 using Application.Contracts.Monitoramento;
+using Application.OrdemServico.Interfaces.External;
+using Microsoft.Extensions.Options;
 
 namespace Tests.Integration
 {
-    public class TestWebApplicationFactory<TStartup> : WebApplicationFactory<TStartup>
+    public class TestWebApplicationFactory<TStartup> : WebApplicationFactory<TStartup>, IAsyncDisposable
         where TStartup : class
     {
+        private readonly MongoDbFixture _mongoFixture;
         private readonly string _databaseName;
+        private readonly MockExternalServices _mockExternalServices;
 
         public TestWebApplicationFactory()
         {
-            // Gera uma database única para cada classe de teste, útil para múltiplos testes não interferirem no mesmo banco e corromperem outros testes.
+            // Gera uma database única para cada classe de teste
             var stackTrace = new StackTrace();
             var callingFrame = stackTrace.GetFrames()
                 ?.FirstOrDefault(f => f.GetMethod()?.DeclaringType?.Name?.EndsWith("Tests") == true);
             
             var testClassName = callingFrame?.GetMethod()?.DeclaringType?.Name ?? "Unknown";
             _databaseName = $"TestDb_{testClassName}_{Guid.NewGuid():N}";
+
+            _mongoFixture = new MongoDbFixture();
+            _mockExternalServices = new MockExternalServices();
         }
+
+        public MockExternalServices MockExternalServices => _mockExternalServices;
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-            // Sobrescreve o appsettings para usar o HmacSecret de teste
+            // Inicializar MongoDB fixture
+            _mongoFixture.InitializeAsync().GetAwaiter().GetResult();
+
+            // Sobrescreve o appsettings para usar configurações de teste
             builder.ConfigureAppConfiguration((context, config) =>
             {
                 var overrides = new Dictionary<string, string?>
@@ -41,28 +53,22 @@ namespace Tests.Integration
                     ["Logging:LogLevel:Default"] = "None",
                     ["Logging:LogLevel:Microsoft"] = "None",
                     ["Logging:LogLevel:Microsoft.AspNetCore"] = "None",
-                    ["Logging:LogLevel:Microsoft.EntityFrameworkCore"] = "None"
+                    ["MongoDB:ConnectionString"] = _mongoFixture.ConnectionString,
+                    ["MongoDB:DatabaseName"] = _mongoFixture.DatabaseName
                 };
                 config.AddInMemoryCollection(overrides);
             });
 
             builder.ConfigureServices(services =>
             {
-                // Remove DbContext atual, com conexão com o banco real
-                var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(IDbContextOptionsConfiguration<AppDbContext>));
-                if (descriptor != null)
-                {
-                    services.Remove(descriptor);
-                }
+                // Configurar mocks para os serviços externos
+                services.AddSingleton<IClienteExternalService>(_mockExternalServices.ClienteService);
+                services.AddSingleton<IVeiculoExternalService>(_mockExternalServices.VeiculoService);
+                services.AddSingleton<IServicoExternalService>(_mockExternalServices.ServicoService);
+                services.AddSingleton<IEstoqueExternalService>(_mockExternalServices.EstoqueService);
 
-                // Configura mock do IMetricsService para testes
+                // Configurar mock do IMetricsService para testes
                 services.AddSingleton<IMetricsService, MockMetricsService>();
-
-                // Cria conexão com banco de dados em memória
-                services.AddDbContext<AppDbContext>(options =>
-                {
-                    options.UseInMemoryDatabase(_databaseName);
-                });
 
                 // Reconfigura JWT com valores de teste
                 services.Configure<Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions>(
@@ -82,17 +88,24 @@ namespace Tests.Integration
                             ClockSkew = TimeSpan.Zero
                         };
                     });
-
-                // Configura o ServiceProvider para inicializar o banco
-                var serviceProvider = services.BuildServiceProvider();
-                using var scope = serviceProvider.CreateScope();
-                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                
-                // Garante que o banco é criado e inicializado com os dados de seed
-                context.Database.EnsureCreated();
             });
 
             base.ConfigureWebHost(builder);
+        }
+        
+        // Cleanup método para limpar dados entre testes
+        public async Task ClearDatabaseAsync()
+        {
+            var context = _mongoFixture.CreateContext();
+            await context.OrdensServico.DeleteManyAsync(MongoDB.Driver.Builders<global::Domain.OrdemServico.Aggregates.OrdemServico.OrdemServico>.Filter.Empty);
+            _mockExternalServices.Clear();
+        }
+
+        // IAsyncDisposable para limpar recursos
+        public new async ValueTask DisposeAsync()
+        {
+            await _mongoFixture.DisposeAsync();
+            await base.DisposeAsync();
         }
     }
 }
