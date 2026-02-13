@@ -66,7 +66,7 @@ public class SagaTimeoutBackgroundService : BackgroundService
                 os.Historico.DataInicioExecucao);
 
             log.LogWarning(
-                "Compensação por timeout aplicada para Ordem Serviço {OsId}. Status revertido para Aprovada. Motivo: timeout_estoque_indisponivel",
+                "Compensação por timeout aplicada para Ordem Serviço {OrdemServicoId}. Status revertido para Aprovada. Motivo: timeout_estoque_indisponivel",
                 os.Id);
         }
     }

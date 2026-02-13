@@ -54,13 +54,13 @@ public class AprovarOrcamentoUseCase
                 await estoqueMessagePublisher.PublicarSolicitacaoReducaoAsync(solicitacao);
 
                 log.LogInformation(
-                    "Mensagem de redução de estoque publicada para Ordem Serviço {OsId}. Itens: {QtdItens}",
+                    "Mensagem de redução de estoque publicada para Ordem Serviço {OrdemServicoId}. Itens: {QtdItens}",
                     ordemServico.Id, solicitacao.Itens.Count);
             }
             else
             {
                 log.LogInformation(
-                    "Ordem Serviço {OsId} não requer interação com estoque (DeveRemover={Deve}, JaConfirmado={Conf}). Prosseguindo direto.",
+                    "Ordem Serviço {OrdemServicoId} não requer interação com estoque (DeveRemover={Deve}, JaConfirmado={Conf}). Prosseguindo direto.",
                     ordemServico.Id, ordemServico.InteracaoEstoque.DeveRemoverEstoque,
                     ordemServico.InteracaoEstoque?.EstoqueRemovidoComSucesso ?? false);
             }
