@@ -1,5 +1,6 @@
 using Application.Contracts.Messaging;
 using Application.Contracts.Messaging.DTOs;
+using Application.Contracts.Monitoramento;
 using Infrastructure.Messaging;
 using MassTransit;
 using Moq;
@@ -18,7 +19,9 @@ public class EstoqueMessagePublisherTests
     {
         // Arrange
         var publishEndpointMock = new Mock<IPublishEndpoint>();
-        var publisher = new EstoqueMessagePublisher(publishEndpointMock.Object);
+        var loggerMock = new Mock<IAppLogger>();
+        loggerMock.Setup(x => x.ComPropriedade(It.IsAny<string>(), It.IsAny<object>())).Returns(loggerMock.Object);
+        var publisher = new EstoqueMessagePublisher(publishEndpointMock.Object, loggerMock.Object);
 
         var solicitacao = new ReducaoEstoqueSolicitacao
         {
@@ -66,7 +69,9 @@ public class EstoqueMessagePublisherTests
     {
         // Arrange
         var publishEndpointMock = new Mock<IPublishEndpoint>();
-        var publisher = new EstoqueMessagePublisher(publishEndpointMock.Object);
+        var loggerMock = new Mock<IAppLogger>();
+        loggerMock.Setup(x => x.ComPropriedade(It.IsAny<string>(), It.IsAny<object>())).Returns(loggerMock.Object);
+        var publisher = new EstoqueMessagePublisher(publishEndpointMock.Object, loggerMock.Object);
 
         var correlationId = Guid.NewGuid();
         var ordemServicoId = Guid.NewGuid();
@@ -115,7 +120,9 @@ public class EstoqueMessagePublisherTests
     {
         // Arrange
         var publishEndpointMock = new Mock<IPublishEndpoint>();
-        var publisher = new EstoqueMessagePublisher(publishEndpointMock.Object);
+        var loggerMock = new Mock<IAppLogger>();
+        loggerMock.Setup(x => x.ComPropriedade(It.IsAny<string>(), It.IsAny<object>())).Returns(loggerMock.Object);
+        var publisher = new EstoqueMessagePublisher(publishEndpointMock.Object, loggerMock.Object);
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(
@@ -132,8 +139,11 @@ public class EstoqueMessagePublisherTests
     [Fact]
     public void Constructor_WhenPublishEndpointIsNull_ThrowsArgumentNullException()
     {
+        // Arrange
+        var loggerMock = new Mock<IAppLogger>();
+
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => new EstoqueMessagePublisher(null!));
+        Assert.Throws<ArgumentNullException>(() => new EstoqueMessagePublisher(null!, loggerMock.Object));
     }
 
     [Fact]
@@ -141,6 +151,8 @@ public class EstoqueMessagePublisherTests
     {
         // Arrange
         var publishEndpointMock = new Mock<IPublishEndpoint>();
+        var loggerMock = new Mock<IAppLogger>();
+        loggerMock.Setup(x => x.ComPropriedade(It.IsAny<string>(), It.IsAny<object>())).Returns(loggerMock.Object);
         var expectedException = new InvalidOperationException("SQS connection failed");
         
         publishEndpointMock
@@ -150,7 +162,7 @@ public class EstoqueMessagePublisherTests
                 It.IsAny<CancellationToken>()))
             .ThrowsAsync(expectedException);
 
-        var publisher = new EstoqueMessagePublisher(publishEndpointMock.Object);
+        var publisher = new EstoqueMessagePublisher(publishEndpointMock.Object, loggerMock.Object);
 
         var solicitacao = new ReducaoEstoqueSolicitacao
         {
@@ -171,7 +183,9 @@ public class EstoqueMessagePublisherTests
     {
         // Arrange
         var publishEndpointMock = new Mock<IPublishEndpoint>();
-        var publisher = new EstoqueMessagePublisher(publishEndpointMock.Object);
+        var loggerMock = new Mock<IAppLogger>();
+        loggerMock.Setup(x => x.ComPropriedade(It.IsAny<string>(), It.IsAny<object>())).Returns(loggerMock.Object);
+        var publisher = new EstoqueMessagePublisher(publishEndpointMock.Object, loggerMock.Object);
 
         var solicitacao = new ReducaoEstoqueSolicitacao
         {

@@ -136,7 +136,7 @@ namespace Tests.Application.OrdemServico
         {
             // Arrange
             var ator = new AtorBuilder().ComoSistema().Build();
-            var ordemServico = new OrdemServicoBuilder().ComOrcamento().Build();
+            var ordemServico = new OrdemServicoBuilder().ComStatus(StatusOrdemServicoEnum.Aprovada).Build();
 
             _fixture.OrdemServicoGatewayMock.AoObterPorId(ordemServico.Id).Retorna(ordemServico);
             _fixture.OrdemServicoGatewayMock.AoAtualizar().Retorna(ordemServico);

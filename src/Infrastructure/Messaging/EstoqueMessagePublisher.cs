@@ -1,5 +1,8 @@
 using Application.Contracts.Messaging;
 using Application.Contracts.Messaging.DTOs;
+using Application.Contracts.Monitoramento;
+using Application.Extensions;
+using Application.Extensions.Enums;
 using MassTransit;
 
 namespace Infrastructure.Messaging;
@@ -11,15 +14,18 @@ namespace Infrastructure.Messaging;
 public class EstoqueMessagePublisher : IEstoqueMessagePublisher
 {
     private readonly IPublishEndpoint _publishEndpoint;
+    private readonly IAppLogger _logger;
     private static readonly TimeSpan MessageTtl = TimeSpan.FromSeconds(60);
 
     /// <summary>
     /// Inicializa uma nova instância de EstoqueMessagePublisher.
     /// </summary>
     /// <param name="publishEndpoint">Endpoint de publicação do MassTransit.</param>
-    public EstoqueMessagePublisher(IPublishEndpoint publishEndpoint)
+    /// <param name="logger">Logger para registro de mensagens.</param>
+    public EstoqueMessagePublisher(IPublishEndpoint publishEndpoint, IAppLogger logger)
     {
         _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     /// <summary>
@@ -36,6 +42,12 @@ public class EstoqueMessagePublisher : IEstoqueMessagePublisher
     {
         if (solicitacao == null)
             throw new ArgumentNullException(nameof(solicitacao));
+
+        _logger
+            .ComMensageria(NomeMensagemEnum.ReducaoEstoqueSolicitacao, TipoMensagemEnum.Publicacao)
+            .ComPropriedade("CorrelationId", solicitacao.CorrelationId)
+            .ComPropriedade("OrdemServicoId", solicitacao.OrdemServicoId)
+            .LogInformation("Publicando solicitação de redução de estoque para OS {OrdemServicoId}. CorrelationId: {CorrelationId}. TTL: {TTL}s", solicitacao.OrdemServicoId, solicitacao.CorrelationId, MessageTtl.TotalSeconds);
 
         await _publishEndpoint.Publish(solicitacao, context =>
         {
