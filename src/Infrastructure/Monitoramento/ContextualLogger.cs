@@ -68,6 +68,16 @@ public class ContextualLogger : IAppLogger
         LogWithContext(messageTemplate, () => _logger.LogError(ex, messageTemplate, args));
     }
 
+    public void LogCritical(string messageTemplate, params object[] args)
+    {
+        LogWithContext(messageTemplate, () => _logger.LogCritical(messageTemplate, args));
+    }
+
+    public void LogCritical(Exception ex, string messageTemplate, params object[] args)
+    {
+        LogWithContext(messageTemplate, () => _logger.LogCritical(ex, messageTemplate, args));
+    }
+
     public IAppLogger ComPropriedade(string key, object? value)
     {
         var newContext = new Dictionary<string, object?>(_context)

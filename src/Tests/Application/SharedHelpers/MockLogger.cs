@@ -22,6 +22,8 @@ namespace Tests.Application.SharedHelpers
             Mock.Setup(x => x.LogWarning(It.IsAny<string>(), It.IsAny<object[]>()));
             Mock.Setup(x => x.LogError(It.IsAny<string>(), It.IsAny<object[]>()));
             Mock.Setup(x => x.LogError(It.IsAny<Exception>(), It.IsAny<string>(), It.IsAny<object[]>()));
+            Mock.Setup(x => x.LogCritical(It.IsAny<string>(), It.IsAny<object[]>()));
+            Mock.Setup(x => x.LogCritical(It.IsAny<Exception>(), It.IsAny<string>(), It.IsAny<object[]>()));
 
             // ComPropriedade retorna ele mesmo para manter fluency
             Mock.Setup(x => x.ComPropriedade(It.IsAny<string>(), It.IsAny<object>()))
@@ -36,6 +38,8 @@ namespace Tests.Application.SharedHelpers
             mockToSetup.Setup(x => x.LogWarning(It.IsAny<string>(), It.IsAny<object[]>()));
             mockToSetup.Setup(x => x.LogError(It.IsAny<string>(), It.IsAny<object[]>()));
             mockToSetup.Setup(x => x.LogError(It.IsAny<Exception>(), It.IsAny<string>(), It.IsAny<object[]>()));
+            mockToSetup.Setup(x => x.LogCritical(It.IsAny<string>(), It.IsAny<object[]>()));
+            mockToSetup.Setup(x => x.LogCritical(It.IsAny<Exception>(), It.IsAny<string>(), It.IsAny<object[]>()));
             
             // ComPropriedade também pode ser chamado no mock da cadeia
             var nextMockChain = new Mock<IAppLogger>();
@@ -84,6 +88,25 @@ namespace Tests.Application.SharedHelpers
             Mock.Verify(x => x.LogError(It.IsAny<Exception>(), It.IsAny<string>(), It.IsAny<object[]>()), Times.AtLeastOnce);
         }
 
+        public void DeveTerLogadoCritical()
+        {
+            // Verifica se foi chamado LogCritical com string ou com exception
+            try
+            {
+                Mock.Verify(x => x.LogCritical(It.IsAny<string>(), It.IsAny<object[]>()), Times.AtLeastOnce);
+            }
+            catch (Moq.MockException)
+            {
+                // Se não foi chamado com string, verifica se foi chamado com exception
+                Mock.Verify(x => x.LogCritical(It.IsAny<Exception>(), It.IsAny<string>(), It.IsAny<object[]>()), Times.AtLeastOnce);
+            }
+        }
+
+        public void DeveTerLogadoCriticalComException()
+        {
+            Mock.Verify(x => x.LogCritical(It.IsAny<Exception>(), It.IsAny<string>(), It.IsAny<object[]>()), Times.AtLeastOnce);
+        }
+
         public void DeveTerChamadoComPropriedade(string chaveEsperada, object valorEsperado)
         {
             Mock.Verify(x => x.ComPropriedade(chaveEsperada, valorEsperado), Times.Once);
@@ -98,6 +121,12 @@ namespace Tests.Application.SharedHelpers
         public void NaoDeveTerLogadoNenhumWarning()
         {
             Mock.Verify(x => x.LogWarning(It.IsAny<string>(), It.IsAny<object[]>()), Times.Never);
+        }
+
+        public void NaoDeveTerLogadoNenhumCritical()
+        {
+            Mock.Verify(x => x.LogCritical(It.IsAny<string>(), It.IsAny<object[]>()), Times.Never);
+            Mock.Verify(x => x.LogCritical(It.IsAny<Exception>(), It.IsAny<string>(), It.IsAny<object[]>()), Times.Never);
         }
     }
 }

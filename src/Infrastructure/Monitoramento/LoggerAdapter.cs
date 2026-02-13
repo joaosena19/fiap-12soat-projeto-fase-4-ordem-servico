@@ -53,6 +53,22 @@ public class LoggerAdapter<T> : IAppLogger
         }
     }
 
+    public void LogCritical(string messageTemplate, params object[] args)
+    {
+        using (LogContext.PushProperty("message_template", messageTemplate))
+        {
+            _logger.LogCritical(messageTemplate, args);
+        }
+    }
+
+    public void LogCritical(Exception ex, string messageTemplate, params object[] args)
+    {
+        using (LogContext.PushProperty("message_template", messageTemplate))
+        {
+            _logger.LogCritical(ex, messageTemplate, args);
+        }
+    }
+
     public IAppLogger ComPropriedade(string key, object? value)
     {
         var context = new Dictionary<string, object?> { [key] = value };

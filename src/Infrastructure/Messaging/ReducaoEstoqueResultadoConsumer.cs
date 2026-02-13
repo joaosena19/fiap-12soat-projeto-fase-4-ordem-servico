@@ -81,7 +81,7 @@ public class ReducaoEstoqueResultadoConsumer : IConsumer<ReducaoEstoqueResultado
         }
         catch(Exception ex)
         {
-            log.LogError(ex, "FALHA NA COMPENSAÇÃO para Ordem Serviço! Dados possivelmente INCONSISTENTES.");
+            log.LogCritical(ex, "FALHA NA COMPENSAÇÃO para Ordem Serviço! Dados possivelmente INCONSISTENTES.");
             _metrics.RegistrarCompensacaoSagaFalhaCritica(mensagem.OrdemServicoId, ex.Message, mensagem.CorrelationId);
         }
         
@@ -101,7 +101,7 @@ public class ReducaoEstoqueResultadoConsumer : IConsumer<ReducaoEstoqueResultado
         }
         catch (Exception ex)
         {
-            log.LogWarning("Falha ao confirmar redução de estoque para Ordem Serviço, mesmo após mensagem de sucesso do serviço de Estoque. Dados possivelmente inconsistentes. Detalhes do erro: {Mensagem}", ex.Message);
+            log.LogCritical(ex, "Falha ao confirmar redução de estoque para Ordem Serviço, mesmo após mensagem de sucesso do serviço de Estoque. Dados possivelmente inconsistentes. Detalhes do erro: {Mensagem}", ex.Message);
             _metrics.RegistrarCompensacaoSagaFalhaCritica(ordemServico.Id, ex.Message, mensagem.CorrelationId);
         }
     }
