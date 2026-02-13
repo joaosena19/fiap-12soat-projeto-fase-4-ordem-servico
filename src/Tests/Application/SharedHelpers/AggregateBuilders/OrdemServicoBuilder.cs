@@ -159,6 +159,16 @@ namespace Tests.Application.SharedHelpers.AggregateBuilders
                         }
                         ordemServico.GerarOrcamento();
                         break;
+                    case StatusOrdemServicoEnum.Aprovada:
+                        ordemServico.IniciarDiagnostico();
+                        // Garante que existe pelo menos um item ou serviço para permitir o orçamento e aprovação
+                        if (!ordemServico.ItensIncluidos.Any() && !ordemServico.ServicosIncluidos.Any())
+                        {
+                            ordemServico.AdicionarServico(Guid.NewGuid(), _faker.Commerce.ProductName(), _faker.Random.Decimal(30, 200));
+                        }
+                        ordemServico.GerarOrcamento();
+                        ordemServico.AprovarOrcamento();
+                        break;
                     case StatusOrdemServicoEnum.EmExecucao:
                         ordemServico.IniciarDiagnostico();
                         // Garante que existe pelo menos um item ou serviço para permitir o orçamento e aprovação
@@ -168,6 +178,7 @@ namespace Tests.Application.SharedHelpers.AggregateBuilders
                         }
                         ordemServico.GerarOrcamento();
                         ordemServico.AprovarOrcamento();
+                        ordemServico.IniciarExecucao();
                         break;
                     case StatusOrdemServicoEnum.Finalizada:
                         ordemServico.IniciarDiagnostico();
@@ -178,6 +189,7 @@ namespace Tests.Application.SharedHelpers.AggregateBuilders
                         }
                         ordemServico.GerarOrcamento();
                         ordemServico.AprovarOrcamento();
+                        ordemServico.IniciarExecucao();
                         ordemServico.FinalizarExecucao();
                         break;
                     case StatusOrdemServicoEnum.Entregue:
@@ -189,6 +201,7 @@ namespace Tests.Application.SharedHelpers.AggregateBuilders
                         }
                         ordemServico.GerarOrcamento();
                         ordemServico.AprovarOrcamento();
+                        ordemServico.IniciarExecucao();
                         ordemServico.FinalizarExecucao();
                         ordemServico.Entregar();
                         break;

@@ -118,6 +118,7 @@ namespace Tests.Domain.OrdemServico
             ordemServico.IniciarDiagnostico();
             ordemServico.AdicionarServico(Guid.NewGuid(), "Teste", 10m);
             ordemServico.GerarOrcamento();
+            ordemServico.AprovarOrcamento();
 
             ordemServico.AlterarStatus(StatusOrdemServicoEnum.EmExecucao);
 
@@ -133,6 +134,7 @@ namespace Tests.Domain.OrdemServico
             ordemServico.IniciarDiagnostico();
             ordemServico.AdicionarServico(Guid.NewGuid(), "Teste", 10m);
             ordemServico.GerarOrcamento();
+            ordemServico.AprovarOrcamento();
             ordemServico.IniciarExecucao();
 
             ordemServico.AlterarStatus(StatusOrdemServicoEnum.Finalizada);
@@ -149,6 +151,7 @@ namespace Tests.Domain.OrdemServico
             ordemServico.IniciarDiagnostico();
             ordemServico.AdicionarServico(Guid.NewGuid(), "Teste", 10m);
             ordemServico.GerarOrcamento();
+            ordemServico.AprovarOrcamento();
             ordemServico.IniciarExecucao();
             ordemServico.FinalizarExecucao();
 
@@ -373,7 +376,7 @@ namespace Tests.Domain.OrdemServico
 
         [Theory(DisplayName = "Não deve criar status se enum for inválido")]
         [InlineData((StatusOrdemServicoEnum)(-1))]
-        [InlineData((StatusOrdemServicoEnum)7)]
+        [InlineData((StatusOrdemServicoEnum)8)]
         [InlineData((StatusOrdemServicoEnum)999)]
         [Trait("ValueObject", "Status")]
         public void Status_ComEnumInvalido_DeveLancarExcecao(StatusOrdemServicoEnum statusInvalido)
@@ -753,12 +756,21 @@ namespace Tests.Domain.OrdemServico
             ordemServico.Status.Valor.Should().Be(StatusOrdemServicoEnum.Cancelada);
         }
 
-        [Fact(DisplayName = "Deve permitir cancelar ordem de serviço em qualquer status")]
+        [Fact(DisplayName = "Deve permitir cancelar ordem de serviço antes de Aprovada")]
         [Trait("Método", "Cancelar")]
-        public void Cancelar_ComQualquerStatus_DeveAlterarStatusParaCancelada()
+        public void Cancelar_ComStatusAntesDeAprovada_DeveAlterarStatusParaCancelada()
         {
             // Arrange & Act & Assert
-            foreach (StatusOrdemServicoEnum statusAtual in Enum.GetValues<StatusOrdemServicoEnum>())
+            // Status permitidos para cancelamento: todos exceto Aprovada, EmExecucao, Finalizada, Entregue
+            var statusPermitidos = new[]
+            {
+                StatusOrdemServicoEnum.Recebida,
+                StatusOrdemServicoEnum.EmDiagnostico,
+                StatusOrdemServicoEnum.AguardandoAprovacao,
+                StatusOrdemServicoEnum.Cancelada
+            };
+
+            foreach (var statusAtual in statusPermitidos)
             {
                 var ordemServico = OrdemServicoAggregate.Criar(Guid.NewGuid());
                 
@@ -774,6 +786,35 @@ namespace Tests.Domain.OrdemServico
                 // Assert
                 ordemServico.Status.Valor.Should().Be(StatusOrdemServicoEnum.Cancelada, 
                     $"Deveria ser possível cancelar uma OS do status '{statusAtual}' para 'Cancelada'");
+            }
+        }
+
+        [Fact(DisplayName = "Não deve permitir cancelar ordem de serviço após Aprovada")]
+        [Trait("Método", "Cancelar")]
+        public void Cancelar_ComStatusAposAprovada_DeveLancarExcecao()
+        {
+            // Arrange & Act & Assert
+            // Status bloqueados: Aprovada, EmExecucao, Finalizada, Entregue
+            var statusBloqueados = new[]
+            {
+                StatusOrdemServicoEnum.Aprovada,
+                StatusOrdemServicoEnum.EmExecucao,
+                StatusOrdemServicoEnum.Finalizada,
+                StatusOrdemServicoEnum.Entregue
+            };
+
+            foreach (var statusBloqueado in statusBloqueados)
+            {
+                var ordemServico = OrdemServicoAggregate.Criar(Guid.NewGuid());
+                
+                // Definir status usando reflection
+                DefinirStatusPorReflection(ordemServico, statusBloqueado);
+
+                // Act & Assert
+                FluentActions.Invoking(() => ordemServico.Cancelar())
+                    .Should().Throw<DomainException>()
+                    .WithMessage($"*cancelar ordem de serviço com status {statusBloqueado}*",
+                        $"Não deveria ser possível cancelar uma OS com status '{statusBloqueado}'");
             }
         }
 
@@ -897,9 +938,9 @@ namespace Tests.Domain.OrdemServico
 
         #region Testes Metodo AprovarOrcamento
 
-        [Fact(DisplayName = "Deve aprovar orçamento e iniciar execução")]
+        [Fact(DisplayName = "Deve aprovar orçamento com sucesso")]
         [Trait("Método", "AprovarOrcamento")]
-        public void AprovarOrcamento_ComOrcamentoExistente_DeveIniciarExecucao()
+        public void AprovarOrcamento_ComOrcamentoExistente_DeveAprovarOrcamento()
         {
             // Arrange
             var ordemServico = OrdemServicoAggregate.Criar(Guid.NewGuid());
@@ -911,8 +952,7 @@ namespace Tests.Domain.OrdemServico
             ordemServico.AprovarOrcamento();
 
             // Assert
-            ordemServico.Status.Valor.Should().Be(StatusOrdemServicoEnum.EmExecucao);
-            ordemServico.Historico.DataInicioExecucao.Should().NotBeNull();
+            ordemServico.Status.Valor.Should().Be(StatusOrdemServicoEnum.Aprovada);
         }
 
         [Fact(DisplayName = "Não deve aprovar orçamento se não existir")]
@@ -968,13 +1008,14 @@ namespace Tests.Domain.OrdemServico
 
         [Fact(DisplayName = "Deve iniciar execução com sucesso")]
         [Trait("Método", "IniciarExecucao")]
-        public void IniciarExecucao_ComStatusAguardandoAprovacao_DeveIniciarExecucao()
+        public void IniciarExecucao_ComStatusAprovada_DeveIniciarExecucao()
         {
             // Arrange
             var ordemServico = OrdemServicoAggregate.Criar(Guid.NewGuid());
             ordemServico.IniciarDiagnostico();
             ordemServico.AdicionarServico(Guid.NewGuid(), "Teste", 50.00m);
             ordemServico.GerarOrcamento();
+            ordemServico.AprovarOrcamento();
 
             // Act
             ordemServico.IniciarExecucao();
@@ -984,13 +1025,13 @@ namespace Tests.Domain.OrdemServico
             ordemServico.Historico.DataInicioExecucao.Should().NotBeNull();
         }
 
-        [Fact(DisplayName = "Não deve iniciar execução se status não for AguardandoAprovacao")]
+        [Fact(DisplayName = "Não deve iniciar execução se status não for Aprovada")]
         [Trait("Método", "IniciarExecucao")]
-        public void IniciarExecucao_ComStatusDiferenteDeAguardandoAprovacao_DeveLancarExcecao()
+        public void IniciarExecucao_ComStatusDiferenteDeAprovada_DeveLancarExcecao()
         {
             // Arrange
             var statusInvalidos = Enum.GetValues<StatusOrdemServicoEnum>()
-                .Except(new[] { StatusOrdemServicoEnum.AguardandoAprovacao });
+                .Except(new[] { StatusOrdemServicoEnum.Aprovada });
 
             foreach (var statusInvalido in statusInvalidos)
             {
@@ -1002,9 +1043,52 @@ namespace Tests.Domain.OrdemServico
                 // Act & Assert
                 FluentActions.Invoking(() => ordemServico.IniciarExecucao())
                     .Should().Throw<DomainException>()
-                    .WithMessage("Só é possível iniciar execução para uma ordem de serviço com o status 'AguardandoAprovacao'",
+                    .WithMessage("Só é possível iniciar execução para uma ordem de serviço com o status 'Aprovada'",
                         $"Status {statusInvalido} não deveria permitir iniciar execução");
             }
+        }
+
+        [Fact(DisplayName = "Deve configurar InteracaoEstoque como AguardandoReducao quando tem itens")]
+        [Trait("Método", "IniciarExecucao")]
+        public void IniciarExecucao_ComItens_DeveConfigurarInteracaoEstoqueComoAguardandoReducao()
+        {
+            // Arrange
+            var ordemServico = OrdemServicoAggregate.Criar(Guid.NewGuid());
+            ordemServico.IniciarDiagnostico();
+            ordemServico.AdicionarServico(Guid.NewGuid(), "Troca de óleo", 150.00m);
+            ordemServico.AdicionarItem(Guid.NewGuid(), "Filtro de óleo", 50.00m, 2, TipoItemIncluidoEnum.Peca);
+            ordemServico.GerarOrcamento();
+            ordemServico.AprovarOrcamento();
+
+            // Act
+            ordemServico.IniciarExecucao();
+
+            // Assert
+            ordemServico.Status.Valor.Should().Be(StatusOrdemServicoEnum.EmExecucao);
+            ordemServico.InteracaoEstoque.DeveRemoverEstoque.Should().BeTrue();
+            ordemServico.InteracaoEstoque.EstoqueFoiConfirmado.Should().BeFalse();
+            ordemServico.Historico.DataInicioExecucao.Should().NotBeNull();
+        }
+
+        [Fact(DisplayName = "Deve configurar InteracaoEstoque como SemInteracao quando não tem itens")]
+        [Trait("Método", "IniciarExecucao")]
+        public void IniciarExecucao_SemItens_DeveConfigurarInteracaoEstoqueComoSemInteracao()
+        {
+            // Arrange
+            var ordemServico = OrdemServicoAggregate.Criar(Guid.NewGuid());
+            ordemServico.IniciarDiagnostico();
+            ordemServico.AdicionarServico(Guid.NewGuid(), "Alinhamento", 100.00m);
+            ordemServico.GerarOrcamento();
+            ordemServico.AprovarOrcamento();
+
+            // Act
+            ordemServico.IniciarExecucao();
+
+            // Assert
+            ordemServico.Status.Valor.Should().Be(StatusOrdemServicoEnum.EmExecucao);
+            ordemServico.InteracaoEstoque.DeveRemoverEstoque.Should().BeFalse();
+            ordemServico.InteracaoEstoque.EstoqueFoiConfirmado.Should().BeTrue(); // SemInteracao considera como já confirmado
+            ordemServico.Historico.DataInicioExecucao.Should().NotBeNull();
         }
 
         #endregion
@@ -1021,6 +1105,7 @@ namespace Tests.Domain.OrdemServico
             ordemServico.AdicionarServico(Guid.NewGuid(), "Teste", 50.00m);
             ordemServico.GerarOrcamento();
             ordemServico.AprovarOrcamento();
+            ordemServico.IniciarExecucao();
 
             // Act
             ordemServico.FinalizarExecucao();
@@ -1067,6 +1152,7 @@ namespace Tests.Domain.OrdemServico
             ordemServico.AdicionarServico(Guid.NewGuid(), "Teste", 50.00m);
             ordemServico.GerarOrcamento();
             ordemServico.AprovarOrcamento();
+            ordemServico.IniciarExecucao();
             ordemServico.FinalizarExecucao();
 
             // Act

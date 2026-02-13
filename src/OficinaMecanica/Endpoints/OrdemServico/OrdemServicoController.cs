@@ -563,7 +563,7 @@ namespace API.Endpoints.OrdemServico
             var gateway = new OrdemServicoRepository(_context);
             var presenter = new OperacaoOrdemServicoPresenter();
             var handler = new OrdemServicoHandler(_loggerFactory);
-            var ator = BuscarAtorAtual();
+            var ator = Ator.Sistema();
 
             await handler.AprovarOrcamentoAsync(ator, dto.Id, gateway, _veiculoExternalService, _estoqueMessagePublisher, _correlationIdAccessor, presenter);
             return presenter.ObterResultado();

@@ -58,10 +58,11 @@ public class BuscarOrdensServicoUseCase
         return status switch
         {
             StatusOrdemServicoEnum.EmExecucao => 1,
-            StatusOrdemServicoEnum.AguardandoAprovacao => 2,
-            StatusOrdemServicoEnum.EmDiagnostico => 3,
-            StatusOrdemServicoEnum.Recebida => 4,
-            _ => 5
+            StatusOrdemServicoEnum.Aprovada => 2,
+            StatusOrdemServicoEnum.AguardandoAprovacao => 3,
+            StatusOrdemServicoEnum.EmDiagnostico => 4,
+            StatusOrdemServicoEnum.Recebida => 5,
+            _ => 6
         };
     }
 }

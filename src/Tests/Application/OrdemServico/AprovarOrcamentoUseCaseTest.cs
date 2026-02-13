@@ -240,8 +240,12 @@ namespace Tests.Application.OrdemServico
         public async Task ExecutarAsync_QuandoOrdemSemOrcamento_ApresentaErroDominio()
         {
             // Arrange
-            var ordemServico = new OrdemServicoBuilder().ComStatus(StatusOrdemServicoEnum.EmDiagnostico).Build();
-            // Ordem em diagnóstico sem orçamento gerado para provocar DomainException
+            // Ordem em status Aprovada sem orçamento gerado (cenário de retry com problema)
+            var ordemServico = new OrdemServicoBuilder().ComStatus(StatusOrdemServicoEnum.Aprovada).Build();
+            
+            // Remove o orçamento por reflection para simular estado inválido
+            var orcamentoProperty = ordemServico.GetType().GetProperty("Orcamento");
+            orcamentoProperty!.SetValue(ordemServico, null);
 
             _fixture.OrdemServicoGatewayMock.AoObterPorId(ordemServico.Id).Retorna(ordemServico);
             _fixture.VeiculoExternalServiceMock.AoObterPorId(ordemServico.VeiculoId).Retorna(new VeiculoExternalDtoBuilder().Build());

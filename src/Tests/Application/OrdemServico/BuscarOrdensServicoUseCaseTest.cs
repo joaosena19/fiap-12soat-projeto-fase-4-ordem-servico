@@ -111,7 +111,7 @@ namespace Tests.Application.OrdemServico
             var random = new Random();
             var todosOsStatus = Enum.GetValues<StatusOrdemServicoEnum>();
             var statusProibidos = new[] { StatusOrdemServicoEnum.Finalizada, StatusOrdemServicoEnum.Entregue, StatusOrdemServicoEnum.Cancelada };
-            var statusValidos = new[] { StatusOrdemServicoEnum.Recebida, StatusOrdemServicoEnum.EmDiagnostico, StatusOrdemServicoEnum.AguardandoAprovacao, StatusOrdemServicoEnum.EmExecucao };
+            var statusValidos = new[] { StatusOrdemServicoEnum.Recebida, StatusOrdemServicoEnum.EmDiagnostico, StatusOrdemServicoEnum.AguardandoAprovacao, StatusOrdemServicoEnum.Aprovada, StatusOrdemServicoEnum.EmExecucao };
 
             // Criar 20 ordens com status aleatórios
             var ordensServico = new List<OrdemServicoAggregate>();
@@ -158,13 +158,14 @@ namespace Tests.Application.OrdemServico
             // Arrange
             var ator = new AtorBuilder().ComoAdministrador().Build();
             var random = new Random();
-            var statusValidos = new[] { StatusOrdemServicoEnum.Recebida, StatusOrdemServicoEnum.EmDiagnostico, StatusOrdemServicoEnum.AguardandoAprovacao, StatusOrdemServicoEnum.EmExecucao };
+            var statusValidos = new[] { StatusOrdemServicoEnum.Recebida, StatusOrdemServicoEnum.EmDiagnostico, StatusOrdemServicoEnum.AguardandoAprovacao, StatusOrdemServicoEnum.Aprovada, StatusOrdemServicoEnum.EmExecucao };
             var prioridadeEsperada = new Dictionary<StatusOrdemServicoEnum, int>
             {
                 { StatusOrdemServicoEnum.EmExecucao, 1 },
-                { StatusOrdemServicoEnum.AguardandoAprovacao, 2 },
-                { StatusOrdemServicoEnum.EmDiagnostico, 3 },
-                { StatusOrdemServicoEnum.Recebida, 4 }
+                { StatusOrdemServicoEnum.Aprovada, 2 },
+                { StatusOrdemServicoEnum.AguardandoAprovacao, 3 },
+                { StatusOrdemServicoEnum.EmDiagnostico, 4 },
+                { StatusOrdemServicoEnum.Recebida, 5 }
             };
 
             // Criar 20 ordens com status aleatórios (apenas status válidos)
