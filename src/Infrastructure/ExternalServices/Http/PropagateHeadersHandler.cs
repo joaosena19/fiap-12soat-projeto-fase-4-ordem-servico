@@ -52,7 +52,7 @@ public class PropagateHeadersHandler : DelegatingHandler
     /// </summary>
     private void PropagateCorrelationId(HttpRequestMessage request)
     {
-        var correlationId = _correlationIdAccessor.GetCorrelationId().ToString();
+        var correlationId = _correlationIdAccessor.GetCorrelationId();
         
         // Remove existente se presente
         if (request.Headers.Contains("X-Correlation-ID"))

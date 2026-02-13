@@ -7,10 +7,10 @@ namespace Application.Contracts.Monitoramento;
 public interface ICorrelationIdAccessor
 {
     /// <summary>
-    /// Recupera o correlation ID da operação atual.
-    /// Se não houver um ID no contexto atual (ex: fora de uma requisição HTTP), 
+    /// Recupera o correlation ID da operação atual como string.
+    /// Se não houver um ID no contexto atual (ex: fora de uma requisição HTTP/consumer), 
     /// gera um novo GUID para manter a rastreabilidade.
     /// </summary>
-    /// <returns>O Guid de correlação.</returns>
-    Guid GetCorrelationId();
+    /// <returns>O correlation ID como string.</returns>
+    string GetCorrelationId();
 }

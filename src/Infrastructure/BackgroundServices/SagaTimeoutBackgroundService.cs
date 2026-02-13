@@ -3,6 +3,8 @@ using Application.Contracts.Monitoramento;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Infrastructure.Monitoramento;
+using Infrastructure.Monitoramento.Correlation;
+using Serilog.Context;
 
 namespace Infrastructure.BackgroundServices;
 
@@ -45,6 +47,11 @@ public class SagaTimeoutBackgroundService : BackgroundService
 
     private async Task VerificarOrdensComTimeoutAsync(IAppLogger log)
     {
+        // Estabelecer um correlation ID para este ciclo de polling de compensação
+        var cycleCorrelationId = Guid.NewGuid().ToString();
+        using var correlationScope = CorrelationContext.Push(cycleCorrelationId);
+        using var logScope = LogContext.PushProperty(CorrelationConstants.LogPropertyName, cycleCorrelationId);
+
         var timeoutLimit = DateTime.UtcNow.Subtract(TimeoutThreshold);
         var ordensComTimeout = await _gateway.ObterOrdensAguardandoEstoqueComTimeoutAsync(timeoutLimit);
 

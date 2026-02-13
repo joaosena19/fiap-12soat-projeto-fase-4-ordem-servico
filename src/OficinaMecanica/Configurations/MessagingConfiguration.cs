@@ -1,6 +1,7 @@
 using Application.Contracts.Messaging;
 using Application.Contracts.Messaging.DTOs;
 using Infrastructure.Messaging;
+using Infrastructure.Messaging.Filters;
 using MassTransit;
 
 namespace API.Configurations;
@@ -23,6 +24,11 @@ public static class MessagingConfiguration
                     // Credenciais via IAM role do pod - sem necessidade de access key
                     // A role anexada ao node group do EKS já tem permissão
                 });
+
+                // Registrar filtros globais de correlação
+                cfg.UseConsumeFilter(typeof(ConsumeCorrelationIdFilter<>), context);
+                cfg.UseSendFilter(typeof(SendCorrelationIdFilter<>), context);
+                cfg.UsePublishFilter(typeof(PublishCorrelationIdFilter<>), context);
 
                 // Configurar endpoint para receber mensagens de resultado
                 cfg.ReceiveEndpoint("fase4-estoque-reducao-estoque-resultado", e =>

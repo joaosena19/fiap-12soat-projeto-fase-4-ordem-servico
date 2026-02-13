@@ -43,7 +43,7 @@ namespace Infrastructure.Monitoramento
             NR.NewRelic.RecordCustomEvent("SagaCompensacaoTimeout", atributos);
         }
 
-        public void RegistrarEstoqueConfirmado(Guid ordemServicoId, string statusAtual, Guid correlationId)
+        public void RegistrarEstoqueConfirmado(Guid ordemServicoId, string statusAtual, string correlationId)
         {
             var atributos = new Dictionary<string, object>
             {
@@ -56,7 +56,7 @@ namespace Infrastructure.Monitoramento
             NR.NewRelic.RecordCustomEvent("SagaEstoqueConfirmado", atributos);
         }
 
-        public void RegistrarCompensacaoSagaFalhaEstoque(Guid ordemServicoId, string motivo, Guid correlationId)
+        public void RegistrarCompensacaoSagaFalhaEstoque(Guid ordemServicoId, string motivo, string correlationId)
         {
             var atributos = new Dictionary<string, object>
             {
@@ -69,7 +69,7 @@ namespace Infrastructure.Monitoramento
             NR.NewRelic.RecordCustomEvent("SagaCompensacaoFalhaEstoque", atributos);
         }
 
-        public void RegistrarCompensacaoSagaFalhaCritica(Guid ordemServicoId, string erro, Guid correlationId)
+        public void RegistrarCompensacaoSagaFalhaCritica(Guid ordemServicoId, string erro, string correlationId)
         {
             var atributos = new Dictionary<string, object>
             {

@@ -20,16 +20,16 @@ namespace Application.Contracts.Monitoramento
         /// <summary>
         /// Registra confirmação de redução de estoque recebida pelo consumer
         /// </summary>
-        void RegistrarEstoqueConfirmado(Guid ordemServicoId, string statusAtual, Guid correlationId);
+        void RegistrarEstoqueConfirmado(Guid ordemServicoId, string statusAtual, string correlationId);
 
         /// <summary>
         /// Registra compensação de saga executada pelo consumer (falha do estoque)
         /// </summary>
-        void RegistrarCompensacaoSagaFalhaEstoque(Guid ordemServicoId, string motivo, Guid correlationId);
+        void RegistrarCompensacaoSagaFalhaEstoque(Guid ordemServicoId, string motivo, string correlationId);
 
         /// <summary>
         /// Registra falha crítica na compensação da saga
         /// </summary>
-        void RegistrarCompensacaoSagaFalhaCritica(Guid ordemServicoId, string erro, Guid correlationId);
+        void RegistrarCompensacaoSagaFalhaCritica(Guid ordemServicoId, string erro, string correlationId);
     }
 }

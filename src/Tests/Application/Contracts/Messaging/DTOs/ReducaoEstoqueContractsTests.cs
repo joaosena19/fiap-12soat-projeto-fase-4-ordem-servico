@@ -16,7 +16,7 @@ public class ReducaoEstoqueContractsTests
         // Arrange
         var solicitacao = new ReducaoEstoqueSolicitacao
         {
-            CorrelationId = Guid.NewGuid(),
+            CorrelationId = Guid.NewGuid().ToString(),
             OrdemServicoId = Guid.NewGuid(),
             Itens = new List<ItemReducao>
             {
@@ -70,7 +70,7 @@ public class ReducaoEstoqueContractsTests
 
         // Assert
         Assert.NotNull(solicitacao);
-        Assert.Equal(correlationId, solicitacao.CorrelationId);
+        Assert.Equal(correlationId.ToString(), solicitacao.CorrelationId);
         Assert.Equal(ordemServicoId, solicitacao.OrdemServicoId);
         Assert.Equal(2, solicitacao.Itens.Count);
         Assert.Equal(itemId1, solicitacao.Itens[0].ItemEstoqueId);
@@ -85,7 +85,7 @@ public class ReducaoEstoqueContractsTests
         // Arrange
         var resultado = new ReducaoEstoqueResultado
         {
-            CorrelationId = Guid.NewGuid(),
+            CorrelationId = Guid.NewGuid().ToString(),
             OrdemServicoId = Guid.NewGuid(),
             Sucesso = true,
             MotivoFalha = null
@@ -109,7 +109,7 @@ public class ReducaoEstoqueContractsTests
         // Arrange
         var resultado = new ReducaoEstoqueResultado
         {
-            CorrelationId = Guid.NewGuid(),
+            CorrelationId = Guid.NewGuid().ToString(),
             OrdemServicoId = Guid.NewGuid(),
             Sucesso = false,
             MotivoFalha = "estoque_insuficiente"
@@ -149,7 +149,7 @@ public class ReducaoEstoqueContractsTests
 
         // Assert
         Assert.NotNull(resultado);
-        Assert.Equal(correlationId, resultado.CorrelationId);
+        Assert.Equal(correlationId.ToString(), resultado.CorrelationId);
         Assert.Equal(ordemServicoId, resultado.OrdemServicoId);
         Assert.False(resultado.Sucesso);
         Assert.Equal("erro_interno", resultado.MotivoFalha);
@@ -184,7 +184,7 @@ public class ReducaoEstoqueContractsTests
         // Arrange
         var resultado = new ReducaoEstoqueResultado
         {
-            CorrelationId = Guid.NewGuid(),
+            CorrelationId = Guid.NewGuid().ToString(),
             OrdemServicoId = Guid.NewGuid(),
             Sucesso = false,
             MotivoFalha = motivoFalha
@@ -206,7 +206,7 @@ public class ReducaoEstoqueContractsTests
         // Arrange
         var solicitacao = new ReducaoEstoqueSolicitacao
         {
-            CorrelationId = Guid.NewGuid(),
+            CorrelationId = Guid.NewGuid().ToString(),
             OrdemServicoId = Guid.NewGuid(),
             Itens = new List<ItemReducao>()
         };

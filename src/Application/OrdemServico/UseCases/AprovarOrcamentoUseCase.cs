@@ -54,8 +54,8 @@ public class AprovarOrcamentoUseCase
                 await estoqueMessagePublisher.PublicarSolicitacaoReducaoAsync(solicitacao);
 
                 log.LogInformation(
-                    "Mensagem de redução de estoque publicada para Ordem Serviço {OsId}. CorrelationId: {CorrelationId}. Itens: {QtdItens}",
-                    ordemServico.Id, solicitacao.CorrelationId, solicitacao.Itens.Count);
+                    "Mensagem de redução de estoque publicada para Ordem Serviço {OsId}. Itens: {QtdItens}",
+                    ordemServico.Id, solicitacao.Itens.Count);
             }
             else
             {

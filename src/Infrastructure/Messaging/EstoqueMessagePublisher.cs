@@ -45,9 +45,8 @@ public class EstoqueMessagePublisher : IEstoqueMessagePublisher
 
         _logger
             .ComMensageria(NomeMensagemEnum.ReducaoEstoqueSolicitacao, TipoMensagemEnum.Publicacao)
-            .ComPropriedade("CorrelationId", solicitacao.CorrelationId)
             .ComPropriedade("OrdemServicoId", solicitacao.OrdemServicoId)
-            .LogInformation("Publicando solicitação de redução de estoque para OS {OrdemServicoId}. CorrelationId: {CorrelationId}. TTL: {TTL}s", solicitacao.OrdemServicoId, solicitacao.CorrelationId, MessageTtl.TotalSeconds);
+            .LogInformation("Publicando solicitação de redução de estoque para OS {OrdemServicoId}. TTL: {TTL}s", solicitacao.OrdemServicoId, MessageTtl.TotalSeconds);
 
         await _publishEndpoint.Publish(solicitacao, context =>
         {

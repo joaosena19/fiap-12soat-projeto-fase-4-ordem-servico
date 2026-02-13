@@ -25,7 +25,7 @@ public class EstoqueMessagePublisherTests
 
         var solicitacao = new ReducaoEstoqueSolicitacao
         {
-            CorrelationId = Guid.NewGuid(),
+            CorrelationId = Guid.NewGuid().ToString(),
             OrdemServicoId = Guid.NewGuid(),
             Itens = new List<ItemReducao>
             {
@@ -80,7 +80,7 @@ public class EstoqueMessagePublisherTests
 
         var solicitacao = new ReducaoEstoqueSolicitacao
         {
-            CorrelationId = correlationId,
+            CorrelationId = correlationId.ToString(),
             OrdemServicoId = ordemServicoId,
             Itens = new List<ItemReducao>
             {
@@ -106,7 +106,7 @@ public class EstoqueMessagePublisherTests
 
         // Assert
         Assert.NotNull(capturedMessage);
-        Assert.Equal(correlationId, capturedMessage.CorrelationId);
+        Assert.Equal(correlationId.ToString(), capturedMessage.CorrelationId);
         Assert.Equal(ordemServicoId, capturedMessage.OrdemServicoId);
         Assert.Equal(2, capturedMessage.Itens.Count);
         Assert.Equal(itemId1, capturedMessage.Itens[0].ItemEstoqueId);
@@ -166,7 +166,7 @@ public class EstoqueMessagePublisherTests
 
         var solicitacao = new ReducaoEstoqueSolicitacao
         {
-            CorrelationId = Guid.NewGuid(),
+            CorrelationId = Guid.NewGuid().ToString(),
             OrdemServicoId = Guid.NewGuid(),
             Itens = new List<ItemReducao>()
         };
@@ -189,7 +189,7 @@ public class EstoqueMessagePublisherTests
 
         var solicitacao = new ReducaoEstoqueSolicitacao
         {
-            CorrelationId = Guid.NewGuid(),
+            CorrelationId = Guid.NewGuid().ToString(),
             OrdemServicoId = Guid.NewGuid(),
             Itens = new List<ItemReducao>() // Lista vazia
         };

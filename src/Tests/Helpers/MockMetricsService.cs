@@ -23,17 +23,17 @@ public class MockMetricsService : IMetricsService
         // Mock não faz nada - apenas para testes não quebrarem
     }
 
-    public void RegistrarEstoqueConfirmado(Guid ordemServicoId, string statusAtual, Guid correlationId)
+    public void RegistrarEstoqueConfirmado(Guid ordemServicoId, string statusAtual, string correlationId)
     {
         // Mock não faz nada - apenas para testes não quebrarem
     }
 
-    public void RegistrarCompensacaoSagaFalhaEstoque(Guid ordemServicoId, string motivo, Guid correlationId)
+    public void RegistrarCompensacaoSagaFalhaEstoque(Guid ordemServicoId, string motivo, string correlationId)
     {
         // Mock não faz nada - apenas para testes não quebrarem
     }
 
-    public void RegistrarCompensacaoSagaFalhaCritica(Guid ordemServicoId, string erro, Guid correlationId)
+    public void RegistrarCompensacaoSagaFalhaCritica(Guid ordemServicoId, string erro, string correlationId)
     {
         // Mock não faz nada - apenas para testes não quebrarem
     }
