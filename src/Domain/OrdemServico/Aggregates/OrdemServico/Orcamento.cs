@@ -29,5 +29,14 @@ namespace Domain.OrdemServico.Aggregates.OrdemServico
 
             return new Orcamento(Uuid.NewSequential(), new DataCriacao(DateTime.UtcNow), new PrecoOrcamento(total));
         }
+
+        /// <summary>
+        /// Reidrata o Orcamento a partir de dados do banco.
+        /// NÃO deve ser usado fora do contexto de buscar do banco.
+        /// </summary>
+        public static Orcamento Reidratar(Guid id, DateTime dataCriacao, decimal preco)
+        {
+            return new Orcamento(id, new DataCriacao(dataCriacao), new PrecoOrcamento(preco));
+        }
     }
 }

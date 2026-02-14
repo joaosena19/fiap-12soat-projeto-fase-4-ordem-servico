@@ -39,7 +39,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("Jwt:Issuer", JwtTestConstants.Issuer);
         builder.UseSetting("Jwt:Audience", JwtTestConstants.Audience);
         builder.UseSetting("Jwt:ExpiresInMinutes", "60");
-        builder.UseSetting("HmacSecret", TestHmacUtils.TestHmacSecret);
+        builder.UseSetting("Webhook:HmacSecret", TestHmacUtils.TestHmacSecret);
         builder.UseSetting("ExternalServices:CadastroBaseUrl", "http://localhost:5000");
         builder.UseSetting("ExternalServices:EstoqueBaseUrl", "http://localhost:5001");
         
@@ -59,7 +59,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
                 ["Jwt:ExpiresInMinutes"] = "60",
                 
                 // HMAC settings para webhooks
-                ["HmacSecret"] = TestHmacUtils.TestHmacSecret,
+                ["Webhook:HmacSecret"] = TestHmacUtils.TestHmacSecret,
                 
                 // Desabilitar logs verbosos em testes
                 ["Logging:LogLevel:Default"] = "Warning",

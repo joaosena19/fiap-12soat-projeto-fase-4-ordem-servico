@@ -42,6 +42,22 @@ namespace Domain.OrdemServico.Aggregates.OrdemServico
             );
         }
 
+        /// <summary>
+        /// Reidrata o ItemIncluido a partir de dados do banco.
+        /// NÃO deve ser usado fora do contexto de buscar do banco.
+        /// </summary>
+        public static ItemIncluido Reidratar(Guid id, Guid itemEstoqueOriginalId, string nome, decimal precoUnitario, int quantidade, TipoItemIncluidoEnum tipoItemIncluido)
+        {
+            return new ItemIncluido(
+                id,
+                itemEstoqueOriginalId,
+                new PrecoItem(precoUnitario),
+                new Nome(nome), 
+                new Quantidade(quantidade), 
+                new TipoItemIncluido(tipoItemIncluido)
+            );
+        }
+
         public void AtualizarQuantidade(int quantidade)
         {
             Quantidade = new Quantidade(quantidade);

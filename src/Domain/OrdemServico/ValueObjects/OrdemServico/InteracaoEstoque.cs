@@ -45,6 +45,23 @@ namespace Domain.OrdemServico.ValueObjects.OrdemServico
         /// </summary>
         public InteracaoEstoque MarcarFalha() => this with { EstoqueRemovidoComSucesso = false };
 
+        /// <summary>
+        /// Reidrata o InteracaoEstoque a partir de dados do banco.
+        /// NÃO deve ser usado fora do contexto de buscar do banco.
+        /// </summary>
+        public static InteracaoEstoque Reidratar(bool deveRemoverEstoque, bool? estoqueRemovidoComSucesso)
+        {
+            if (!deveRemoverEstoque)
+                return SemInteracao();
+            
+            if (!estoqueRemovidoComSucesso.HasValue)
+                return AguardandoReducao();
+            
+            return estoqueRemovidoComSucesso.Value 
+                ? AguardandoReducao().ConfirmarReducao() 
+                : AguardandoReducao().MarcarFalha();
+        }
+
         // Propriedades computadas para facilitar decisões
 
         /// <summary>

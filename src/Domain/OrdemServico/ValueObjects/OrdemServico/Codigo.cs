@@ -32,6 +32,15 @@ namespace Domain.OrdemServico.ValueObjects.OrdemServico
             return new Codigo(codigo);
         }
 
+        /// <summary>
+        /// Reidrata o Codigo a partir de dados do banco SEM VALIDAÇÃO.
+        /// NÃO deve ser usado fora do contexto de buscar do banco.
+        /// </summary>
+        public static Codigo Reidratar(string codigo)
+        {
+            return new Codigo { _valor = codigo };
+        }
+
         public string Valor => _valor;
 
     }

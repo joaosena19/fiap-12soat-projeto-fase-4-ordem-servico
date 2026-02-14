@@ -40,6 +40,21 @@ namespace Domain.OrdemServico.ValueObjects.OrdemServico
         public DateTime? DataFinalizacao => _dataFinalizacao;
         public DateTime? DataEntrega => _dataEntrega;
 
+        /// <summary>
+        /// Reidrata o HistoricoTemporal a partir de dados do banco SEM VALIDAÇÃO de ordem cronológica.
+        /// NÃO deve ser usado fora do contexto de buscar do banco.
+        /// </summary>
+        public static HistoricoTemporal Reidratar(DateTime dataCriacao, DateTime? dataInicioExecucao, DateTime? dataFinalizacao, DateTime? dataEntrega)
+        {
+            return new HistoricoTemporal
+            {
+                _dataCriacao = dataCriacao,
+                _dataInicioExecucao = dataInicioExecucao,
+                _dataFinalizacao = dataFinalizacao,
+                _dataEntrega = dataEntrega
+            };
+        }
+
         public HistoricoTemporal MarcarDataInicioExecucao(DateTime? data = null)
             => new(_dataCriacao, data ?? DateTime.UtcNow, _dataFinalizacao, _dataEntrega);
 

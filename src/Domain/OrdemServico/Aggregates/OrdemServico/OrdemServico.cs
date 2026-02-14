@@ -51,6 +51,28 @@ namespace Domain.OrdemServico.Aggregates.OrdemServico
             );
         }
 
+        /// <summary>
+        /// Reidrata a OrdemServico a partir de dados do banco.
+        /// NÃO deve ser usado fora do contexto de buscar do banco.
+        /// </summary>
+        public static OrdemServico Reidratar(Guid id, Guid veiculoId, string codigo, StatusOrdemServicoEnum status, DateTime dataCriacao, DateTime? dataInicioExecucao, DateTime? dataFinalizacao, DateTime? dataEntrega, bool deveRemoverEstoque, bool? estoqueRemovidoComSucesso, List<ServicoIncluido> servicosIncluidos, List<ItemIncluido> itensIncluidos, Orcamento? orcamento)
+        {
+            var ordemServico = new OrdemServico
+            {
+                Id = id,
+                VeiculoId = veiculoId,
+                Codigo = Codigo.Reidratar(codigo),
+                Status = new Status(status),
+                Historico = HistoricoTemporal.Reidratar(dataCriacao, dataInicioExecucao, dataFinalizacao, dataEntrega),
+                InteracaoEstoque = InteracaoEstoque.Reidratar(deveRemoverEstoque, estoqueRemovidoComSucesso),
+                Orcamento = orcamento,
+                _servicosIncluidos = servicosIncluidos,
+                _itensIncluidos = itensIncluidos
+            };
+
+            return ordemServico;
+        }
+
         public bool PermiteAlterarServicosItens()
         {
             var statusPermitidos = new List<StatusOrdemServicoEnum>() { StatusOrdemServicoEnum.Recebida, StatusOrdemServicoEnum.EmDiagnostico };

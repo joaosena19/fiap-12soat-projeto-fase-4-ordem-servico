@@ -1,9 +1,4 @@
 using Domain.OrdemServico.Enums;
-using Domain.OrdemServico.ValueObjects.ItemIncluido;
-using Domain.OrdemServico.ValueObjects.Orcamento;
-using Domain.OrdemServico.ValueObjects.OrdemServico;
-using Domain.OrdemServico.ValueObjects.ServicoIncluido;
-using System.Reflection;
 using OrdemServicoAggregate = Domain.OrdemServico.Aggregates.OrdemServico.OrdemServico;
 using ItemIncluidoEntity = Domain.OrdemServico.Aggregates.OrdemServico.ItemIncluido;
 using ServicoIncluidoEntity = Domain.OrdemServico.Aggregates.OrdemServico.ServicoIncluido;
@@ -63,106 +58,41 @@ namespace Infrastructure.Repositories.OrdemServico
 
         public static OrdemServicoAggregate ToAggregate(OrdemServicoDocument document)
         {
-            // Criar instância via reflection (construtor privado)
-            var aggregate = (OrdemServicoAggregate)Activator.CreateInstance(typeof(OrdemServicoAggregate), true)!;
-
-            // Definir Id (private init)
-            SetProperty(aggregate, "Id", document.Id);
-
-            // Definir VeiculoId
-            SetProperty(aggregate, "VeiculoId", document.VeiculoId);
-
-            // Definir Codigo
-            SetProperty(aggregate, "Codigo", new Codigo(document.Codigo));
-
-            // Definir Status
             var statusEnum = Enum.Parse<StatusOrdemServicoEnum>(document.Status);
-            SetProperty(aggregate, "Status", new Status(statusEnum));
 
-            // Definir Historico
-            var historico = new HistoricoTemporal(
+            var servicos = document.ServicosIncluidos
+                .Select(s => ServicoIncluidoEntity.Reidratar(s.Id, s.ServicoOriginalId, s.Nome, s.Preco))
+                .ToList();
+
+            var itens = document.ItensIncluidos
+                .Select(i => ItemIncluidoEntity.Reidratar(
+                    i.Id,
+                    i.ItemEstoqueOriginalId,
+                    i.Nome,
+                    i.Preco,
+                    i.Quantidade,
+                    Enum.Parse<TipoItemIncluidoEnum>(i.TipoItemIncluido)))
+                .ToList();
+
+            var orcamento = document.Orcamento != null
+                ? OrcamentoEntity.Reidratar(document.Orcamento.Id, document.Orcamento.DataCriacao, document.Orcamento.Preco)
+                : null;
+
+            return OrdemServicoAggregate.Reidratar(
+                document.Id,
+                document.VeiculoId,
+                document.Codigo,
+                statusEnum,
                 document.Historico.DataCriacao,
                 document.Historico.DataInicioExecucao,
                 document.Historico.DataFinalizacao,
-                document.Historico.DataEntrega
+                document.Historico.DataEntrega,
+                document.InteracaoEstoque.DeveRemoverEstoque,
+                document.InteracaoEstoque.EstoqueRemovidoComSucesso,
+                servicos,
+                itens,
+                orcamento
             );
-            SetProperty(aggregate, "Historico", historico);
-
-            // Definir InteracaoEstoque
-            var interacaoEstoque = document.InteracaoEstoque.DeveRemoverEstoque
-                ? (document.InteracaoEstoque.EstoqueRemovidoComSucesso.HasValue
-                    ? (document.InteracaoEstoque.EstoqueRemovidoComSucesso.Value
-                        ? InteracaoEstoque.AguardandoReducao().ConfirmarReducao()
-                        : InteracaoEstoque.AguardandoReducao().MarcarFalha())
-                    : InteracaoEstoque.AguardandoReducao())
-                : InteracaoEstoque.SemInteracao();
-            SetProperty(aggregate, "InteracaoEstoque", interacaoEstoque);
-
-            // Definir ServicosIncluidos (lista privada)
-            var servicosField = typeof(OrdemServicoAggregate).GetField("_servicosIncluidos", BindingFlags.NonPublic | BindingFlags.Instance);
-            var servicos = document.ServicosIncluidos.Select(s => CreateServicoIncluido(s)).ToList();
-            servicosField!.SetValue(aggregate, servicos);
-
-            // Definir ItensIncluidos (lista privada)
-            var itensField = typeof(OrdemServicoAggregate).GetField("_itensIncluidos", BindingFlags.NonPublic | BindingFlags.Instance);
-            var itens = document.ItensIncluidos.Select(i => CreateItemIncluido(i)).ToList();
-            itensField!.SetValue(aggregate, itens);
-
-            // Definir Orcamento
-            if (document.Orcamento != null)
-            {
-                var orcamento = CreateOrcamento(document.Orcamento);
-                SetProperty(aggregate, "Orcamento", orcamento);
-            }
-
-            return aggregate;
-        }
-
-        private static ServicoIncluidoEntity CreateServicoIncluido(ServicoIncluidoDocument doc)
-        {
-            var servico = (ServicoIncluidoEntity)Activator.CreateInstance(typeof(ServicoIncluidoEntity), true)!;
-            SetProperty(servico, "Id", doc.Id);
-            SetProperty(servico, "ServicoOriginalId", doc.ServicoOriginalId);
-            SetProperty(servico, "Nome", new NomeServico(doc.Nome));
-            SetProperty(servico, "Preco", new PrecoServico(doc.Preco));
-            return servico;
-        }
-
-        private static ItemIncluidoEntity CreateItemIncluido(ItemIncluidoDocument doc)
-        {
-            var item = (ItemIncluidoEntity)Activator.CreateInstance(typeof(ItemIncluidoEntity), true)!;
-            SetProperty(item, "Id", doc.Id);
-            SetProperty(item, "ItemEstoqueOriginalId", doc.ItemEstoqueOriginalId);
-            SetProperty(item, "Nome", new Nome(doc.Nome));
-            SetProperty(item, "Quantidade", new Quantidade(doc.Quantidade));
-            var tipoEnum = Enum.Parse<TipoItemIncluidoEnum>(doc.TipoItemIncluido);
-            SetProperty(item, "TipoItemIncluido", new TipoItemIncluido(tipoEnum));
-            SetProperty(item, "Preco", new PrecoItem(doc.Preco));
-            return item;
-        }
-
-        private static OrcamentoEntity CreateOrcamento(OrcamentoDocument doc)
-        {
-            var orcamento = (OrcamentoEntity)Activator.CreateInstance(typeof(OrcamentoEntity), true)!;
-            SetProperty(orcamento, "Id", doc.Id);
-            SetProperty(orcamento, "DataCriacao", new DataCriacao(doc.DataCriacao));
-            SetProperty(orcamento, "Preco", new PrecoOrcamento(doc.Preco));
-            return orcamento;
-        }
-
-        private static void SetProperty<T>(object obj, string propertyName, T value)
-        {
-            var property = obj.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            if (property != null && property.CanWrite)
-            {
-                property.SetValue(obj, value);
-            }
-            else
-            {
-                // Tentar setar via backing field para propriedades init
-                var field = obj.GetType().GetField($"<{propertyName}>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance);
-                field?.SetValue(obj, value);
-            }
         }
     }
 }

@@ -27,6 +27,15 @@ namespace Domain.OrdemServico.Aggregates.OrdemServico
         {
             return new ServicoIncluido(Uuid.NewSequential(), servicoOriginalId, new NomeServico(nome), new PrecoServico(preco));
         }
+
+        /// <summary>
+        /// Reidrata o ServicoIncluido a partir de dados do banco.
+        /// NÃO deve ser usado fora do contexto de buscar do banco.
+        /// </summary>
+        public static ServicoIncluido Reidratar(Guid id, Guid servicoOriginalId, string nome, decimal preco)
+        {
+            return new ServicoIncluido(id, servicoOriginalId, new NomeServico(nome), new PrecoServico(preco));
+        }
     }
 
 }
