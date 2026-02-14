@@ -15,6 +15,9 @@ namespace API.Configurations
         /// <returns>Coleção de serviços configurada</returns>
         public static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration configuration)
         {
+            // Configurar mapeamentos e convenções do MongoDB
+            MongoDbMappingConfiguration.Configure();
+
             // Configura as opções do MongoDB a partir da seção de configuração
             services.Configure<MongoDbSettings>(configuration.GetSection("MongoDB"));
 

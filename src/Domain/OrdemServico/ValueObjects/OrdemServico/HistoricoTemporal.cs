@@ -7,10 +7,10 @@ namespace Domain.OrdemServico.ValueObjects.OrdemServico
     [ValueObject]
     public record HistoricoTemporal
     {
-        private readonly DateTime _dataCriacao;
-        private readonly DateTime? _dataInicioExecucao;
-        private readonly DateTime? _dataFinalizacao;
-        private readonly DateTime? _dataEntrega;
+        private DateTime _dataCriacao;
+        private DateTime? _dataInicioExecucao;
+        private DateTime? _dataFinalizacao;
+        private DateTime? _dataEntrega;
 
         // Construtor sem parâmetros para o EF Core
         private HistoricoTemporal() { }

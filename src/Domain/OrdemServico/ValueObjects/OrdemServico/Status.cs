@@ -8,7 +8,7 @@ namespace Domain.OrdemServico.ValueObjects.OrdemServico
     [ValueObject]
     public record Status
     {
-        private readonly StatusOrdemServicoEnum _valor;
+        private StatusOrdemServicoEnum _valor;
 
         // Construtor sem parâmetro para o EF Core
         private Status() { }

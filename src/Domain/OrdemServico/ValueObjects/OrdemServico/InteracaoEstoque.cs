@@ -51,12 +51,12 @@ namespace Domain.OrdemServico.ValueObjects.OrdemServico
         /// Indica se a ordem está aguardando resposta do Estoque.
         /// Verdadeiro quando DeveRemoverEstoque == true E EstoqueRemovidoComSucesso == null.
         /// </summary>
-        public bool EstaAguardandoEstoque => DeveRemoverEstoque && EstoqueRemovidoComSucesso == null;
+        public bool EstaAguardandoRemocaoEstoque => DeveRemoverEstoque && EstoqueRemovidoComSucesso == null;
 
         /// <summary>
         /// Indica se o estoque foi confirmado (ou se não era necessário).
         /// Verdadeiro quando: (a) NÃO precisa remover estoque, OU (b) redução foi confirmada com sucesso.
         /// </summary>
-        public bool EstoqueFoiConfirmado => !DeveRemoverEstoque || EstoqueRemovidoComSucesso == true;
+        public bool SemPendenciasEstoque => !DeveRemoverEstoque || EstoqueRemovidoComSucesso == true;
     }
 }

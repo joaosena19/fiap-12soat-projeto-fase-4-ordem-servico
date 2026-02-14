@@ -19,17 +19,7 @@ namespace Application.OrdemServico.UseCases;
 /// </summary>
 public class CriarOrdemServicoCompletaUseCase
 {
-    public async Task ExecutarAsync(
-        Ator ator,
-        CriarOrdemServicoCompletaDto dto,
-        IOrdemServicoGateway ordemServicoGateway,
-        IClienteExternalService clienteExternalService,
-        IVeiculoExternalService veiculoExternalService,
-        IServicoExternalService servicoExternalService,
-        IEstoqueExternalService estoqueExternalService,
-        ICriarOrdemServicoCompletaPresenter presenter,
-        IAppLogger logger,
-        IMetricsService metricsService)
+    public async Task ExecutarAsync(Ator ator, CriarOrdemServicoCompletaDto dto, IOrdemServicoGateway ordemServicoGateway, IClienteExternalService clienteExternalService, IVeiculoExternalService veiculoExternalService, IServicoExternalService servicoExternalService, IEstoqueExternalService estoqueExternalService, ICriarOrdemServicoCompletaPresenter presenter, IAppLogger logger, IMetricsService metricsService)
     {
         try
         {

@@ -1066,7 +1066,7 @@ namespace Tests.Domain.OrdemServico
             // Assert
             ordemServico.Status.Valor.Should().Be(StatusOrdemServicoEnum.EmExecucao);
             ordemServico.InteracaoEstoque.DeveRemoverEstoque.Should().BeTrue();
-            ordemServico.InteracaoEstoque.EstoqueFoiConfirmado.Should().BeFalse();
+            ordemServico.InteracaoEstoque.SemPendenciasEstoque.Should().BeFalse();
             ordemServico.Historico.DataInicioExecucao.Should().NotBeNull();
         }
 
@@ -1087,7 +1087,7 @@ namespace Tests.Domain.OrdemServico
             // Assert
             ordemServico.Status.Valor.Should().Be(StatusOrdemServicoEnum.EmExecucao);
             ordemServico.InteracaoEstoque.DeveRemoverEstoque.Should().BeFalse();
-            ordemServico.InteracaoEstoque.EstoqueFoiConfirmado.Should().BeTrue(); // SemInteracao considera como já confirmado
+            ordemServico.InteracaoEstoque.SemPendenciasEstoque.Should().BeTrue(); // SemInteracao considera como já confirmado
             ordemServico.Historico.DataInicioExecucao.Should().NotBeNull();
         }
 

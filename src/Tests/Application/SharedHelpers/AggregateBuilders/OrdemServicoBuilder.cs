@@ -179,6 +179,8 @@ namespace Tests.Application.SharedHelpers.AggregateBuilders
                         ordemServico.GerarOrcamento();
                         ordemServico.AprovarOrcamento();
                         ordemServico.IniciarExecucao();
+                        if (ordemServico.ItensIncluidos.Any())
+                            ordemServico.ConfirmarReducaoEstoque();
                         break;
                     case StatusOrdemServicoEnum.Finalizada:
                         ordemServico.IniciarDiagnostico();
@@ -190,6 +192,8 @@ namespace Tests.Application.SharedHelpers.AggregateBuilders
                         ordemServico.GerarOrcamento();
                         ordemServico.AprovarOrcamento();
                         ordemServico.IniciarExecucao();
+                        if (ordemServico.ItensIncluidos.Any())
+                            ordemServico.ConfirmarReducaoEstoque();
                         ordemServico.FinalizarExecucao();
                         break;
                     case StatusOrdemServicoEnum.Entregue:
@@ -202,6 +206,8 @@ namespace Tests.Application.SharedHelpers.AggregateBuilders
                         ordemServico.GerarOrcamento();
                         ordemServico.AprovarOrcamento();
                         ordemServico.IniciarExecucao();
+                        if (ordemServico.ItensIncluidos.Any())
+                            ordemServico.ConfirmarReducaoEstoque();
                         ordemServico.FinalizarExecucao();
                         ordemServico.Entregar();
                         break;

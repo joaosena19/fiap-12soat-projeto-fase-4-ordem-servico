@@ -18,8 +18,8 @@ namespace Domain.OrdemServico.Aggregates.OrdemServico
         public InteracaoEstoque InteracaoEstoque { get; private set; } = InteracaoEstoque.SemInteracao();
 
 
-        private readonly List<ServicoIncluido> _servicosIncluidos = new();
-        private readonly List<ItemIncluido> _itensIncluidos = new();
+        private List<ServicoIncluido> _servicosIncluidos = new();
+        private List<ItemIncluido> _itensIncluidos = new();
         public IReadOnlyCollection<ServicoIncluido> ServicosIncluidos => _servicosIncluidos.AsReadOnly();
         public IReadOnlyCollection<ItemIncluido> ItensIncluidos => _itensIncluidos.AsReadOnly();
 
@@ -181,10 +181,11 @@ namespace Domain.OrdemServico.Aggregates.OrdemServico
             if (Status.Valor != StatusOrdemServicoEnum.Aprovada)
                 throw new DomainException($"Só é possível iniciar execução para uma ordem de serviço com o status '{StatusOrdemServicoEnum.Aprovada}'", ErrorType.DomainRuleBroken);
 
-            // Seta InteracaoEstoque baseado na presença de itens
-            InteracaoEstoque = ItensIncluidos.Any()
-                ? InteracaoEstoque.AguardandoReducao()
-                : InteracaoEstoque.SemInteracao();
+            // Garantia para não marcar novamente em cenário de Retry, onde IniciarExecucao pode ser chamado mais de uma vez antes de receber a confirmação do estoque
+            var deveAguardarReducaoEstoque = ItensIncluidos.Any() && InteracaoEstoque.EstoqueRemovidoComSucesso != true;
+            if (deveAguardarReducaoEstoque)
+                InteracaoEstoque = InteracaoEstoque.AguardandoReducao();
+            else InteracaoEstoque = InteracaoEstoque.SemInteracao();
 
             Status = new Status(StatusOrdemServicoEnum.EmExecucao);
             Historico = Historico.MarcarDataInicioExecucao();
@@ -195,7 +196,7 @@ namespace Domain.OrdemServico.Aggregates.OrdemServico
             if (Status.Valor != StatusOrdemServicoEnum.EmExecucao)
                 throw new DomainException($"Só é possível finalizar execução para uma ordem de serviço com o status '{StatusOrdemServicoEnum.EmExecucao}'", ErrorType.DomainRuleBroken);
 
-            if (!InteracaoEstoque.EstoqueFoiConfirmado)
+            if (!InteracaoEstoque.SemPendenciasEstoque)
                 throw new DomainException("Não é possível finalizar execução enquanto aguardando confirmação do estoque.", ErrorType.DomainRuleBroken);
 
             Status = new Status(StatusOrdemServicoEnum.Finalizada);

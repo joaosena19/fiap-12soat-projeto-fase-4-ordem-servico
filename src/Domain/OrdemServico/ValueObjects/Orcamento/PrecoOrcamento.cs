@@ -7,7 +7,7 @@ namespace Domain.OrdemServico.ValueObjects.Orcamento
     [ValueObject]
     public record PrecoOrcamento
     {
-        private readonly decimal _valor;
+        private decimal _valor;
 
         // Construtor sem parâmetro para EF Core
         private PrecoOrcamento() { }

@@ -17,8 +17,8 @@ namespace Tests.Domain.OrdemServico
             // Assert
             interacao.DeveRemoverEstoque.Should().BeFalse();
             interacao.EstoqueRemovidoComSucesso.Should().BeNull();
-            interacao.EstaAguardandoEstoque.Should().BeFalse();
-            interacao.EstoqueFoiConfirmado.Should().BeTrue(); // Sem interação = já confirmado
+            interacao.EstaAguardandoRemocaoEstoque.Should().BeFalse();
+            interacao.SemPendenciasEstoque.Should().BeTrue(); // Sem interação = já confirmado
         }
 
         [Fact(DisplayName = "AguardandoReducao deve criar InteracaoEstoque aguardando resposta do Estoque")]
@@ -31,8 +31,8 @@ namespace Tests.Domain.OrdemServico
             // Assert
             interacao.DeveRemoverEstoque.Should().BeTrue();
             interacao.EstoqueRemovidoComSucesso.Should().BeNull();
-            interacao.EstaAguardandoEstoque.Should().BeTrue();
-            interacao.EstoqueFoiConfirmado.Should().BeFalse(); // Ainda aguardando
+            interacao.EstaAguardandoRemocaoEstoque.Should().BeTrue();
+            interacao.SemPendenciasEstoque.Should().BeFalse(); // Ainda aguardando
         }
 
         #endregion
@@ -52,8 +52,8 @@ namespace Tests.Domain.OrdemServico
             // Assert
             interacaoConfirmada.DeveRemoverEstoque.Should().BeTrue();
             interacaoConfirmada.EstoqueRemovidoComSucesso.Should().BeTrue();
-            interacaoConfirmada.EstaAguardandoEstoque.Should().BeFalse();
-            interacaoConfirmada.EstoqueFoiConfirmado.Should().BeTrue();
+            interacaoConfirmada.EstaAguardandoRemocaoEstoque.Should().BeFalse();
+            interacaoConfirmada.SemPendenciasEstoque.Should().BeTrue();
         }
 
         [Fact(DisplayName = "MarcarFalha deve marcar EstoqueRemovidoComSucesso como false")]
@@ -69,15 +69,15 @@ namespace Tests.Domain.OrdemServico
             // Assert
             interacaoFalhada.DeveRemoverEstoque.Should().BeTrue();
             interacaoFalhada.EstoqueRemovidoComSucesso.Should().BeFalse();
-            interacaoFalhada.EstaAguardandoEstoque.Should().BeFalse();
-            interacaoFalhada.EstoqueFoiConfirmado.Should().BeFalse();
+            interacaoFalhada.EstaAguardandoRemocaoEstoque.Should().BeFalse();
+            interacaoFalhada.SemPendenciasEstoque.Should().BeFalse();
         }
 
         #endregion
 
         #region Testes Propriedades Computadas
 
-        [Fact(DisplayName = "EstaAguardandoEstoque deve retornar true apenas quando aguardando")]
+        [Fact(DisplayName = "EstaAguardandoRemocaoEstoque deve retornar true apenas quando aguardando")]
         [Trait("ValueObject", "InteracaoEstoque")]
         public void EstaAguardandoEstoque_ApenasSemInteracao_RetornaTrue()
         {
@@ -88,13 +88,13 @@ namespace Tests.Domain.OrdemServico
             var falhado = aguardando.MarcarFalha();
 
             // Assert
-            semInteracao.EstaAguardandoEstoque.Should().BeFalse("não precisa remover estoque");
-            aguardando.EstaAguardandoEstoque.Should().BeTrue("está aguardando resposta");
-            confirmado.EstaAguardandoEstoque.Should().BeFalse("já foi confirmado");
-            falhado.EstaAguardandoEstoque.Should().BeFalse("já foi marcado como falha");
+            semInteracao.EstaAguardandoRemocaoEstoque.Should().BeFalse("não precisa remover estoque");
+            aguardando.EstaAguardandoRemocaoEstoque.Should().BeTrue("está aguardando resposta");
+            confirmado.EstaAguardandoRemocaoEstoque.Should().BeFalse("já foi confirmado");
+            falhado.EstaAguardandoRemocaoEstoque.Should().BeFalse("já foi marcado como falha");
         }
 
-        [Fact(DisplayName = "EstoqueFoiConfirmado deve retornar true quando não precisa remover ou quando confirmado")]
+        [Fact(DisplayName = "SemPendenciasEstoque deve retornar true quando não precisa remover ou quando confirmado")]
         [Trait("ValueObject", "InteracaoEstoque")]
         public void EstoqueFoiConfirmado_SemInteracaoOuConfirmado_RetornaTrue()
         {
@@ -105,10 +105,10 @@ namespace Tests.Domain.OrdemServico
             var falhado = aguardando.MarcarFalha();
 
             // Assert
-            semInteracao.EstoqueFoiConfirmado.Should().BeTrue("não precisa remover estoque");
-            aguardando.EstoqueFoiConfirmado.Should().BeFalse("ainda aguardando");
-            confirmado.EstoqueFoiConfirmado.Should().BeTrue("foi confirmado com sucesso");
-            falhado.EstoqueFoiConfirmado.Should().BeFalse("falhou ou foi compensado");
+            semInteracao.SemPendenciasEstoque.Should().BeTrue("não precisa remover estoque");
+            aguardando.SemPendenciasEstoque.Should().BeFalse("ainda aguardando");
+            confirmado.SemPendenciasEstoque.Should().BeTrue("foi confirmado com sucesso");
+            falhado.SemPendenciasEstoque.Should().BeFalse("falhou ou foi compensado");
         }
 
         #endregion

@@ -2,6 +2,7 @@ using Domain.OrdemServico.Aggregates.OrdemServico;
 using Domain.OrdemServico.Enums;
 using FluentAssertions;
 using Infrastructure.Database;
+using Infrastructure.Repositories.OrdemServico;
 using MongoDB.Driver;
 using Moq;
 using Shared.Seed;
@@ -16,18 +17,18 @@ namespace Tests.Other.DataSeed
         public async Task SeedOrdensServicoAsync_Deve_PopularOrdensServico_Quando_ColecaoVazia()
         {
             // Arrange
-            var mockCollection = new Mock<IMongoCollection<OrdemServico>>();
-            var capturedOrdens = new List<OrdemServico>();
+            var mockCollection = new Mock<IMongoCollection<OrdemServicoDocument>>();
+            var capturedDocuments = new List<OrdemServicoDocument>();
 
             mockCollection
                 .Setup(c => c.EstimatedDocumentCountAsync(default, default))
                 .ReturnsAsync(0);
 
             mockCollection
-                .Setup(c => c.InsertManyAsync(It.IsAny<IEnumerable<OrdemServico>>(), null, default))
-                .Callback<IEnumerable<OrdemServico>, InsertManyOptions, CancellationToken>((ordens, opts, ct) =>
+                .Setup(c => c.InsertManyAsync(It.IsAny<IEnumerable<OrdemServicoDocument>>(), null, default))
+                .Callback<IEnumerable<OrdemServicoDocument>, InsertManyOptions, CancellationToken>((documents, opts, ct) =>
                 {
-                    capturedOrdens.AddRange(ordens);
+                    capturedDocuments.AddRange(documents);
                 })
                 .Returns(Task.CompletedTask);
 
@@ -35,7 +36,10 @@ namespace Tests.Other.DataSeed
             await SeedData.SeedOrdensServicoAsync(mockCollection.Object);
 
             // Assert
-            capturedOrdens.Should().HaveCount(3);
+            capturedDocuments.Should().HaveCount(3);
+
+            // Converter documents de volta para aggregates para verificação
+            var capturedOrdens = capturedDocuments.Select(OrdemServicoMapper.ToAggregate).ToList();
 
             // Verifica cenário 1: Cancelada
             var cancelada = capturedOrdens.FirstOrDefault(o => o.VeiculoId == SeedIds.Veiculos.Abc1234);
@@ -63,7 +67,7 @@ namespace Tests.Other.DataSeed
         public async Task SeedOrdensServicoAsync_NaoDevePopular_Quando_ColecaoJaTiverDados()
         {
             // Arrange
-            var mockCollection = new Mock<IMongoCollection<OrdemServico>>();
+            var mockCollection = new Mock<IMongoCollection<OrdemServicoDocument>>();
 
             mockCollection
                 .Setup(c => c.EstimatedDocumentCountAsync(default, default))
@@ -74,7 +78,7 @@ namespace Tests.Other.DataSeed
 
             // Assert
             mockCollection.Verify(
-                c => c.InsertManyAsync(It.IsAny<IEnumerable<OrdemServico>>(), null, default),
+                c => c.InsertManyAsync(It.IsAny<IEnumerable<OrdemServicoDocument>>(), null, default),
                 Times.Never,
                 "InsertManyAsync não deve ser chamado quando a coleção já tem dados");
         }
@@ -85,18 +89,18 @@ namespace Tests.Other.DataSeed
         public async Task SeedOrdensServicoAsync_Deve_UtilizarIdsDeterministicos()
         {
             // Arrange
-            var mockCollection = new Mock<IMongoCollection<OrdemServico>>();
-            var capturedOrdens = new List<OrdemServico>();
+            var mockCollection = new Mock<IMongoCollection<OrdemServicoDocument>>();
+            var capturedDocuments = new List<OrdemServicoDocument>();
 
             mockCollection
                 .Setup(c => c.EstimatedDocumentCountAsync(default, default))
                 .ReturnsAsync(0);
 
             mockCollection
-                .Setup(c => c.InsertManyAsync(It.IsAny<IEnumerable<OrdemServico>>(), null, default))
-                .Callback<IEnumerable<OrdemServico>, InsertManyOptions, CancellationToken>((ordens, opts, ct) =>
+                .Setup(c => c.InsertManyAsync(It.IsAny<IEnumerable<OrdemServicoDocument>>(), null, default))
+                .Callback<IEnumerable<OrdemServicoDocument>, InsertManyOptions, CancellationToken>((documents, opts, ct) =>
                 {
-                    capturedOrdens.AddRange(ordens);
+                    capturedDocuments.AddRange(documents);
                 })
                 .Returns(Task.CompletedTask);
 
@@ -104,6 +108,9 @@ namespace Tests.Other.DataSeed
             await SeedData.SeedOrdensServicoAsync(mockCollection.Object);
 
             // Assert - Verifica que os IDs de veículos são os esperados
+            // Converter documents de volta para aggregates para verificação
+            var capturedOrdens = capturedDocuments.Select(OrdemServicoMapper.ToAggregate).ToList();
+            
             capturedOrdens.Select(o => o.VeiculoId).Should().Contain(SeedIds.Veiculos.Abc1234);
             capturedOrdens.Select(o => o.VeiculoId).Should().Contain(SeedIds.Veiculos.Xyz5678);
             capturedOrdens.Select(o => o.VeiculoId).Should().Contain(SeedIds.Veiculos.Def9012);
@@ -124,15 +131,15 @@ namespace Tests.Other.DataSeed
         public async Task SeedAllAsync_Deve_ChamarSeedOrdensServicoAsync()
         {
             // Arrange
-            var mockCollection = new Mock<IMongoCollection<OrdemServico>>();
-            var mockContext = new Mock<MongoDbContext>("mongodb://localhost:27017", "testdb");
+            var mockCollection = new Mock<IMongoCollection<OrdemServicoDocument>>();
+            var mockContext = new Mock<MongoDbContext>();
 
             mockCollection
                 .Setup(c => c.EstimatedDocumentCountAsync(default, default))
                 .ReturnsAsync(0);
 
             mockCollection
-                .Setup(c => c.InsertManyAsync(It.IsAny<IEnumerable<OrdemServico>>(), null, default))
+                .Setup(c => c.InsertManyAsync(It.IsAny<IEnumerable<OrdemServicoDocument>>(), null, default))
                 .Returns(Task.CompletedTask);
 
             mockContext

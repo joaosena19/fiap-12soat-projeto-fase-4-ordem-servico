@@ -2,6 +2,7 @@ using MongoDB.Driver;
 using Domain.OrdemServico.Aggregates.OrdemServico;
 using Domain.OrdemServico.Enums;
 using Shared.Seed;
+using Infrastructure.Repositories.OrdemServico;
 
 namespace Infrastructure.Database
 {
@@ -14,7 +15,7 @@ namespace Infrastructure.Database
         /// <summary>
         /// Seed de ordens_servico collection.
         /// </summary>
-        public static async Task SeedOrdensServicoAsync(IMongoCollection<OrdemServico> collection, CancellationToken ct = default)
+        public static async Task SeedOrdensServicoAsync(IMongoCollection<OrdemServicoDocument> collection, CancellationToken ct = default)
         {
             // Verifica idempotência - executa seed apenas se a coleção estiver vazia
             var count = await collection.EstimatedDocumentCountAsync(cancellationToken: ct);
@@ -49,8 +50,9 @@ namespace Infrastructure.Database
             ordem3.IniciarDiagnostico();
             ordensServico.Add(ordem3);
 
-            // Insere todos os cenários
-            await collection.InsertManyAsync(ordensServico, cancellationToken: ct);
+            // Converte aggregates para documents e insere
+            var documents = ordensServico.Select(OrdemServicoMapper.ToDocument).ToList();
+            await collection.InsertManyAsync(documents, cancellationToken: ct);
         }
 
         /// <summary>

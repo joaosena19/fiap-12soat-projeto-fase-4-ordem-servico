@@ -8,7 +8,7 @@ namespace Infrastructure.Repositories.OrdemServico
 {
     public class OrdemServicoRepository : IOrdemServicoGateway
     {
-        private readonly IMongoCollection<OrdemServicoAggregate> _collection;
+        private readonly IMongoCollection<OrdemServicoDocument> _collection;
 
         public OrdemServicoRepository(MongoDbContext context)
         {
@@ -17,35 +17,47 @@ namespace Infrastructure.Repositories.OrdemServico
 
         public async Task<OrdemServicoAggregate> SalvarAsync(OrdemServicoAggregate ordemServico)
         {
-            await _collection.InsertOneAsync(ordemServico);
+            var document = OrdemServicoMapper.ToDocument(ordemServico);
+            await _collection.InsertOneAsync(document);
             return ordemServico;
         }
 
         public async Task<OrdemServicoAggregate?> ObterPorIdAsync(Guid id)
         {
-            return await _collection
+            var document = await _collection
                 .Find(os => os.Id == id)
                 .FirstOrDefaultAsync();
+            
+            return document != null ? OrdemServicoMapper.ToAggregate(document) : null;
         }
 
         public async Task<OrdemServicoAggregate?> ObterPorCodigoAsync(string codigo)
         {
-            var codigoNormalizado = codigo.Trim().Replace("-", "").ToUpper();
+            var codigoTrimmed = codigo.Trim().ToUpper();
             
-            var filter = Builders<OrdemServicoAggregate>.Filter.Where(os => 
-                os.Codigo.Valor.Trim().Replace("-", "").ToUpper() == codigoNormalizado);
+            // Se o código não tem 18 caracteres (formato OS-YYYYMMDD-XXXXXX), tenta formatar
+            if (codigoTrimmed.Length != 18)
+            {
+                var codigoSemHifens = codigoTrimmed.Replace("-", "");
+                
+                if (codigoSemHifens.Length == 16 && codigoSemHifens.StartsWith("OS"))
+                    codigoTrimmed = $"OS-{codigoSemHifens.Substring(2, 8)}-{codigoSemHifens.Substring(10)}";
+            }
             
-            return await _collection
-                .Find(filter)
+            var document = await _collection
+                .Find(os => os.Codigo == codigoTrimmed)
                 .FirstOrDefaultAsync();
+            
+            return document != null ? OrdemServicoMapper.ToAggregate(document) : null;
         }
 
         public async Task<OrdemServicoAggregate> AtualizarAsync(OrdemServicoAggregate ordemServico)
         {
-            // MongoDB replace - substitui o documento inteiro
+            var document = OrdemServicoMapper.ToDocument(ordemServico);
+            
             var result = await _collection.ReplaceOneAsync(
                 os => os.Id == ordemServico.Id,
-                ordemServico,
+                document,
                 new ReplaceOptions { IsUpsert = false });
 
             if (result.MatchedCount == 0)
@@ -56,35 +68,41 @@ namespace Infrastructure.Repositories.OrdemServico
 
         public async Task<IEnumerable<OrdemServicoAggregate>> ObterTodosAsync()
         {
-            return await _collection
+            var documents = await _collection
                 .Find(_ => true)
                 .ToListAsync();
+            
+            return documents.Select(OrdemServicoMapper.ToAggregate);
         }
 
         public async Task<IEnumerable<OrdemServicoAggregate>> ObterEntreguesUltimosDiasAsync(int quantidadeDias)
         {
             var dataLimite = DateTime.UtcNow.AddDays(-quantidadeDias).Date;
             
-            var filter = Builders<OrdemServicoAggregate>.Filter.And(
-                Builders<OrdemServicoAggregate>.Filter.Eq(os => os.Status.Valor, StatusOrdemServicoEnum.Entregue),
-                Builders<OrdemServicoAggregate>.Filter.Gte(os => os.Historico.DataCriacao, dataLimite)
+            var filter = Builders<OrdemServicoDocument>.Filter.And(
+                Builders<OrdemServicoDocument>.Filter.Eq(os => os.Status, StatusOrdemServicoEnum.Entregue.ToString()),
+                Builders<OrdemServicoDocument>.Filter.Gte("Historico.DataCriacao", dataLimite)
             );
             
-            return await _collection
+            var documents = await _collection
                 .Find(filter)
                 .ToListAsync();
+            
+            return documents.Select(OrdemServicoMapper.ToAggregate);
         }
 
         public async Task<IEnumerable<OrdemServicoAggregate>> ObterOrdensAguardandoEstoqueComTimeoutAsync(DateTime timeoutLimit)
         {
-            var filter = Builders<OrdemServicoAggregate>.Filter.And(
-                Builders<OrdemServicoAggregate>.Filter.Eq(x => x.Status.Valor, StatusOrdemServicoEnum.EmExecucao),
-                Builders<OrdemServicoAggregate>.Filter.Eq(x => x.InteracaoEstoque.DeveRemoverEstoque, true),
-                Builders<OrdemServicoAggregate>.Filter.Eq(x => x.InteracaoEstoque.EstoqueRemovidoComSucesso, (bool?)null),
-                Builders<OrdemServicoAggregate>.Filter.Lte(x => x.Historico.DataInicioExecucao, timeoutLimit)
+            var filter = Builders<OrdemServicoDocument>.Filter.And(
+                Builders<OrdemServicoDocument>.Filter.Eq(os => os.Status, StatusOrdemServicoEnum.EmExecucao.ToString()),
+                Builders<OrdemServicoDocument>.Filter.Eq("InteracaoEstoque.DeveRemoverEstoque", true),
+                Builders<OrdemServicoDocument>.Filter.Eq("InteracaoEstoque.EstoqueRemovidoComSucesso", (bool?)null),
+                Builders<OrdemServicoDocument>.Filter.Lte("Historico.DataInicioExecucao", timeoutLimit)
             );
 
-            return await _collection.Find(filter).ToListAsync();
+            var documents = await _collection.Find(filter).ToListAsync();
+            
+            return documents.Select(OrdemServicoMapper.ToAggregate);
         }
     }
 }

@@ -7,7 +7,7 @@ namespace Domain.OrdemServico.ValueObjects.ServicoIncluido
     [ValueObject]
     public record NomeServico
     {
-        private readonly string _valor = string.Empty;
+        private string _valor = string.Empty;
 
         // Construtor sem parâmetro para EF Core
         private NomeServico() { }

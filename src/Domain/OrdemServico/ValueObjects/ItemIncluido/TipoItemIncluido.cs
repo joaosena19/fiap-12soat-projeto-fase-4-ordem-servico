@@ -8,7 +8,7 @@ namespace Domain.OrdemServico.ValueObjects.ItemIncluido
     [ValueObject]
     public record TipoItemIncluido
     {
-        private readonly TipoItemIncluidoEnum _valor;
+        private TipoItemIncluidoEnum _valor;
 
         // Construtor sem parâmetro para o EF Core
         private TipoItemIncluido() { }

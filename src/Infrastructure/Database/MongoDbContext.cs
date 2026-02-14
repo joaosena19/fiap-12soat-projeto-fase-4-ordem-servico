@@ -1,4 +1,5 @@
 using Domain.OrdemServico.Aggregates.OrdemServico;
+using Infrastructure.Repositories.OrdemServico;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
@@ -30,9 +31,26 @@ namespace Infrastructure.Database
         }
 
         /// <summary>
-        /// Coleção de Ordens de Serviço
+        /// Construtor para testes/mocks
         /// </summary>
-        public IMongoCollection<OrdemServico> OrdensServico => 
-            _database.GetCollection<OrdemServico>("ordens_servico");
+        protected MongoDbContext(string connectionString, string databaseName)
+        {
+            var client = new MongoClient(connectionString);
+            _database = client.GetDatabase(databaseName);
+        }
+
+        /// <summary>
+        /// Construtor vazio para mocks
+        /// </summary>
+        protected MongoDbContext()
+        {
+            _database = null!;
+        }
+
+        /// <summary>
+        /// Coleção de Ordens de Serviço (usando Documents para persistência)
+        /// </summary>
+        public virtual IMongoCollection<OrdemServicoDocument> OrdensServico => 
+            _database.GetCollection<OrdemServicoDocument>("ordens_servico");
     }
 }

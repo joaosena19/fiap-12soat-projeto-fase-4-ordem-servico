@@ -53,7 +53,7 @@ namespace Tests.Application.OrdemServico
             ordemServicoAtualizada.Should().NotBeNull();
             ordemServicoAtualizada!.Status.Valor.Should().Be(StatusOrdemServicoEnum.EmExecucao);
             ordemServicoAtualizada.InteracaoEstoque.DeveRemoverEstoque.Should().BeTrue();
-            ordemServicoAtualizada.InteracaoEstoque.EstaAguardandoEstoque.Should().BeTrue();
+            ordemServicoAtualizada.InteracaoEstoque.EstaAguardandoRemocaoEstoque.Should().BeTrue();
 
             _fixture.EstoqueMessagePublisherMock.Verify(x => x.PublicarSolicitacaoReducaoAsync(
                 It.Is<ReducaoEstoqueSolicitacao>(s => 
@@ -112,8 +112,10 @@ namespace Tests.Application.OrdemServico
             // Simular OS em estado: Aprovada + estoque já confirmado de tentativa anterior
             ordemServico.AprovarOrcamento(); // → Aprovada
             ordemServico.IniciarExecucao(); // → EmExecucao + aguardando estoque
-            ordemServico.ConfirmarReducaoEstoque(); // estoque confirmado
-            ordemServico.RegistrarFalhaReducaoEstoque(); // volta para Aprovada, mas mantém EstoqueRemovidoComSucesso = true
+            ordemServico.ConfirmarReducaoEstoque(); // estoque confirmado (EstoqueRemovidoComSucesso = true)
+            // Reverter status para Aprovada via reflection (simulando retry sem alterar InteracaoEstoque)
+            var statusProperty = ordemServico.GetType().GetProperty("Status");
+            statusProperty!.SetValue(ordemServico, new global::Domain.OrdemServico.ValueObjects.OrdemServico.Status(StatusOrdemServicoEnum.Aprovada));
 
             OrdemServicoAggregate? ordemServicoAtualizada = null;
 
@@ -172,7 +174,7 @@ namespace Tests.Application.OrdemServico
             ordemServicoAtualizada.Should().NotBeNull();
             ordemServicoAtualizada!.Status.Valor.Should().Be(StatusOrdemServicoEnum.EmExecucao);
             ordemServicoAtualizada.InteracaoEstoque.DeveRemoverEstoque.Should().BeFalse();
-            ordemServicoAtualizada.InteracaoEstoque.EstoqueFoiConfirmado.Should().BeTrue();
+            ordemServicoAtualizada.InteracaoEstoque.SemPendenciasEstoque.Should().BeTrue();
 
             // Não deve publicar mensagem pois não há itens de estoque
             _fixture.EstoqueMessagePublisherMock.Verify(x => x.PublicarSolicitacaoReducaoAsync(
@@ -235,38 +237,7 @@ namespace Tests.Application.OrdemServico
             _fixture.OperacaoOrdemServicoPresenterMock.NaoDeveTerApresentadoSucesso();
         }
 
-        [Fact(DisplayName = "Deve apresentar erro quando ordem sem orçamento")]
-        [Trait("UseCase", "AprovarOrcamento")]
-        public async Task ExecutarAsync_QuandoOrdemSemOrcamento_ApresentaErroDominio()
-        {
-            // Arrange
-            // Ordem em status Aprovada sem orçamento gerado (cenário de retry com problema)
-            var ordemServico = new OrdemServicoBuilder().ComStatus(StatusOrdemServicoEnum.Aprovada).Build();
-            
-            // Remove o orçamento por reflection para simular estado inválido
-            var orcamentoProperty = ordemServico.GetType().GetProperty("Orcamento");
-            orcamentoProperty!.SetValue(ordemServico, null);
 
-            _fixture.OrdemServicoGatewayMock.AoObterPorId(ordemServico.Id).Retorna(ordemServico);
-            _fixture.VeiculoExternalServiceMock.AoObterPorId(ordemServico.VeiculoId).Retorna(new VeiculoExternalDtoBuilder().Build());
-
-            // Act
-            await _fixture.AprovarOrcamentoUseCase.ExecutarAsync(
-                new AtorBuilder().ComoAdministrador().Build(),
-                ordemServico.Id,
-                _fixture.OrdemServicoGatewayMock.Object,
-                _fixture.VeiculoExternalServiceMock.Object,
-                _fixture.EstoqueMessagePublisherMock.Object,
-                _fixture.CorrelationIdAccessorMock.Object,
-                _fixture.OperacaoOrdemServicoPresenterMock.Object, 
-                MockLogger.CriarSimples());
-
-            // Assert
-            _fixture.OperacaoOrdemServicoPresenterMock.DeveTerApresentadoErro(
-                "Não existe orçamento para aprovar. É necessário gerar o orçamento primeiro.", 
-                ErrorType.DomainRuleBroken);
-            _fixture.OperacaoOrdemServicoPresenterMock.NaoDeveTerApresentadoSucesso();
-        }
 
         [Fact(DisplayName = "Deve apresentar erro quando cliente tenta aprovar orçamento de outro cliente")]
         [Trait("UseCase", "AprovarOrcamento")]

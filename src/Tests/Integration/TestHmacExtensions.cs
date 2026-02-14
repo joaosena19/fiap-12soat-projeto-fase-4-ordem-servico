@@ -1,45 +1,48 @@
-using Microsoft.AspNetCore.Mvc.Testing;
 using System.Text;
+using System.Text.Json;
 
-namespace Tests.Integration
+namespace Tests.Integration;
+
+/// <summary>
+/// Extension methods para adicionar assinatura HMAC a requisições HTTP em testes
+/// </summary>
+public static class TestHmacExtensions
 {
-    public static class TestHmacExtensions
+    /// <summary>
+    /// Envia uma requisição POST com assinatura HMAC válida para endpoints webhook
+    /// </summary>
+    public static async Task<HttpResponseMessage> PostAsJsonWithHmacAsync<T>(
+        this HttpClient client,
+        string requestUri,
+        T value,
+        JsonSerializerOptions? options = null)
     {
-        /// <summary>
-        /// Cria um cliente HTTP configurado para usar HMAC de teste
-        /// </summary>
-        public static HttpClient CreateHmacClient<TEntryPoint>(this WebApplicationFactory<TEntryPoint> factory)
-            where TEntryPoint : class
+        var request = new HttpRequestMessage(HttpMethod.Post, requestUri);
+
+        // Serializar o objeto para JSON
+        var serializerOptions = options ?? new JsonSerializerOptions
         {
-            // O TestWebApplicationFactory já configura o IConfiguration com secret de teste
-            // O serviço HMAC real será usado com o secret de teste
-            return factory.CreateClient();
-        }
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+        
+        var json = JsonSerializer.Serialize(value, serializerOptions);
 
-        /// <summary>
-        /// Envia uma requisição POST com HMAC válido para endpoints webhook
-        /// </summary>
-        public static async Task<HttpResponseMessage> PostAsJsonWithHmacAsync<T>(
-            this HttpClient client,
-            string requestUri,
-            T value)
-        {
-            var request = new HttpRequestMessage(HttpMethod.Post, requestUri);
+        // Gerar assinatura HMAC
+        var signature = TestHmacUtils.ComputeHmacSignature(json);
 
-            // Serializar o objeto para JSON
-            var json = System.Text.Json.JsonSerializer.Serialize(value, new System.Text.Json.JsonSerializerOptions
-            {
-                PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
-            });
+        // Configurar headers e body
+        request.Headers.Add("X-Signature", signature);
+        request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            // Gerar assinatura HMAC
-            var signature = TestHmacUtils.GenerateHmacSignature(json);
+        return await client.SendAsync(request);
+    }
 
-            // Configurar headers e body
-            request.Headers.Add("X-Signature", signature);
-            request.Content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            return await client.SendAsync(request);
-        }
+    /// <summary>
+    /// Adiciona assinatura HMAC a uma requisição HTTP existente
+    /// </summary>
+    public static void AddHmacSignature(this HttpRequestMessage request, string body)
+    {
+        var signature = TestHmacUtils.ComputeHmacSignature(body);
+        request.Headers.Add("X-Signature", signature);
     }
 }
