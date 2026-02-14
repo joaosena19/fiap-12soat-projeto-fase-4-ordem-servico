@@ -101,3 +101,6 @@ plans/
 
 # Copilot instructions
 .github/copilot-instructions.md
+
+# Agents instructions
+AGENTS.md
