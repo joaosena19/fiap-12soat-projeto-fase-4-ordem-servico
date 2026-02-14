@@ -93,7 +93,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
         base.ConfigureWebHost(builder);
     }
 
-    private void RemoveMassTransitServices(IServiceCollection services)
+    private static void RemoveMassTransitServices(IServiceCollection services)
     {
         // Remover todos os serviços relacionados ao MassTransit
         var massTransitServices = services
@@ -140,7 +140,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
         services.AddScoped<IEstoqueExternalService>(_ => Mocks.EstoqueService.Object);
     }
 
-    private void ReplaceMessagePublisher(IServiceCollection services)
+    private static void ReplaceMessagePublisher(IServiceCollection services)
     {
         // Remover implementação real do message publisher
         var descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IEstoqueMessagePublisher));
@@ -153,7 +153,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
         services.AddScoped<IEstoqueMessagePublisher, NoOpEstoqueMessagePublisher>();
     }
 
-    private void RemoveBackgroundServices(IServiceCollection services)
+    private static void RemoveBackgroundServices(IServiceCollection services)
     {
         // Remover hosted services restantes (incluindo SagaTimeoutBackgroundService)
         var hostedServicesToRemove = services

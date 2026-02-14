@@ -11,6 +11,11 @@ namespace API.Middleware
     /// </summary>
     public class ExceptionHandlingMiddleware
     {
+        private static readonly JsonSerializerOptions JsonOptions = new()
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+
         private readonly RequestDelegate _next;
         private readonly ILogger<ExceptionHandlingMiddleware> _logger;
 
@@ -54,10 +59,7 @@ namespace API.Middleware
                     break;
             }
 
-            var jsonResponse = JsonSerializer.Serialize(response, new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            });
+            var jsonResponse = JsonSerializer.Serialize(response, JsonOptions);
 
             await context.Response.WriteAsync(jsonResponse);
         }

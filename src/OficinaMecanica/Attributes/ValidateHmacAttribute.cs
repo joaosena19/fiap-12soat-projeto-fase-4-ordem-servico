@@ -8,6 +8,7 @@ namespace API.Attributes
     /// <summary>
     /// Atributo para validação de assinatura HMAC em webhooks
     /// </summary>
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false)]
     public class ValidateHmacAttribute : Attribute, IAsyncResourceFilter
     {
         private const string SIGNATURE_HEADER = "X-Signature";

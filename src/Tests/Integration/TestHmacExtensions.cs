@@ -8,6 +8,11 @@ namespace Tests.Integration;
 /// </summary>
 public static class TestHmacExtensions
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
     /// <summary>
     /// Envia uma requisição POST com assinatura HMAC válida para endpoints webhook
     /// </summary>
@@ -20,10 +25,7 @@ public static class TestHmacExtensions
         var request = new HttpRequestMessage(HttpMethod.Post, requestUri);
 
         // Serializar o objeto para JSON
-        var serializerOptions = options ?? new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        };
+        var serializerOptions = options ?? JsonOptions;
         
         var json = JsonSerializer.Serialize(value, serializerOptions);
 

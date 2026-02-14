@@ -34,10 +34,10 @@ namespace Tests.Infrastructure.ExternalServices.Http
 
             var chave = CriarChaveRota(request.Method.Method, request.RequestUri?.PathAndQuery ?? "/");
 
-            if (!_respostasPorRota.ContainsKey(chave) || _respostasPorRota[chave].Count == 0)
+            if (!_respostasPorRota.TryGetValue(chave, out var respostas) || respostas.Count == 0)
                 throw new InvalidOperationException($"Requisição não esperada: {request.Method} {request.RequestUri?.PathAndQuery}. Rotas configuradas: {string.Join(", ", _respostasPorRota.Keys)}");
 
-            var fabricaResposta = _respostasPorRota[chave].Dequeue();
+            var fabricaResposta = respostas.Dequeue();
             return await fabricaResposta(request);
         }
 

@@ -9,6 +9,10 @@ namespace API.Configurations
     /// </summary>
     public static class HealthCheckConfiguration
     {
+        private static readonly string[] LiveTags = { "live" };
+        private static readonly string[] ReadyTags = { "ready" };
+        private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
+
         /// <summary>
         /// Adiciona e configura os serviços de verificação de saúde da aplicação
         /// </summary>
@@ -23,8 +27,8 @@ namespace API.Configurations
         public static IServiceCollection AddHealthChecks(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddHealthChecks()
-                .AddCheck("self", () => HealthCheckResult.Healthy("A aplicação está viva."), tags: new[] { "live" })
-                .AddCheck<MongoDbHealthCheck>("database", HealthStatus.Unhealthy, tags: new[] { "ready" });
+                .AddCheck("self", () => HealthCheckResult.Healthy("A aplicação está viva."), tags: LiveTags)
+                .AddCheck<MongoDbHealthCheck>("database", HealthStatus.Unhealthy, tags: ReadyTags);
 
             return services;
         }
@@ -77,7 +81,6 @@ namespace API.Configurations
         private static async Task WriteHealthCheckResponse(HttpContext context, HealthReport report)
         {
             context.Response.ContentType = "application/json";
-            var options = new JsonSerializerOptions { WriteIndented = true };
 
             var response = new
             {
@@ -92,7 +95,7 @@ namespace API.Configurations
                 totalDuration = report.TotalDuration
             };
 
-            await context.Response.WriteAsync(JsonSerializer.Serialize(response, options));
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response, JsonOptions));
         }
     }
     

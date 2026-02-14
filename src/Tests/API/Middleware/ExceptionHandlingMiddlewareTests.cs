@@ -13,6 +13,8 @@ namespace Tests.API.Middleware
 {
     public class ExceptionHandlingMiddlewareTests
     {
+        private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
         private readonly Mock<ILogger<ExceptionHandlingMiddleware>> _loggerMock;
         private readonly DefaultHttpContext _httpContext;
 
@@ -78,8 +80,7 @@ namespace Tests.API.Middleware
             using var reader = new StreamReader(_httpContext.Response.Body);
             var responseBody = await reader.ReadToEndAsync();
 
-            var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-            var errorResponse = JsonSerializer.Deserialize<ErrorResponseDto>(responseBody, options);
+            var errorResponse = JsonSerializer.Deserialize<ErrorResponseDto>(responseBody, JsonOptions);
 
             errorResponse.Should().NotBeNull();
             errorResponse!.Message.Should().Be(errorMessage);
@@ -119,8 +120,7 @@ namespace Tests.API.Middleware
             using var reader = new StreamReader(_httpContext.Response.Body);
             var responseBody = await reader.ReadToEndAsync();
 
-            var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-            var errorResponse = JsonSerializer.Deserialize<ErrorResponseDto>(responseBody, options);
+            var errorResponse = JsonSerializer.Deserialize<ErrorResponseDto>(responseBody, JsonOptions);
 
             errorResponse.Should().NotBeNull();
             errorResponse!.Message.Should().Be("Ocorreu um erro interno no servidor."); // Mensagem fixa definida no middleware

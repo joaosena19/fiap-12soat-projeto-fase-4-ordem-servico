@@ -11,7 +11,7 @@ namespace Tests.API.Configurations
         public void SeedIfDevelopment_NaoDeveExecutarSeed_QuandoNaoEhDevelopment()
         {
             // Arrange
-            var builder = WebApplication.CreateBuilder(new string[] { });
+            var builder = WebApplication.CreateBuilder(Array.Empty<string>());
             builder.Environment.EnvironmentName = "Production";
             var app = builder.Build();
 
@@ -25,7 +25,7 @@ namespace Tests.API.Configurations
         public void Seed_NaoDeveExecutarSeed_QuandoEhTesteDeIntegracao()
         {
             // Arrange - O assembly de testes já está carregado, IsIntegrationTest() retornará true
-            var builder = WebApplication.CreateBuilder(new string[] { });
+            var builder = WebApplication.CreateBuilder(Array.Empty<string>());
             builder.Environment.EnvironmentName = "Development";
             var app = builder.Build();
 
@@ -39,7 +39,7 @@ namespace Tests.API.Configurations
         public void SeedIfDevelopment_DeveChamarSeed_QuandoEhDevelopment()
         {
             // Arrange - Em ambiente de teste, IsIntegrationTest() retorna true, então Seed retorna cedo
-            var builder = WebApplication.CreateBuilder(new string[] { });
+            var builder = WebApplication.CreateBuilder(Array.Empty<string>());
             builder.Environment.EnvironmentName = "Development";
             var app = builder.Build();
 

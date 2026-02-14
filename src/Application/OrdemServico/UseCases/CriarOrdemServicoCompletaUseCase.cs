@@ -58,7 +58,7 @@ public class CriarOrdemServicoCompletaUseCase
         }
     }
 
-    private async Task<ClienteExternalDto> BuscarOuCriarCliente(ClienteDto clienteDto, IClienteExternalService clienteExternalService)
+    private static async Task<ClienteExternalDto> BuscarOuCriarCliente(ClienteDto clienteDto, IClienteExternalService clienteExternalService)
     {
         var clienteExistente = await clienteExternalService.ObterPorDocumentoAsync(clienteDto.DocumentoIdentificador);
         if (clienteExistente != null) return clienteExistente;
@@ -72,7 +72,7 @@ public class CriarOrdemServicoCompletaUseCase
         return novoCliente;
     }
 
-    private async Task<VeiculoExternalDto> BuscarOuCriarVeiculo(VeiculoDto veiculoDto, Guid clienteId, IVeiculoExternalService veiculoExternalService)
+    private static async Task<VeiculoExternalDto> BuscarOuCriarVeiculo(VeiculoDto veiculoDto, Guid clienteId, IVeiculoExternalService veiculoExternalService)
     {
         var veiculoExistente = await veiculoExternalService.ObterVeiculoPorPlacaAsync(veiculoDto.Placa);
         if (veiculoExistente != null) return veiculoExistente;
@@ -91,7 +91,7 @@ public class CriarOrdemServicoCompletaUseCase
         return novoVeiculo;
     }
 
-    private async Task<OrdemServicoAggregate> CriarOrdemServicoComCodigoUnico(Guid veiculoId, IOrdemServicoGateway ordemServicoGateway)
+    private static async Task<OrdemServicoAggregate> CriarOrdemServicoComCodigoUnico(Guid veiculoId, IOrdemServicoGateway ordemServicoGateway)
     {
         OrdemServicoAggregate novaOrdemServico;
         OrdemServicoAggregate? ordemServicoExistente;
@@ -108,7 +108,7 @@ public class CriarOrdemServicoCompletaUseCase
     /// <summary>
     /// Adiciona serviços. Caso não encontre o serviço pelo ID, apenas ignora.
     /// </summary>
-    private async Task AdicionarServicos(List<Guid>? servicosIds, OrdemServicoAggregate ordemServico, IServicoExternalService servicoExternalService)
+    private static async Task AdicionarServicos(List<Guid>? servicosIds, OrdemServicoAggregate ordemServico, IServicoExternalService servicoExternalService)
     {
         if (servicosIds == null || servicosIds.Count == 0) return;
 
@@ -124,7 +124,7 @@ public class CriarOrdemServicoCompletaUseCase
     /// <summary>
     /// Adiciona itens. Caso não encontre o item pelo ID, apenas ignora.
     /// </summary>
-    private async Task AdicionarItens(List<ItemDto>? itens, OrdemServicoAggregate ordemServico, IEstoqueExternalService estoqueExternalService)
+    private static async Task AdicionarItens(List<ItemDto>? itens, OrdemServicoAggregate ordemServico, IEstoqueExternalService estoqueExternalService)
     {
         if (itens == null || itens.Count == 0) return;
 

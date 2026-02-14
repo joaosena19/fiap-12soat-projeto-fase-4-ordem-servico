@@ -22,7 +22,7 @@ namespace Tests.API.Attributes
             _sut = new ValidateHmacAttribute();
         }
 
-        private (ResourceExecutingContext context, Mock<ResourceExecutionDelegate> next) CriarContexto(string? signatureHeader, string? body, Mock<IHmacValidationService>? hmacServiceMock = null)
+        private static (ResourceExecutingContext context, Mock<ResourceExecutionDelegate> next) CriarContexto(string? signatureHeader, string? body, Mock<IHmacValidationService>? hmacServiceMock = null)
         {
             var httpContext = new DefaultHttpContext();
 

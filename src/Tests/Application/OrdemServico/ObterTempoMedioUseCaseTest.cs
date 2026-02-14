@@ -250,7 +250,7 @@ namespace Tests.Application.OrdemServico
                 12.0);
         }
 
-        private OrdemServicoAggregate CriarOrdemEntregueComHistorico(DateTime dataCriacao, DateTime dataInicioDiagnostico, DateTime dataInicioExecucao, DateTime dataFinalizacao, DateTime dataEntrega)
+        private static OrdemServicoAggregate CriarOrdemEntregueComHistorico(DateTime dataCriacao, DateTime dataInicioDiagnostico, DateTime dataInicioExecucao, DateTime dataFinalizacao, DateTime dataEntrega)
         {
             var ordem = new OrdemServicoBuilder().Entregue().Build();
 

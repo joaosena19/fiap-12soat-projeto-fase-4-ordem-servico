@@ -10,6 +10,11 @@ namespace Tests.Application.Contracts.Messaging.DTOs;
 /// </summary>
 public class ReducaoEstoqueContractsTests
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
     [Fact(DisplayName = "Deve conter todos os campos ao serializar ReducaoEstoqueSolicitacao")]
     [Trait("Contrato", "ReducaoEstoque")]
     public void Serializar_DeveConterTodosCampos_QuandoReducaoEstoqueSolicitacaoSerializada()
@@ -65,10 +70,7 @@ public class ReducaoEstoqueContractsTests
         }}";
 
         // Act
-        var solicitacao = JsonSerializer.Deserialize<ReducaoEstoqueSolicitacao>(json, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
+        var solicitacao = JsonSerializer.Deserialize<ReducaoEstoqueSolicitacao>(json, JsonOptions);
 
         // Assert
         solicitacao.Should().NotBeNull();
@@ -147,10 +149,7 @@ public class ReducaoEstoqueContractsTests
         }}";
 
         // Act
-        var resultado = JsonSerializer.Deserialize<ReducaoEstoqueResultado>(json, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
+        var resultado = JsonSerializer.Deserialize<ReducaoEstoqueResultado>(json, JsonOptions);
 
         // Assert
         resultado.Should().NotBeNull();
