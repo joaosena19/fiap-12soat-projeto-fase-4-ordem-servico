@@ -117,5 +117,51 @@ namespace Tests.API.Presenters.OrdemServico
             segundaOrdem.Orcamento.Preco.Should().Be(ordemComOrcamento.Orcamento.Preco.Valor);
             segundaOrdem.Orcamento.DataCriacao.Should().Be(ordemComOrcamento.Orcamento.DataCriacao.Valor);
         }
+
+        [Fact(DisplayName = "Deve mapear lista vazia quando não existirem ordens")]
+        [Trait("Presenter", "BuscarOrdensServico")]
+        public void ApresentarSucesso_DeveMapearListaVazia_QuandoNaoExistiremOrdens()
+        {
+            // Arrange
+            var presenter = new BuscarOrdensServicoPresenter();
+
+            // Act
+            presenter.ApresentarSucesso(Array.Empty<global::Domain.OrdemServico.Aggregates.OrdemServico.OrdemServico>());
+
+            // Assert
+            presenter.FoiSucesso.Should().BeTrue();
+
+            var resultado = presenter.ObterResultado();
+            resultado.Should().BeOfType<OkObjectResult>();
+
+            var okResult = resultado as OkObjectResult;
+            var retorno = okResult!.Value as IEnumerable<RetornoOrdemServicoCompletaDto>;
+            retorno.Should().NotBeNull();
+            retorno!.Should().BeEmpty();
+        }
+
+        [Fact(DisplayName = "Deve retornar listas vazias de serviços e itens quando ordem não tem serviços nem itens")]
+        [Trait("Presenter", "BuscarOrdensServico")]
+        public void ApresentarSucesso_DeveRetornarListasVazias_QuandoOrdemSemServicosEItens()
+        {
+            // Arrange
+            var ordemServico = new OrdemServicoBuilder().Build();
+            var presenter = new BuscarOrdensServicoPresenter();
+
+            // Act
+            presenter.ApresentarSucesso(new[] { ordemServico });
+
+            // Assert
+            presenter.FoiSucesso.Should().BeTrue();
+
+            var resultado = presenter.ObterResultado();
+            var okResult = resultado as OkObjectResult;
+            var retorno = (okResult!.Value as IEnumerable<RetornoOrdemServicoCompletaDto>)!.ToList();
+
+            retorno.Should().HaveCount(1);
+            retorno[0].ServicosIncluidos.Should().BeEmpty();
+            retorno[0].ItensIncluidos.Should().BeEmpty();
+            retorno[0].Orcamento.Should().BeNull();
+        }
     }
 }

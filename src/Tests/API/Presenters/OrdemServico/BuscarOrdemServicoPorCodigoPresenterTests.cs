@@ -132,5 +132,28 @@ namespace Tests.API.Presenters.OrdemServico
             dto.Orcamento.Preco.Should().Be(ordemServico.Orcamento.Preco.Valor);
             dto.Orcamento.DataCriacao.Should().Be(ordemServico.Orcamento.DataCriacao.Valor);
         }
+
+        [Fact(DisplayName = "Deve retornar listas vazias quando serviços e itens forem nulos")]
+        [Trait("Presenter", "BuscarOrdemServicoPorCodigo")]
+        public void ApresentarSucesso_DeveRetornarListasVazias_QuandoServicosEItensForemNulos()
+        {
+            // Arrange
+            var ordemServico = new OrdemServicoBuilder().Build();
+            var presenter = new BuscarOrdemServicoPorCodigoPresenter();
+
+            // Act
+            presenter.ApresentarSucesso(ordemServico);
+
+            // Assert
+            presenter.FoiSucesso.Should().BeTrue();
+
+            var resultado = presenter.ObterResultado();
+            var okResult = resultado as OkObjectResult;
+            var dto = okResult!.Value as RetornoOrdemServicoCompletaDto;
+
+            dto!.ServicosIncluidos.Should().BeEmpty();
+            dto.ItensIncluidos.Should().BeEmpty();
+            dto.Orcamento.Should().BeNull();
+        }
     }
 }

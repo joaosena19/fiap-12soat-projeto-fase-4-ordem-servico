@@ -113,6 +113,77 @@ namespace Tests.Domain.OrdemServico
 
         #endregion
 
+        #region Testes Reidratar
+
+        [Fact(DisplayName = "Reidratar deve retornar SemInteracao quando DeveRemoverEstoque é false")]
+        [Trait("ValueObject", "InteracaoEstoque")]
+        public void Reidratar_DeveRetornarSemInteracao_QuandoDeveRemoverEstoqueFalse()
+        {
+            // Act
+            var interacao = InteracaoEstoque.Reidratar(false, null);
+
+            // Assert
+            interacao.DeveRemoverEstoque.Should().BeFalse();
+            interacao.EstoqueRemovidoComSucesso.Should().BeNull();
+            interacao.SemPendenciasEstoque.Should().BeTrue();
+        }
+
+        [Fact(DisplayName = "Reidratar deve retornar AguardandoReducao quando EstoqueRemovidoComSucesso é null")]
+        [Trait("ValueObject", "InteracaoEstoque")]
+        public void Reidratar_DeveRetornarAguardandoReducao_QuandoEstoqueRemovidoNull()
+        {
+            // Act
+            var interacao = InteracaoEstoque.Reidratar(true, null);
+
+            // Assert
+            interacao.DeveRemoverEstoque.Should().BeTrue();
+            interacao.EstoqueRemovidoComSucesso.Should().BeNull();
+            interacao.EstaAguardandoRemocaoEstoque.Should().BeTrue();
+        }
+
+        [Fact(DisplayName = "Reidratar deve retornar confirmado quando EstoqueRemovidoComSucesso é true")]
+        [Trait("ValueObject", "InteracaoEstoque")]
+        public void Reidratar_DeveRetornarConfirmado_QuandoEstoqueRemovidoTrue()
+        {
+            // Act
+            var interacao = InteracaoEstoque.Reidratar(true, true);
+
+            // Assert
+            interacao.DeveRemoverEstoque.Should().BeTrue();
+            interacao.EstoqueRemovidoComSucesso.Should().BeTrue();
+            interacao.SemPendenciasEstoque.Should().BeTrue();
+            interacao.EstaAguardandoRemocaoEstoque.Should().BeFalse();
+        }
+
+        [Fact(DisplayName = "Reidratar deve retornar falhado quando EstoqueRemovidoComSucesso é false")]
+        [Trait("ValueObject", "InteracaoEstoque")]
+        public void Reidratar_DeveRetornarFalhado_QuandoEstoqueRemovidoFalse()
+        {
+            // Act
+            var interacao = InteracaoEstoque.Reidratar(true, false);
+
+            // Assert
+            interacao.DeveRemoverEstoque.Should().BeTrue();
+            interacao.EstoqueRemovidoComSucesso.Should().BeFalse();
+            interacao.SemPendenciasEstoque.Should().BeFalse();
+            interacao.EstaAguardandoRemocaoEstoque.Should().BeFalse();
+        }
+
+        [Fact(DisplayName = "Reidratar deve ignorar EstoqueRemovidoComSucesso quando DeveRemoverEstoque é false")]
+        [Trait("ValueObject", "InteracaoEstoque")]
+        public void Reidratar_DeveIgnorarEstoqueRemovido_QuandoDeveRemoverFalse()
+        {
+            // Act - Mesmo passando true para estoqueRemovidoComSucesso, deve retornar SemInteracao
+            var interacao = InteracaoEstoque.Reidratar(false, true);
+
+            // Assert
+            interacao.DeveRemoverEstoque.Should().BeFalse();
+            interacao.EstoqueRemovidoComSucesso.Should().BeNull();
+            interacao.SemPendenciasEstoque.Should().BeTrue();
+        }
+
+        #endregion
+
         #region Testes Imutabilidade (Record)
 
         [Fact(DisplayName = "ConfirmarReducao deve retornar nova instância sem alterar a original")]
