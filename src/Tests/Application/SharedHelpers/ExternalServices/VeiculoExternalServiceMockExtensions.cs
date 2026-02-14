@@ -114,5 +114,11 @@ namespace Tests.Application.SharedHelpers.ExternalServices
         {
             mock.Verify(x => x.CriarVeiculoAsync(It.IsAny<CriarVeiculoExternalDto>()), Times.Never);
         }
+
+        public static void NaoDeveTerVerificadoExistenciaVeiculo(this Mock<IVeiculoExternalService> mock)
+        {
+            mock.Verify(x => x.VerificarExistenciaVeiculo(It.IsAny<Guid>()), Times.Never,
+                "O método VerificarExistenciaVeiculo não deveria ter sido chamado.");
+        }
     }
 }

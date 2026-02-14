@@ -6,6 +6,10 @@ using Serilog.Events;
 
 namespace Tests.Infrastructure.Monitoramento.Correlation;
 
+/// <summary>
+/// Testes unitários para CorrelationIdEnricher.
+/// Valida o enriquecimento de eventos de log com o correlation ID.
+/// </summary>
 public class CorrelationIdEnricherTests
 {
     private readonly CorrelationIdEnricher _enriquecedor;
@@ -18,6 +22,7 @@ public class CorrelationIdEnricherTests
     }
 
     [Fact(DisplayName = "Enrich deve adicionar CorrelationId quando contexto tem valor e propriedade não existe")]
+    [Trait("Infrastructure", "Monitoramento")]
     public void Enrich_DeveAdicionarCorrelationId_QuandoContextoTemValorEPropriedadeNaoExiste()
     {
         // Arrange
@@ -38,6 +43,7 @@ public class CorrelationIdEnricherTests
     }
 
     [Fact(DisplayName = "Enrich não deve adicionar propriedade quando contexto está vazio")]
+    [Trait("Infrastructure", "Monitoramento")]
     public void Enrich_NaoDeveAdicionarPropriedade_QuandoContextoEstaVazio()
     {
         // Arrange
@@ -51,6 +57,7 @@ public class CorrelationIdEnricherTests
     }
 
     [Fact(DisplayName = "Enrich não deve adicionar propriedade quando contexto é null")]
+    [Trait("Infrastructure", "Monitoramento")]
     public void Enrich_NaoDeveAdicionarPropriedade_QuandoContextoEhNull()
     {
         // Arrange
@@ -65,6 +72,7 @@ public class CorrelationIdEnricherTests
     }
 
     [Fact(DisplayName = "Enrich não deve duplicar propriedade quando propriedade já existe")]
+    [Trait("Infrastructure", "Monitoramento")]
     public void Enrich_NaoDeveDuplicarPropriedade_QuandoPropriedadeJaExiste()
     {
         // Arrange
@@ -89,6 +97,7 @@ public class CorrelationIdEnricherTests
     }
 
     [Fact(DisplayName = "Enrich não deve adicionar propriedade quando CorrelationId é string vazia")]
+    [Trait("Infrastructure", "Monitoramento")]
     public void Enrich_NaoDeveAdicionarPropriedade_QuandoCorrelationIdEhStringVazia()
     {
         // Arrange
@@ -105,6 +114,7 @@ public class CorrelationIdEnricherTests
     }
 
     [Fact(DisplayName = "Enrich deve adicionar propriedade com nome correto")]
+    [Trait("Infrastructure", "Monitoramento")]
     public void Enrich_DeveAdicionarPropriedadeComNomeCorreto()
     {
         // Arrange
@@ -122,6 +132,7 @@ public class CorrelationIdEnricherTests
     }
 
     [Fact(DisplayName = "Enrich deve usar ScalarValue para propriedade CorrelationId")]
+    [Trait("Infrastructure", "Monitoramento")]
     public void Enrich_DeveUsarScalarValue_ParaPropriedadeCorrelationId()
     {
         // Arrange
@@ -139,6 +150,7 @@ public class CorrelationIdEnricherTests
     }
 
     [Fact(DisplayName = "Enrich deve funcionar com múltiplos eventos de log")]
+    [Trait("Infrastructure", "Monitoramento")]
     public void Enrich_DeveFuncionarComMultiplosEventosDeLog()
     {
         // Arrange

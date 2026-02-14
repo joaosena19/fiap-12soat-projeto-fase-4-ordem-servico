@@ -3,9 +3,14 @@ using Infrastructure.Monitoramento.Correlation;
 
 namespace Tests.Infrastructure.Monitoramento.Correlation;
 
+/// <summary>
+/// Testes unitários para CorrelationContext.
+/// Valida o comportamento do contexto de correlação baseado em AsyncLocal.
+/// </summary>
 public class CorrelationContextTests
 {
     [Fact(DisplayName = "Current deve retornar null quando nenhum CorrelationId está definido")]
+    [Trait("Infrastructure", "Monitoramento")]
     public void Current_DeveRetornarNull_QuandoNenhumCorrelationIdEstaDefinido()
     {
         // Arrange & Act
@@ -16,6 +21,7 @@ public class CorrelationContextTests
     }
 
     [Fact(DisplayName = "Push deve definir o CorrelationId atual")]
+    [Trait("Infrastructure", "Monitoramento")]
     public void Push_DeveDefinirCorrelationIdAtual()
     {
         // Arrange
@@ -30,6 +36,7 @@ public class CorrelationContextTests
     }
 
     [Fact(DisplayName = "Push deve restaurar o valor anterior quando descartado")]
+    [Trait("Infrastructure", "Monitoramento")]
     public void Push_DeveRestaurarValorAnterior_QuandoDescartado()
     {
         // Arrange
@@ -55,6 +62,7 @@ public class CorrelationContextTests
     }
 
     [Fact(DisplayName = "Push deve suportar aninhamento")]
+    [Trait("Infrastructure", "Monitoramento")]
     public void Push_DeveSuportarAninhamento()
     {
         // Arrange
@@ -88,6 +96,7 @@ public class CorrelationContextTests
     }
 
     [Fact(DisplayName = "Push deve lidar com string vazia")]
+    [Trait("Infrastructure", "Monitoramento")]
     public void Push_DeveLidarComStringVazia()
     {
         // Arrange
@@ -104,6 +113,7 @@ public class CorrelationContextTests
     }
 
     [Fact(DisplayName = "Push deve ser thread-safe com AsyncLocal")]
+    [Trait("Infrastructure", "Monitoramento")]
     public void Push_DeveSerThreadSafe_ComAsyncLocal()
     {
         // Arrange
@@ -140,6 +150,7 @@ public class CorrelationContextTests
     }
 
     [Fact(DisplayName = "Current deve retornar o valor correto em escopos diferentes")]
+    [Trait("Infrastructure", "Monitoramento")]
     public void Current_DeveRetornarValorCorreto_EmEscoposDiferentes()
     {
         // Arrange
@@ -165,6 +176,7 @@ public class CorrelationContextTests
     }
 
     [Fact(DisplayName = "Dispose deve ser idempotente")]
+    [Trait("Infrastructure", "Monitoramento")]
     public void Dispose_DeveSerIdempotente()
     {
         // Arrange

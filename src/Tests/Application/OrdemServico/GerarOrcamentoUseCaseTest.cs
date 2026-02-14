@@ -1,15 +1,16 @@
 using Application.Identidade.Services;
 using Domain.OrdemServico.Enums;
-using Moq;
 using Shared.Enums;
 using Tests.Application.OrdemServico.Helpers;
 using Tests.Application.SharedHelpers.AggregateBuilders;
 using Tests.Application.SharedHelpers.Gateways;
 using Tests.Application.SharedHelpers;
-using OrdemServicoAggregate = Domain.OrdemServico.Aggregates.OrdemServico.OrdemServico;
 
 namespace Tests.Application.OrdemServico
 {
+    /// <summary>
+    /// Testes unitários para o caso de uso de geração de orçamento.
+    /// </summary>
     public class GerarOrcamentoUseCaseTest
     {
         private readonly OrdemServicoTestFixture _fixture;
@@ -38,8 +39,8 @@ namespace Tests.Application.OrdemServico
                 _fixture.GerarOrcamentoPresenterMock.Object, MockLogger.CriarSimples());
 
             // Assert
-            _fixture.GerarOrcamentoPresenterMock.Verify(p => p.ApresentarSucesso(It.IsAny<OrdemServicoAggregate>()), Times.Once);
-            _fixture.GerarOrcamentoPresenterMock.Verify(p => p.ApresentarErro(It.IsAny<string>(), It.IsAny<ErrorType>()), Times.Never);
+            _fixture.GerarOrcamentoPresenterMock.DeveTerApresentadoSucessoComQualquerObjeto();
+            _fixture.GerarOrcamentoPresenterMock.NaoDeveTerApresentadoErro();
         }
 
         [Fact(DisplayName = "Deve apresentar erro quando ordem de serviço não for encontrada")]
@@ -60,8 +61,8 @@ namespace Tests.Application.OrdemServico
                 _fixture.GerarOrcamentoPresenterMock.Object, MockLogger.CriarSimples());
 
             // Assert
-            _fixture.GerarOrcamentoPresenterMock.Verify(p => p.ApresentarErro("Ordem de serviço não encontrada.", ErrorType.ResourceNotFound), Times.Once);
-            _fixture.GerarOrcamentoPresenterMock.Verify(p => p.ApresentarSucesso(It.IsAny<OrdemServicoAggregate>()), Times.Never);
+            _fixture.GerarOrcamentoPresenterMock.DeveTerApresentadoErro("Ordem de serviço não encontrada.", ErrorType.ResourceNotFound);
+            _fixture.GerarOrcamentoPresenterMock.NaoDeveTerApresentadoSucesso();
         }
 
         [Fact(DisplayName = "Deve apresentar erro de domínio quando domain lançar DomainException")]
@@ -82,8 +83,8 @@ namespace Tests.Application.OrdemServico
                 _fixture.GerarOrcamentoPresenterMock.Object, MockLogger.CriarSimples());
 
             // Assert
-            _fixture.GerarOrcamentoPresenterMock.Verify(p => p.ApresentarErro(It.IsAny<string>(), ErrorType.DomainRuleBroken), Times.Once);
-            _fixture.GerarOrcamentoPresenterMock.Verify(p => p.ApresentarSucesso(It.IsAny<OrdemServicoAggregate>()), Times.Never);
+            _fixture.GerarOrcamentoPresenterMock.DeveTerApresentadoErroComTipo(ErrorType.DomainRuleBroken);
+            _fixture.GerarOrcamentoPresenterMock.NaoDeveTerApresentadoSucesso();
         }
 
         [Fact(DisplayName = "Deve apresentar erro interno quando ocorrer exceção genérica")]
@@ -105,8 +106,8 @@ namespace Tests.Application.OrdemServico
                 _fixture.GerarOrcamentoPresenterMock.Object, MockLogger.CriarSimples());
 
             // Assert
-            _fixture.GerarOrcamentoPresenterMock.Verify(p => p.ApresentarErro("Erro interno do servidor.", ErrorType.UnexpectedError), Times.Once);
-            _fixture.GerarOrcamentoPresenterMock.Verify(p => p.ApresentarSucesso(It.IsAny<OrdemServicoAggregate>()), Times.Never);
+            _fixture.GerarOrcamentoPresenterMock.DeveTerApresentadoErro("Erro interno do servidor.", ErrorType.UnexpectedError);
+            _fixture.GerarOrcamentoPresenterMock.NaoDeveTerApresentadoSucesso();
         }
 
         [Fact(DisplayName = "Deve apresentar erro NotAllowed quando cliente tentar gerar orçamento")]
@@ -125,8 +126,8 @@ namespace Tests.Application.OrdemServico
                 _fixture.GerarOrcamentoPresenterMock.Object, MockLogger.CriarSimples());
 
             // Assert
-            _fixture.GerarOrcamentoPresenterMock.Verify(p => p.ApresentarErro("Acesso negado. Apenas administradores podem gerar orçamentos.", ErrorType.NotAllowed), Times.Once);
-            _fixture.GerarOrcamentoPresenterMock.Verify(p => p.ApresentarSucesso(It.IsAny<OrdemServicoAggregate>()), Times.Never);
+            _fixture.GerarOrcamentoPresenterMock.DeveTerApresentadoErro("Acesso negado. Apenas administradores podem gerar orçamentos.", ErrorType.NotAllowed);
+            _fixture.GerarOrcamentoPresenterMock.NaoDeveTerApresentadoSucesso();
         }
 
         [Fact(DisplayName = "Deve logar Information quando ator não for administrador")]

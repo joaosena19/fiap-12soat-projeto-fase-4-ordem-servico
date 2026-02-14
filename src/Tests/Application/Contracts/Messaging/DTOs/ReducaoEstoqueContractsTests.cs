@@ -1,6 +1,6 @@
 using Application.Contracts.Messaging.DTOs;
+using FluentAssertions;
 using System.Text.Json;
-using Xunit;
 
 namespace Tests.Application.Contracts.Messaging.DTOs;
 
@@ -10,8 +10,9 @@ namespace Tests.Application.Contracts.Messaging.DTOs;
 /// </summary>
 public class ReducaoEstoqueContractsTests
 {
-    [Fact]
-    public void ReducaoEstoqueSolicitacao_WhenSerialized_ShouldContainAllFields()
+    [Fact(DisplayName = "Deve conter todos os campos ao serializar ReducaoEstoqueSolicitacao")]
+    [Trait("Contrato", "ReducaoEstoque")]
+    public void Serializar_DeveConterTodosCampos_QuandoReducaoEstoqueSolicitacaoSerializada()
     {
         // Arrange
         var solicitacao = new ReducaoEstoqueSolicitacao
@@ -27,19 +28,20 @@ public class ReducaoEstoqueContractsTests
 
         // Act
         var json = JsonSerializer.Serialize(solicitacao);
-        var deserialized = JsonSerializer.Deserialize<ReducaoEstoqueSolicitacao>(json);
+        var deserializado = JsonSerializer.Deserialize<ReducaoEstoqueSolicitacao>(json);
 
         // Assert
-        Assert.NotNull(deserialized);
-        Assert.Equal(solicitacao.CorrelationId, deserialized.CorrelationId);
-        Assert.Equal(solicitacao.OrdemServicoId, deserialized.OrdemServicoId);
-        Assert.Equal(2, deserialized.Itens.Count);
-        Assert.Equal(solicitacao.Itens[0].ItemEstoqueId, deserialized.Itens[0].ItemEstoqueId);
-        Assert.Equal(solicitacao.Itens[0].Quantidade, deserialized.Itens[0].Quantidade);
+        deserializado.Should().NotBeNull();
+        deserializado!.CorrelationId.Should().Be(solicitacao.CorrelationId);
+        deserializado.OrdemServicoId.Should().Be(solicitacao.OrdemServicoId);
+        deserializado.Itens.Should().HaveCount(2);
+        deserializado.Itens[0].ItemEstoqueId.Should().Be(solicitacao.Itens[0].ItemEstoqueId);
+        deserializado.Itens[0].Quantidade.Should().Be(solicitacao.Itens[0].Quantidade);
     }
 
-    [Fact]
-    public void ReducaoEstoqueSolicitacao_WhenDeserializedFromJson_ShouldHaveCorrectValues()
+    [Fact(DisplayName = "Deve ter valores corretos ao deserializar ReducaoEstoqueSolicitacao de JSON")]
+    [Trait("Contrato", "ReducaoEstoque")]
+    public void Deserializar_DeveTerValoresCorretos_QuandoReducaoEstoqueSolicitacaoDeserializadaDeJson()
     {
         // Arrange
         var correlationId = Guid.NewGuid();
@@ -69,18 +71,19 @@ public class ReducaoEstoqueContractsTests
         });
 
         // Assert
-        Assert.NotNull(solicitacao);
-        Assert.Equal(correlationId.ToString(), solicitacao.CorrelationId);
-        Assert.Equal(ordemServicoId, solicitacao.OrdemServicoId);
-        Assert.Equal(2, solicitacao.Itens.Count);
-        Assert.Equal(itemId1, solicitacao.Itens[0].ItemEstoqueId);
-        Assert.Equal(10, solicitacao.Itens[0].Quantidade);
-        Assert.Equal(itemId2, solicitacao.Itens[1].ItemEstoqueId);
-        Assert.Equal(5, solicitacao.Itens[1].Quantidade);
+        solicitacao.Should().NotBeNull();
+        solicitacao!.CorrelationId.Should().Be(correlationId.ToString());
+        solicitacao.OrdemServicoId.Should().Be(ordemServicoId);
+        solicitacao.Itens.Should().HaveCount(2);
+        solicitacao.Itens[0].ItemEstoqueId.Should().Be(itemId1);
+        solicitacao.Itens[0].Quantidade.Should().Be(10);
+        solicitacao.Itens[1].ItemEstoqueId.Should().Be(itemId2);
+        solicitacao.Itens[1].Quantidade.Should().Be(5);
     }
 
-    [Fact]
-    public void ReducaoEstoqueResultado_WhenSerializedWithSucesso_ShouldContainAllFields()
+    [Fact(DisplayName = "Deve conter todos os campos ao serializar ReducaoEstoqueResultado com sucesso")]
+    [Trait("Contrato", "ReducaoEstoque")]
+    public void Serializar_DeveConterTodosCampos_QuandoReducaoEstoqueResultadoComSucesso()
     {
         // Arrange
         var resultado = new ReducaoEstoqueResultado
@@ -93,18 +96,19 @@ public class ReducaoEstoqueContractsTests
 
         // Act
         var json = JsonSerializer.Serialize(resultado);
-        var deserialized = JsonSerializer.Deserialize<ReducaoEstoqueResultado>(json);
+        var deserializado = JsonSerializer.Deserialize<ReducaoEstoqueResultado>(json);
 
         // Assert
-        Assert.NotNull(deserialized);
-        Assert.Equal(resultado.CorrelationId, deserialized.CorrelationId);
-        Assert.Equal(resultado.OrdemServicoId, deserialized.OrdemServicoId);
-        Assert.True(deserialized.Sucesso);
-        Assert.Null(deserialized.MotivoFalha);
+        deserializado.Should().NotBeNull();
+        deserializado!.CorrelationId.Should().Be(resultado.CorrelationId);
+        deserializado.OrdemServicoId.Should().Be(resultado.OrdemServicoId);
+        deserializado.Sucesso.Should().BeTrue();
+        deserializado.MotivoFalha.Should().BeNull();
     }
 
-    [Fact]
-    public void ReducaoEstoqueResultado_WhenSerializedWithFalha_ShouldContainMotivoFalha()
+    [Fact(DisplayName = "Deve conter motivo de falha ao serializar ReducaoEstoqueResultado com falha")]
+    [Trait("Contrato", "ReducaoEstoque")]
+    public void Serializar_DeveConterMotivoFalha_QuandoReducaoEstoqueResultadoComFalha()
     {
         // Arrange
         var resultado = new ReducaoEstoqueResultado
@@ -117,18 +121,19 @@ public class ReducaoEstoqueContractsTests
 
         // Act
         var json = JsonSerializer.Serialize(resultado);
-        var deserialized = JsonSerializer.Deserialize<ReducaoEstoqueResultado>(json);
+        var deserializado = JsonSerializer.Deserialize<ReducaoEstoqueResultado>(json);
 
         // Assert
-        Assert.NotNull(deserialized);
-        Assert.Equal(resultado.CorrelationId, deserialized.CorrelationId);
-        Assert.Equal(resultado.OrdemServicoId, deserialized.OrdemServicoId);
-        Assert.False(deserialized.Sucesso);
-        Assert.Equal("estoque_insuficiente", deserialized.MotivoFalha);
+        deserializado.Should().NotBeNull();
+        deserializado!.CorrelationId.Should().Be(resultado.CorrelationId);
+        deserializado.OrdemServicoId.Should().Be(resultado.OrdemServicoId);
+        deserializado.Sucesso.Should().BeFalse();
+        deserializado.MotivoFalha.Should().Be("estoque_insuficiente");
     }
 
-    [Fact]
-    public void ReducaoEstoqueResultado_WhenDeserializedFromJson_ShouldHaveCorrectValues()
+    [Fact(DisplayName = "Deve ter valores corretos ao deserializar ReducaoEstoqueResultado de JSON")]
+    [Trait("Contrato", "ReducaoEstoque")]
+    public void Deserializar_DeveTerValoresCorretos_QuandoReducaoEstoqueResultadoDeserializadoDeJson()
     {
         // Arrange
         var correlationId = Guid.NewGuid();
@@ -148,15 +153,16 @@ public class ReducaoEstoqueContractsTests
         });
 
         // Assert
-        Assert.NotNull(resultado);
-        Assert.Equal(correlationId.ToString(), resultado.CorrelationId);
-        Assert.Equal(ordemServicoId, resultado.OrdemServicoId);
-        Assert.False(resultado.Sucesso);
-        Assert.Equal("erro_interno", resultado.MotivoFalha);
+        resultado.Should().NotBeNull();
+        resultado!.CorrelationId.Should().Be(correlationId.ToString());
+        resultado.OrdemServicoId.Should().Be(ordemServicoId);
+        resultado.Sucesso.Should().BeFalse();
+        resultado.MotivoFalha.Should().Be("erro_interno");
     }
 
-    [Fact]
-    public void ItemReducao_WhenSerialized_ShouldContainAllFields()
+    [Fact(DisplayName = "Deve conter todos os campos ao serializar ItemReducao")]
+    [Trait("Contrato", "ReducaoEstoque")]
+    public void Serializar_DeveConterTodosCampos_QuandoItemReducaoSerializado()
     {
         // Arrange
         var item = new ItemReducao
@@ -167,19 +173,20 @@ public class ReducaoEstoqueContractsTests
 
         // Act
         var json = JsonSerializer.Serialize(item);
-        var deserialized = JsonSerializer.Deserialize<ItemReducao>(json);
+        var deserializado = JsonSerializer.Deserialize<ItemReducao>(json);
 
         // Assert
-        Assert.NotNull(deserialized);
-        Assert.Equal(item.ItemEstoqueId, deserialized.ItemEstoqueId);
-        Assert.Equal(item.Quantidade, deserialized.Quantidade);
+        deserializado.Should().NotBeNull();
+        deserializado!.ItemEstoqueId.Should().Be(item.ItemEstoqueId);
+        deserializado.Quantidade.Should().Be(item.Quantidade);
     }
 
-    [Theory]
+    [Theory(DisplayName = "Deve suportar diferentes motivos de falha no ReducaoEstoqueResultado")]
+    [Trait("Contrato", "ReducaoEstoque")]
     [InlineData("estoque_insuficiente")]
     [InlineData("erro_interno")]
     [InlineData("servico_indisponivel")]
-    public void ReducaoEstoqueResultado_SupportsDifferentMotivosFalha(string motivoFalha)
+    public void Serializar_DeveSuportarDiferentesMotivosFalha(string motivoFalha)
     {
         // Arrange
         var resultado = new ReducaoEstoqueResultado
@@ -192,16 +199,17 @@ public class ReducaoEstoqueContractsTests
 
         // Act
         var json = JsonSerializer.Serialize(resultado);
-        var deserialized = JsonSerializer.Deserialize<ReducaoEstoqueResultado>(json);
+        var deserializado = JsonSerializer.Deserialize<ReducaoEstoqueResultado>(json);
 
         // Assert
-        Assert.NotNull(deserialized);
-        Assert.False(deserialized.Sucesso);
-        Assert.Equal(motivoFalha, deserialized.MotivoFalha);
+        deserializado.Should().NotBeNull();
+        deserializado!.Sucesso.Should().BeFalse();
+        deserializado.MotivoFalha.Should().Be(motivoFalha);
     }
 
-    [Fact]
-    public void ReducaoEstoqueSolicitacao_WithEmptyItens_ShouldSerializeCorrectly()
+    [Fact(DisplayName = "Deve serializar corretamente ReducaoEstoqueSolicitacao com itens vazios")]
+    [Trait("Contrato", "ReducaoEstoque")]
+    public void Serializar_DeveSerializarCorretamente_QuandoReducaoEstoqueSolicitacaoComItensVazios()
     {
         // Arrange
         var solicitacao = new ReducaoEstoqueSolicitacao
@@ -213,11 +221,11 @@ public class ReducaoEstoqueContractsTests
 
         // Act
         var json = JsonSerializer.Serialize(solicitacao);
-        var deserialized = JsonSerializer.Deserialize<ReducaoEstoqueSolicitacao>(json);
+        var deserializado = JsonSerializer.Deserialize<ReducaoEstoqueSolicitacao>(json);
 
         // Assert
-        Assert.NotNull(deserialized);
-        Assert.NotNull(deserialized.Itens);
-        Assert.Empty(deserialized.Itens);
+        deserializado.Should().NotBeNull();
+        deserializado!.Itens.Should().NotBeNull();
+        deserializado.Itens.Should().BeEmpty();
     }
 }

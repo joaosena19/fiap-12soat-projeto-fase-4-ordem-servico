@@ -4,10 +4,14 @@ using Infrastructure.Monitoramento.Correlation;
 
 namespace Tests.Infrastructure.Monitoramento;
 
-[Trait("Infrastructure", "Monitoramento")]
+/// <summary>
+/// Testes unitários para CorrelationIdAccessor.
+/// Valida a obtenção do correlation ID a partir do contexto.
+/// </summary>
 public class CorrelationIdAccessorTests
 {
     [Fact(DisplayName = "GetCorrelationId deve retornar valor atual quando CorrelationContext estiver definido")]
+    [Trait("Infrastructure", "Monitoramento")]
     public void GetCorrelationId_DeveRetornarValorAtual_QuandoCorrelationContextEstiverDefinido()
     {
         // Arrange
@@ -24,6 +28,7 @@ public class CorrelationIdAccessorTests
     }
 
     [Fact(DisplayName = "GetCorrelationId deve gerar GUID válido quando CorrelationContext estiver nulo ou whitespace")]
+    [Trait("Infrastructure", "Monitoramento")]
     public void GetCorrelationId_DeveGerarGuidValido_QuandoCorrelationContextEstiverNuloOuWhitespace()
     {
         // Arrange
@@ -38,6 +43,7 @@ public class CorrelationIdAccessorTests
     }
 
     [Fact(DisplayName = "GetCorrelationId deve usar fallback para GUID quando contexto for whitespace")]
+    [Trait("Infrastructure", "Monitoramento")]
     public void GetCorrelationId_DeveUsarFallbackParaGuid_QuandoContextoForWhitespace()
     {
         // Arrange
@@ -54,6 +60,7 @@ public class CorrelationIdAccessorTests
     }
 
     [Fact(DisplayName = "GetCorrelationId deve gerar GUIDs diferentes a cada chamada quando não há contexto")]
+    [Trait("Infrastructure", "Monitoramento")]
     public void GetCorrelationId_DeveGerarGuidsDiferentes_QuandoNaoHaContexto()
     {
         // Arrange
@@ -70,6 +77,7 @@ public class CorrelationIdAccessorTests
     }
 
     [Fact(DisplayName = "GetCorrelationId deve respeitar escopos aninhados")]
+    [Trait("Infrastructure", "Monitoramento")]
     public void GetCorrelationId_DeveRespeitarEscoposAninhados()
     {
         // Arrange

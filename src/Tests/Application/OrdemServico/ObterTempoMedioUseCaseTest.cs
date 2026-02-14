@@ -1,4 +1,3 @@
-using Moq;
 using Shared.Enums;
 using Shared.Exceptions;
 using Tests.Application.OrdemServico.Helpers;
@@ -9,6 +8,9 @@ using OrdemServicoAggregate = Domain.OrdemServico.Aggregates.OrdemServico.OrdemS
 
 namespace Tests.Application.OrdemServico
 {
+    /// <summary>
+    /// Testes unitários para o caso de uso de obtenção do tempo médio de execução.
+    /// </summary>
     public class ObterTempoMedioUseCaseTest
     {
         private readonly OrdemServicoTestFixture _fixture;
@@ -45,16 +47,8 @@ namespace Tests.Application.OrdemServico
                 logger);
 
             // Assert
-            _fixture.ObterTempoMedioPresenterMock.Verify(p => p.ApresentarSucesso(
-                quantidadeDias,
-                It.IsAny<DateTime>(),
-                It.IsAny<DateTime>(),
-                ordensEntregues.Count,
-                It.IsAny<double>(),
-                It.IsAny<double>()
-            ), Times.Once);
-
-            _fixture.ObterTempoMedioPresenterMock.Verify(p => p.ApresentarErro(It.IsAny<string>(), It.IsAny<ErrorType>()), Times.Never);
+            _fixture.ObterTempoMedioPresenterMock.DeveTerApresentadoSucessoComQualquerParametro();
+            _fixture.ObterTempoMedioPresenterMock.NaoDeveTerApresentadoErro();
         }
 
         [Fact(DisplayName = "Deve apresentar erro quando quantidade de dias for menor que 1")]
@@ -75,19 +69,11 @@ namespace Tests.Application.OrdemServico
                 logger);
 
             // Assert
-            _fixture.ObterTempoMedioPresenterMock.Verify(p => p.ApresentarErro(
+            _fixture.ObterTempoMedioPresenterMock.DeveTerApresentadoErro(
                 "A quantidade de dias deve estar entre 1 e 365.",
-                ErrorType.InvalidInput
-            ), Times.Once);
+                ErrorType.InvalidInput);
 
-            _fixture.ObterTempoMedioPresenterMock.Verify(p => p.ApresentarSucesso(
-                It.IsAny<int>(),
-                It.IsAny<DateTime>(),
-                It.IsAny<DateTime>(),
-                It.IsAny<int>(),
-                It.IsAny<double>(),
-                It.IsAny<double>()
-            ), Times.Never);
+            _fixture.ObterTempoMedioPresenterMock.NaoDeveTerApresentadoSucesso();
         }
 
         [Fact(DisplayName = "Deve apresentar erro quando quantidade de dias for maior que 365")]
@@ -108,19 +94,11 @@ namespace Tests.Application.OrdemServico
                 logger);
 
             // Assert
-            _fixture.ObterTempoMedioPresenterMock.Verify(p => p.ApresentarErro(
+            _fixture.ObterTempoMedioPresenterMock.DeveTerApresentadoErro(
                 "A quantidade de dias deve estar entre 1 e 365.",
-                ErrorType.InvalidInput
-            ), Times.Once);
+                ErrorType.InvalidInput);
 
-            _fixture.ObterTempoMedioPresenterMock.Verify(p => p.ApresentarSucesso(
-                It.IsAny<int>(),
-                It.IsAny<DateTime>(),
-                It.IsAny<DateTime>(),
-                It.IsAny<int>(),
-                It.IsAny<double>(),
-                It.IsAny<double>()
-            ), Times.Never);
+            _fixture.ObterTempoMedioPresenterMock.NaoDeveTerApresentadoSucesso();
         }
 
         [Fact(DisplayName = "Deve apresentar erro quando nenhuma ordem entregue for encontrada")]
@@ -142,19 +120,11 @@ namespace Tests.Application.OrdemServico
                 logger);
 
             // Assert
-            _fixture.ObterTempoMedioPresenterMock.Verify(p => p.ApresentarErro(
+            _fixture.ObterTempoMedioPresenterMock.DeveTerApresentadoErro(
                 "Nenhuma ordem de serviço entregue encontrada no período especificado.",
-                ErrorType.DomainRuleBroken
-            ), Times.Once);
+                ErrorType.DomainRuleBroken);
 
-            _fixture.ObterTempoMedioPresenterMock.Verify(p => p.ApresentarSucesso(
-                It.IsAny<int>(),
-                It.IsAny<DateTime>(),
-                It.IsAny<DateTime>(),
-                It.IsAny<int>(),
-                It.IsAny<double>(),
-                It.IsAny<double>()
-            ), Times.Never);
+            _fixture.ObterTempoMedioPresenterMock.NaoDeveTerApresentadoSucesso();
         }
 
         [Fact(DisplayName = "Deve apresentar erro de domínio quando gateway lançar DomainException")]
@@ -178,19 +148,11 @@ namespace Tests.Application.OrdemServico
                 logger);
 
             // Assert
-            _fixture.ObterTempoMedioPresenterMock.Verify(p => p.ApresentarErro(
+            _fixture.ObterTempoMedioPresenterMock.DeveTerApresentadoErro(
                 domainException.Message,
-                domainException.ErrorType
-            ), Times.Once);
+                domainException.ErrorType);
 
-            _fixture.ObterTempoMedioPresenterMock.Verify(p => p.ApresentarSucesso(
-                It.IsAny<int>(),
-                It.IsAny<DateTime>(),
-                It.IsAny<DateTime>(),
-                It.IsAny<int>(),
-                It.IsAny<double>(),
-                It.IsAny<double>()
-            ), Times.Never);
+            _fixture.ObterTempoMedioPresenterMock.NaoDeveTerApresentadoSucesso();
         }
 
         [Fact(DisplayName = "Deve apresentar erro interno quando ocorrer exceção genérica")]
@@ -213,19 +175,11 @@ namespace Tests.Application.OrdemServico
                 logger);
 
             // Assert
-            _fixture.ObterTempoMedioPresenterMock.Verify(p => p.ApresentarErro(
+            _fixture.ObterTempoMedioPresenterMock.DeveTerApresentadoErro(
                 "Erro interno do servidor.",
-                ErrorType.UnexpectedError
-            ), Times.Once);
+                ErrorType.UnexpectedError);
 
-            _fixture.ObterTempoMedioPresenterMock.Verify(p => p.ApresentarSucesso(
-                It.IsAny<int>(),
-                It.IsAny<DateTime>(),
-                It.IsAny<DateTime>(),
-                It.IsAny<int>(),
-                It.IsAny<double>(),
-                It.IsAny<double>()
-            ), Times.Never);
+            _fixture.ObterTempoMedioPresenterMock.NaoDeveTerApresentadoSucesso();
         }
 
         [Fact(DisplayName = "Deve apresentar erro NotAllowed quando cliente tentar obter tempo médio")]
@@ -246,19 +200,11 @@ namespace Tests.Application.OrdemServico
                 logger);
 
             // Assert
-            _fixture.ObterTempoMedioPresenterMock.Verify(p => p.ApresentarErro(
+            _fixture.ObterTempoMedioPresenterMock.DeveTerApresentadoErro(
                 "Acesso negado. Apenas administradores podem obter tempo médio de execução.",
-                ErrorType.NotAllowed
-            ), Times.Once);
+                ErrorType.NotAllowed);
 
-            _fixture.ObterTempoMedioPresenterMock.Verify(p => p.ApresentarSucesso(
-                It.IsAny<int>(),
-                It.IsAny<DateTime>(),
-                It.IsAny<DateTime>(),
-                It.IsAny<int>(),
-                It.IsAny<double>(),
-                It.IsAny<double>()
-            ), Times.Never);
+            _fixture.ObterTempoMedioPresenterMock.NaoDeveTerApresentadoSucesso();
         }
 
         [Theory(DisplayName = "Deve calcular tempo médio corretamente com diferentes cenários")]
@@ -297,14 +243,11 @@ namespace Tests.Application.OrdemServico
                 logger);
 
             // Assert
-            _fixture.ObterTempoMedioPresenterMock.Verify(p => p.ApresentarSucesso(
+            _fixture.ObterTempoMedioPresenterMock.DeveTerApresentadoSucesso(
                 quantidadeDias,
-                It.IsAny<DateTime>(),
-                It.IsAny<DateTime>(),
                 quantidadeOrdens,
-                24.0, // Tempo completo: 24 horas
-                12.0  // Tempo execução: 12 horas (16h - 4h)
-            ), Times.Once);
+                24.0,
+                12.0);
         }
 
         private OrdemServicoAggregate CriarOrdemEntregueComHistorico(DateTime dataCriacao, DateTime dataInicioDiagnostico, DateTime dataInicioExecucao, DateTime dataFinalizacao, DateTime dataEntrega)

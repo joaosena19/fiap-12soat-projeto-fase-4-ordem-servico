@@ -14,6 +14,9 @@ using OrdemServicoAggregate = Domain.OrdemServico.Aggregates.OrdemServico.OrdemS
 
 namespace Tests.Application.OrdemServico
 {
+    /// <summary>
+    /// Testes unitários para o caso de uso de criação de ordem de serviço.
+    /// </summary>
     public class CriarOrdemServicoUseCaseTest
     {
         private readonly OrdemServicoTestFixture _fixture;
@@ -43,9 +46,9 @@ namespace Tests.Application.OrdemServico
                 _fixture.MetricsServiceMock.Object);
 
             // Assert
-            _fixture.CriarOrdemServicoPresenterMock.Verify(p => p.ApresentarErro("Acesso negado. Apenas administradores podem criar ordens de serviço.", ErrorType.NotAllowed), Times.Once);
-            _fixture.CriarOrdemServicoPresenterMock.Verify(p => p.ApresentarSucesso(It.IsAny<OrdemServicoAggregate>()), Times.Never);
-            _fixture.VeiculoExternalServiceMock.Verify(v => v.VerificarExistenciaVeiculo(It.IsAny<Guid>()), Times.Never);
+            _fixture.CriarOrdemServicoPresenterMock.DeveTerApresentadoErro("Acesso negado. Apenas administradores podem criar ordens de serviço.", ErrorType.NotAllowed);
+            _fixture.CriarOrdemServicoPresenterMock.NaoDeveTerApresentadoSucesso();
+            _fixture.VeiculoExternalServiceMock.NaoDeveTerVerificadoExistenciaVeiculo();
         }
 
         [Fact(DisplayName = "Deve criar ordem de serviço com status inicial Recebida")]
@@ -76,8 +79,8 @@ namespace Tests.Application.OrdemServico
             ordemServicoSalva.Should().NotBeNull();
             ordemServicoSalva!.Status.Valor.Should().Be(StatusOrdemServicoEnum.Recebida);
             ordemServicoSalva.Historico.DataCriacao.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
-            _fixture.CriarOrdemServicoPresenterMock.Verify(p => p.ApresentarSucesso(ordemServicoSalva), Times.Once);
-            _fixture.CriarOrdemServicoPresenterMock.Verify(p => p.ApresentarErro(It.IsAny<string>(), It.IsAny<ErrorType>()), Times.Never);
+            _fixture.CriarOrdemServicoPresenterMock.DeveTerApresentadoSucesso(ordemServicoSalva);
+            _fixture.CriarOrdemServicoPresenterMock.NaoDeveTerApresentadoErro();
         }
 
         [Fact(DisplayName = "Deve apresentar erro quando veículo não existir")]
@@ -102,8 +105,8 @@ namespace Tests.Application.OrdemServico
                 _fixture.MetricsServiceMock.Object);
 
             // Assert
-            _fixture.CriarOrdemServicoPresenterMock.Verify(p => p.ApresentarErro("Veículo não encontrado para criar a ordem de serviço.", ErrorType.ReferenceNotFound), Times.Once);
-            _fixture.CriarOrdemServicoPresenterMock.Verify(p => p.ApresentarSucesso(It.IsAny<OrdemServicoAggregate>()), Times.Never);
+            _fixture.CriarOrdemServicoPresenterMock.DeveTerApresentadoErro("Veículo não encontrado para criar a ordem de serviço.", ErrorType.ReferenceNotFound);
+            _fixture.CriarOrdemServicoPresenterMock.NaoDeveTerApresentadoSucesso();
         }
 
         [Fact(DisplayName = "Deve gerar novo código quando código já existir")]
@@ -138,8 +141,8 @@ namespace Tests.Application.OrdemServico
             // Assert
             ordemServicoSalva.Should().NotBeNull();
             ordemServicoSalva!.Codigo.Valor.Should().NotBe(ordemServicoExistente.Codigo.Valor);
-            _fixture.CriarOrdemServicoPresenterMock.Verify(p => p.ApresentarSucesso(ordemServicoSalva), Times.Once);
-            _fixture.CriarOrdemServicoPresenterMock.Verify(p => p.ApresentarErro(It.IsAny<string>(), It.IsAny<ErrorType>()), Times.Never);
+            _fixture.CriarOrdemServicoPresenterMock.DeveTerApresentadoSucesso(ordemServicoSalva);
+            _fixture.CriarOrdemServicoPresenterMock.NaoDeveTerApresentadoErro();
         }
 
         [Fact(DisplayName = "Deve apresentar erro de domínio quando ocorrer DomainException")]
@@ -164,8 +167,8 @@ namespace Tests.Application.OrdemServico
                 _fixture.MetricsServiceMock.Object);
 
             // Assert
-            _fixture.CriarOrdemServicoPresenterMock.Verify(p => p.ApresentarErro("Erro de domínio personalizado", ErrorType.DomainRuleBroken), Times.Once);
-            _fixture.CriarOrdemServicoPresenterMock.Verify(p => p.ApresentarSucesso(It.IsAny<OrdemServicoAggregate>()), Times.Never);
+            _fixture.CriarOrdemServicoPresenterMock.DeveTerApresentadoErro("Erro de domínio personalizado", ErrorType.DomainRuleBroken);
+            _fixture.CriarOrdemServicoPresenterMock.NaoDeveTerApresentadoSucesso();
         }
 
         [Fact(DisplayName = "Deve apresentar erro interno quando ocorrer exceção genérica")]
@@ -192,8 +195,8 @@ namespace Tests.Application.OrdemServico
                 _fixture.MetricsServiceMock.Object);
 
             // Assert
-            _fixture.CriarOrdemServicoPresenterMock.Verify(p => p.ApresentarErro("Erro interno do servidor.", ErrorType.UnexpectedError), Times.Once);
-            _fixture.CriarOrdemServicoPresenterMock.Verify(p => p.ApresentarSucesso(It.IsAny<OrdemServicoAggregate>()), Times.Never);
+            _fixture.CriarOrdemServicoPresenterMock.DeveTerApresentadoErro("Erro interno do servidor.", ErrorType.UnexpectedError);
+            _fixture.CriarOrdemServicoPresenterMock.NaoDeveTerApresentadoSucesso();
         }
 
         // Teste removido: responsabilidade já coberta em outros testes
@@ -372,7 +375,7 @@ namespace Tests.Application.OrdemServico
 
             // Assert
             mockLogger.DeveTerLogadoErrorComException();
-            _fixture.CriarOrdemServicoPresenterMock.Verify(p => p.ApresentarSucesso(It.IsAny<OrdemServicoAggregate>()), Times.Once);
+            _fixture.CriarOrdemServicoPresenterMock.DeveTerApresentadoSucessoComQualquerObjeto();
         }
 
         [Fact(DisplayName = "Deve logar warning quando cliente for null ao registrar métrica")]
