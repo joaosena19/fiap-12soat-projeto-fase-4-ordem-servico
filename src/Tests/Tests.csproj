@@ -18,10 +18,14 @@
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
     <PackageReference Include="Moq" Version="4.20.72" />
+    <PackageReference Include="Reqnroll" Version="3.3.3" />
+    <PackageReference Include="Reqnroll.xUnit" Version="3.3.3" />
+    <PackageReference Include="LivingDocGen.Reqnroll.Integration" Version="2.0.7" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.0" />
     <PackageReference Include="Mongo2Go" Version="3.1.3" />
+    <PackageReference Include="XunitXml.TestLogger" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,6 +37,12 @@
     <ProjectReference Include="..\Domain\Domain.csproj" />
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
     <ProjectReference Include="..\OficinaMecanica\API.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="reqnroll.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
