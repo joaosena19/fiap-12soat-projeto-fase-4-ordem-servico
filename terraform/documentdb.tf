@@ -1,7 +1,7 @@
-# Security Group para o DocumentDB do serviço de Ordem de Serviço
+# Security Group para o DocumentDB do servico de Ordem de Servico
 resource "aws_security_group" "ordemservico_docdb_sg" {
   name        = "${var.db_cluster_identifier}-sg"
-  description = "Security group para DocumentDB Cluster do serviço de Ordem de Serviço"
+  description = "Security group para DocumentDB Cluster do servico de Ordem de Servico"
   vpc_id      = data.terraform_remote_state.infra.outputs.vpc_principal_id
 
   ingress {
@@ -13,7 +13,7 @@ resource "aws_security_group" "ordemservico_docdb_sg" {
   }
 
   ingress {
-    description = "Acesso DocumentDB das subnets públicas (pods EKS)"
+    description = "Acesso DocumentDB das subnets publicas (pods EKS)"
     from_port   = var.db_port
     to_port     = var.db_port
     protocol    = "tcp"
@@ -33,7 +33,7 @@ resource "aws_security_group" "ordemservico_docdb_sg" {
   }
 }
 
-# DB Subnet Group usando as subnets públicas da infraestrutura
+# DB Subnet Group usando as subnets publicas da infraestrutura
 resource "aws_docdb_subnet_group" "ordemservico_subnet_group" {
   name       = "${var.db_cluster_identifier}-subnet-group"
   subnet_ids = data.terraform_remote_state.infra.outputs.subnet_publica_ids
@@ -47,7 +47,7 @@ resource "aws_docdb_subnet_group" "ordemservico_subnet_group" {
 resource "aws_docdb_cluster_parameter_group" "ordemservico_params" {
   family      = "docdb5.0"
   name        = "${var.db_cluster_identifier}-params"
-  description = "DocumentDB cluster parameter group for Ordem de Serviço"
+  description = "DocumentDB cluster parameter group for Ordem de Servico"
 
   parameter {
     name  = "tls"
@@ -59,7 +59,7 @@ resource "aws_docdb_cluster_parameter_group" "ordemservico_params" {
   }
 }
 
-# Cluster DocumentDB dedicado para o microsserviço de Ordem de Serviço
+# Cluster DocumentDB dedicado para o microsservico de Ordem de Servico
 resource "aws_docdb_cluster" "ordemservico_docdb" {
   cluster_identifier              = var.db_cluster_identifier
   engine                          = "docdb"
@@ -89,7 +89,7 @@ resource "aws_docdb_cluster" "ordemservico_docdb" {
   }
 }
 
-# Instância DocumentDB (cluster member)
+# Instancia DocumentDB (cluster member)
 resource "aws_docdb_cluster_instance" "ordemservico_docdb_instance" {
   identifier         = var.db_instance_identifier
   cluster_identifier = aws_docdb_cluster.ordemservico_docdb.id
