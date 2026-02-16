@@ -32,7 +32,7 @@ public class CadastroHttpClientService :
     public async Task<ServicoExternalDto?> ObterServicoPorIdAsync(Guid servicoId)
     {
         var response = await BaseExternalHttpClient.ExecuteHttpOperationAsync(
-            () => _httpClient.GetAsync($"/api/cadastros/servicos/{servicoId}"),
+            () => _httpClient.GetAsync($"/api/servicos/{servicoId}"),
             nameof(ObterServicoPorIdAsync),
             _logger);
             
@@ -56,7 +56,7 @@ public class CadastroHttpClientService :
     public async Task<bool> VerificarExistenciaVeiculo(Guid veiculoId)
     {
         var response = await BaseExternalHttpClient.ExecuteHttpOperationAsync(
-            () => _httpClient.GetAsync($"/api/cadastros/veiculos/{veiculoId}"),
+            () => _httpClient.GetAsync($"/api/veiculos/{veiculoId}"),
             nameof(VerificarExistenciaVeiculo),
             _logger);
             
@@ -75,7 +75,7 @@ public class CadastroHttpClientService :
     public async Task<VeiculoExternalDto?> ObterVeiculoPorIdAsync(Guid veiculoId)
     {
         var response = await BaseExternalHttpClient.ExecuteHttpOperationAsync(
-            () => _httpClient.GetAsync($"/api/cadastros/veiculos/{veiculoId}"),
+            () => _httpClient.GetAsync($"/api/veiculos/{veiculoId}"),
             nameof(ObterVeiculoPorIdAsync),
             _logger);
             
@@ -95,7 +95,7 @@ public class CadastroHttpClientService :
     public async Task<VeiculoExternalDto?> ObterVeiculoPorPlacaAsync(string placa)
     {
         var response = await BaseExternalHttpClient.ExecuteHttpOperationAsync(
-            () => _httpClient.GetAsync($"/api/cadastros/veiculos/placa/{Uri.EscapeDataString(placa)}"),
+            () => _httpClient.GetAsync($"/api/veiculos/placa/{Uri.EscapeDataString(placa)}"),
             nameof(ObterVeiculoPorPlacaAsync),
             _logger);
             
@@ -115,7 +115,7 @@ public class CadastroHttpClientService :
     public async Task<VeiculoExternalDto> CriarVeiculoAsync(CriarVeiculoExternalDto dto)
     {
         var response = await BaseExternalHttpClient.ExecuteHttpOperationAsync(
-            () => _httpClient.PostAsJsonAsync("/api/cadastros/veiculos", dto),
+            () => _httpClient.PostAsJsonAsync("/api/veiculos", dto),
             nameof(CriarVeiculoAsync),
             _logger);
             
@@ -142,7 +142,7 @@ public class CadastroHttpClientService :
         
         // Depois busca o cliente
         var clienteResponse = await BaseExternalHttpClient.ExecuteHttpOperationAsync(
-            () => _httpClient.GetAsync($"/api/cadastros/clientes/{veiculo.ClienteId}"),
+            () => _httpClient.GetAsync($"/api/clientes/{veiculo.ClienteId}"),
             nameof(ObterClientePorVeiculoIdAsync),
             _logger);
             
@@ -162,7 +162,7 @@ public class CadastroHttpClientService :
     public async Task<ClienteExternalDto?> ObterPorDocumentoAsync(string documentoIdentificador)
     {
         var response = await BaseExternalHttpClient.ExecuteHttpOperationAsync(
-            () => _httpClient.GetAsync($"/api/cadastros/clientes/documento/{Uri.EscapeDataString(documentoIdentificador)}"),
+            () => _httpClient.GetAsync($"/api/clientes/documento/{Uri.EscapeDataString(documentoIdentificador)}"),
             nameof(ObterPorDocumentoAsync),
             _logger);
             
@@ -182,7 +182,7 @@ public class CadastroHttpClientService :
     public async Task<ClienteExternalDto> CriarClienteAsync(CriarClienteExternalDto dto)
     {
         var response = await BaseExternalHttpClient.ExecuteHttpOperationAsync(
-            () => _httpClient.PostAsJsonAsync("/api/cadastros/clientes", dto),
+            () => _httpClient.PostAsJsonAsync("/api/clientes", dto),
             nameof(CriarClienteAsync),
             _logger);
             
