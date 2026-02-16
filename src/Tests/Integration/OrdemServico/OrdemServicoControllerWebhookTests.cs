@@ -112,7 +112,7 @@ public class OrdemServicoControllerWebhookTests : IClassFixture<Mongo2GoFixture>
                 Nome = "Filtro de óleo",
                 Preco = 25.00m,
                 Quantidade = 1,
-                TipoItemIncluido = "Peca"
+                TipoItemEstoque = "Peca"
             });
 
         // Act

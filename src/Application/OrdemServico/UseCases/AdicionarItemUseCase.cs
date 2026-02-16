@@ -28,7 +28,7 @@ public class AdicionarItemUseCase
             if (itemEstoque == null)
                 throw new DomainException($"Item de estoque com ID {itemEstoqueOriginalId} não encontrado.", ErrorType.ReferenceNotFound, "Item de estoque não encontrado para Id {ItemEstoqueId}", itemEstoqueOriginalId);
 
-            var tipoItemIncluido = Enum.Parse<TipoItemIncluidoEnum>(itemEstoque.TipoItemIncluido, true);
+            var tipoItemIncluido = Enum.Parse<TipoItemIncluidoEnum>(itemEstoque.TipoItemEstoque, true);
 
             ordemServico.AdicionarItem(
                 itemEstoque.Id,

@@ -40,7 +40,7 @@ public class EstoqueHttpClientServiceTests
         resultado.Nome.Should().Be(itemEsperado.Nome);
         resultado.Preco.Should().Be(itemEsperado.Preco);
         resultado.Quantidade.Should().Be(itemEsperado.Quantidade);
-        resultado.TipoItemIncluido.Should().Be(itemEsperado.TipoItemIncluido);
+        resultado.TipoItemEstoque.Should().Be(itemEsperado.TipoItemEstoque);
     }
 
     [Fact(DisplayName = "Deve retornar null quando status 404")]

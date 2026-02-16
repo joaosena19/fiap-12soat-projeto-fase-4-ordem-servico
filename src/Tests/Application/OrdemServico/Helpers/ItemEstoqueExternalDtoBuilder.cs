@@ -10,7 +10,7 @@ namespace Tests.Application.OrdemServico.Helpers
         private string _nome;
         private decimal _preco;
         private int _quantidade;
-        private string _tipoItemIncluido;
+        private string _tipoItemEstoque;
         private readonly Faker _faker = new Faker("pt_BR");
 
         public ItemEstoqueExternalDtoBuilder()
@@ -19,7 +19,7 @@ namespace Tests.Application.OrdemServico.Helpers
             _nome = _faker.Commerce.ProductName();
             _preco = _faker.Random.Decimal(10, 500);
             _quantidade = _faker.Random.Int(1, 100);
-            _tipoItemIncluido = _faker.PickRandom<TipoItemIncluidoEnum>().ToString();
+            _tipoItemEstoque = _faker.PickRandom<TipoItemIncluidoEnum>().ToString();
         }
 
         public ItemEstoqueExternalDtoBuilder ComId(Guid id)
@@ -46,15 +46,15 @@ namespace Tests.Application.OrdemServico.Helpers
             return this;
         }
 
-        public ItemEstoqueExternalDtoBuilder ComTipoItemIncluido(TipoItemIncluidoEnum tipoItemIncluido)
+        public ItemEstoqueExternalDtoBuilder ComTipoItemEstoque(TipoItemIncluidoEnum tipoItemEstoque)
         {
-            _tipoItemIncluido = tipoItemIncluido.ToString();
+            _tipoItemEstoque = tipoItemEstoque.ToString();
             return this;
         }
 
-        public ItemEstoqueExternalDtoBuilder ComTipoItemIncluido(string tipoItemIncluido)
+        public ItemEstoqueExternalDtoBuilder ComTipoItemEstoque(string tipoItemEstoque)
         {
-            _tipoItemIncluido = tipoItemIncluido;
+            _tipoItemEstoque = tipoItemEstoque;
             return this;
         }
 
@@ -66,7 +66,7 @@ namespace Tests.Application.OrdemServico.Helpers
                 Nome = _nome,
                 Preco = _preco,
                 Quantidade = _quantidade,
-                TipoItemIncluido = _tipoItemIncluido
+                TipoItemEstoque = _tipoItemEstoque
             };
         }
     }
