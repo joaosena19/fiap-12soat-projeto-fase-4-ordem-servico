@@ -36,6 +36,11 @@ jobs:
       - name: Buildar a aplicação (Release)
         run: dotnet build ${{ steps.find_sln.outputs.sln_path }} --no-restore --configuration Release
 
+      - name: Instalar dependências para Mongo2Go
+        run: |
+          wget -q http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+          sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+
       - name: Rodar testes unitários (Release)
         run: dotnet test ${{ steps.find_sln.outputs.sln_path }} --no-build --configuration Release --verbosity normal
         env:
@@ -213,6 +218,17 @@ jobs:
             --from-literal=AWS__Region=${{ env.AWS_REGION }} \
             --from-literal=AWS__SQS__EstoqueReducaoSolicitacaoQueueUrl="$SQS_SOLICITACAO_URL" \
             --from-literal=AWS__SQS__EstoqueReducaoResultadoQueueUrl="$SQS_RESULTADO_URL" \
+            --from-literal=NEW_RELIC_APP_NAME=OrdemServicoService \
+            --from-literal=NEW_RELIC_APPLICATION_LOGGING_ENABLED=true \
+            --from-literal=NEW_RELIC_APPLICATION_LOGGING_FORWARDING_ENABLED=true \
+            --from-literal=NEW_RELIC_APPLICATION_LOGGING_CONTEXT_DATA_ENABLED=true \
+            --from-literal=NEW_RELIC_APPLICATION_LOGGING_METRICS_ENABLED=true \
+            --from-literal=NEW_RELIC_DISTRIBUTED_TRACING_ENABLED=true \
+            --from-literal=NEW_RELIC_LOG_LEVEL=info \
+            --from-literal=NEW_RELIC_HOME=/app/newrelic \
+            --from-literal=CORECLR_ENABLE_PROFILING=1 \
+            --from-literal=CORECLR_PROFILER="{36032161-FFC0-4B61-B559-F6C5D41BAE5A}" \
+            --from-literal=CORECLR_PROFILER_PATH=/app/newrelic/libNewRelicProfiler.so \
             --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Atualizar tag da imagem no manifesto k8s
@@ -225,8 +241,6 @@ jobs:
 
       - name: Aplicar manifestos K8s
         run: |
-          kubectl apply -f k8s/${{ env.SERVICE_NAME }}-config.yaml
-          kubectl apply -f k8s/${{ env.SERVICE_NAME }}-secret.yaml
           kubectl apply -f k8s/${{ env.SERVICE_NAME }}-deployment.yaml
           kubectl apply -f k8s/${{ env.SERVICE_NAME }}-service.yaml
           kubectl apply -f k8s/${{ env.SERVICE_NAME }}-hpa.yaml
