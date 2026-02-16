@@ -24,7 +24,7 @@ public class CadastroHttpClientServiceTests
         var servicoId = Guid.NewGuid();
         var servicoEsperado = new ServicoExternalDtoBuilder().ComId(servicoId).Build();
         
-        handler.ParaRota("GET", $"/api/cadastros/servicos/{servicoId}")
+        handler.ParaRota("GET", $"/api/servicos/{servicoId}")
                .Retornar(HttpStatusCode.OK, servicoEsperado);
         
         var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
@@ -49,7 +49,7 @@ public class CadastroHttpClientServiceTests
         var handler = new StubHttpMessageHandler();
         var servicoId = Guid.NewGuid();
         
-        handler.ParaRota("GET", $"/api/cadastros/servicos/{servicoId}")
+        handler.ParaRota("GET", $"/api/servicos/{servicoId}")
                .Retornar(HttpStatusCode.NotFound);
         
         var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
@@ -71,7 +71,7 @@ public class CadastroHttpClientServiceTests
         var handler = new StubHttpMessageHandler();
         var servicoId = Guid.NewGuid();
         
-        handler.ParaRota("GET", $"/api/cadastros/servicos/{servicoId}")
+        handler.ParaRota("GET", $"/api/servicos/{servicoId}")
                .Retornar(HttpStatusCode.InternalServerError);
         
         var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
@@ -100,7 +100,7 @@ public class CadastroHttpClientServiceTests
         var veiculoId = Guid.NewGuid();
         var veiculo = new VeiculoExternalDtoBuilder().Build();
         
-        handler.ParaRota("GET", $"/api/cadastros/veiculos/{veiculoId}")
+        handler.ParaRota("GET", $"/api/veiculos/{veiculoId}")
                .Retornar(HttpStatusCode.OK, veiculo);
         
         var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
@@ -122,7 +122,7 @@ public class CadastroHttpClientServiceTests
         var handler = new StubHttpMessageHandler();
         var veiculoId = Guid.NewGuid();
         
-        handler.ParaRota("GET", $"/api/cadastros/veiculos/{veiculoId}")
+        handler.ParaRota("GET", $"/api/veiculos/{veiculoId}")
                .Retornar(HttpStatusCode.NotFound);
         
         var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
@@ -145,7 +145,7 @@ public class CadastroHttpClientServiceTests
         var veiculoId = Guid.NewGuid();
         var veiculoEsperado = new VeiculoExternalDtoBuilder().Build();
         
-        handler.ParaRota("GET", $"/api/cadastros/veiculos/{veiculoId}")
+        handler.ParaRota("GET", $"/api/veiculos/{veiculoId}")
                .Retornar(HttpStatusCode.OK, veiculoEsperado);
         
         var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
@@ -170,7 +170,7 @@ public class CadastroHttpClientServiceTests
         var handler = new StubHttpMessageHandler();
         var veiculoId = Guid.NewGuid();
         
-        handler.ParaRota("GET", $"/api/cadastros/veiculos/{veiculoId}")
+        handler.ParaRota("GET", $"/api/veiculos/{veiculoId}")
                .Retornar(HttpStatusCode.NotFound);
         
         var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
@@ -194,7 +194,7 @@ public class CadastroHttpClientServiceTests
         var placaEscapada = Uri.EscapeDataString(placaComEspaco);
         var veiculoEsperado = new VeiculoExternalDtoBuilder().ComPlaca(placaComEspaco).Build();
         
-        handler.ParaRota("GET", $"/api/cadastros/veiculos/placa/{placaEscapada}")
+        handler.ParaRota("GET", $"/api/veiculos/placa/{placaEscapada}")
                .Retornar(HttpStatusCode.OK, veiculoEsperado);
         
         var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
@@ -236,7 +236,7 @@ public class CadastroHttpClientServiceTests
             .ComMarca(criarDto.Marca)
             .Build();
         
-        handler.ParaRota("POST", "/api/cadastros/veiculos")
+        handler.ParaRota("POST", "/api/veiculos")
                .Retornar((HttpStatusCode)statusCode, veiculoEsperado);
         
         var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
@@ -269,7 +269,7 @@ public class CadastroHttpClientServiceTests
             TipoVeiculo = 1
         };
         
-        handler.ParaRota("POST", "/api/cadastros/veiculos")
+        handler.ParaRota("POST", "/api/veiculos")
                .Retornar(HttpStatusCode.OK);
         
         var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
@@ -295,7 +295,7 @@ public class CadastroHttpClientServiceTests
         var handler = new StubHttpMessageHandler();
         var veiculoId = Guid.NewGuid();
         
-        handler.ParaRota("GET", $"/api/cadastros/veiculos/{veiculoId}")
+        handler.ParaRota("GET", $"/api/veiculos/{veiculoId}")
                .Retornar(HttpStatusCode.NotFound);
         
         var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
@@ -321,10 +321,10 @@ public class CadastroHttpClientServiceTests
         var veiculoEsperado = new VeiculoExternalDtoBuilder().ComClienteId(clienteId).Build();
         var clienteEsperado = new ClienteExternalDtoBuilder().ComId(clienteId).Build();
         
-        handler.ParaRota("GET", $"/api/cadastros/veiculos/{veiculoId}")
+        handler.ParaRota("GET", $"/api/veiculos/{veiculoId}")
                .Retornar(HttpStatusCode.OK, veiculoEsperado);
         
-        handler.ParaRota("GET", $"/api/cadastros/clientes/{clienteId}")
+        handler.ParaRota("GET", $"/api/clientes/{clienteId}")
                .Retornar(HttpStatusCode.OK, clienteEsperado);
         
         var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
@@ -352,10 +352,10 @@ public class CadastroHttpClientServiceTests
         var clienteId = Guid.NewGuid();
         var veiculoEsperado = new VeiculoExternalDtoBuilder().ComClienteId(clienteId).Build();
         
-        handler.ParaRota("GET", $"/api/cadastros/veiculos/{veiculoId}")
+        handler.ParaRota("GET", $"/api/veiculos/{veiculoId}")
                .Retornar(HttpStatusCode.OK, veiculoEsperado);
         
-        handler.ParaRota("GET", $"/api/cadastros/clientes/{clienteId}")
+        handler.ParaRota("GET", $"/api/clientes/{clienteId}")
                .Retornar(HttpStatusCode.NotFound);
         
         var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
@@ -379,7 +379,7 @@ public class CadastroHttpClientServiceTests
         var documento = "12345678901";
         var documentoEscapado = Uri.EscapeDataString(documento);
         
-        handler.ParaRota("GET", $"/api/cadastros/clientes/documento/{documentoEscapado}")
+        handler.ParaRota("GET", $"/api/clientes/documento/{documentoEscapado}")
                .Retornar(HttpStatusCode.NotFound);
         
         var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
@@ -411,7 +411,7 @@ public class CadastroHttpClientServiceTests
             .ComDocumentoIdentificador(criarDto.DocumentoIdentificador)
             .Build();
         
-        handler.ParaRota("POST", "/api/cadastros/clientes")
+        handler.ParaRota("POST", "/api/clientes")
                .Retornar((HttpStatusCode)statusCode, clienteEsperado);
         
         var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
@@ -439,7 +439,7 @@ public class CadastroHttpClientServiceTests
             DocumentoIdentificador = "12345678901"
         };
         
-        handler.ParaRota("POST", "/api/cadastros/clientes")
+        handler.ParaRota("POST", "/api/clientes")
                .Retornar(HttpStatusCode.OK);
         
         var httpClient = new HttpClient(handler) { BaseAddress = new Uri("http://localhost") };
