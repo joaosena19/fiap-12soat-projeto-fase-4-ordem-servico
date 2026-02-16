@@ -36,6 +36,11 @@ jobs:
       - name: Buildar a aplicação (Release)
         run: dotnet build ${{ steps.find_sln.outputs.sln_path }} --no-restore --configuration Release
 
+      - name: Instalar dependências para Mongo2Go
+        run: |
+          wget -q http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+          sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2_amd64.deb
+
       - name: Rodar testes unitários (Release)
         run: dotnet test ${{ steps.find_sln.outputs.sln_path }} --no-build --configuration Release --verbosity normal
         env:
