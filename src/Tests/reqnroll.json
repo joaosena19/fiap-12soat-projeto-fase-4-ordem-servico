@@ -1,0 +1,18 @@
+{
+  "$schema": "https://schemas.reqnroll.net/reqnroll-config-latest.json",
+  "language": {
+    "feature": "pt-BR"
+  },
+  "bindingCulture": {
+    "name": "pt-BR"
+  },
+  "trace": {
+    "traceSuccessfulSteps": true,
+    "traceTimings": true,
+    "minTracedDuration": "0:0:0.1"
+  },
+  "livingDocGenerator": {
+    "enabled": true,
+    "filePath": "TestExecution.json"
+  }
+}

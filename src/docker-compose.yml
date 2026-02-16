@@ -1,0 +1,47 @@
+services:
+  ordemservico-service:
+    container_name: ordemservico_service
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    ports:
+      - "5001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      # MongoDB Configuration
+      - MongoDB__ConnectionString=${MongoDB__ConnectionString}
+      - MongoDB__DatabaseName=${MongoDB__DatabaseName}
+      # JWT Configuration
+      - Jwt__Key=${Jwt__Key}
+      - Jwt__Issuer=${Jwt__Issuer}
+      - Jwt__Audience=${Jwt__Audience}
+      # API Credentials
+      - ApiCredentials__ClientId=${ApiCredentials__ClientId}
+      - ApiCredentials__ClientSecret=${ApiCredentials__ClientSecret}
+      # Webhook HMAC Secret
+      - Webhook__HmacSecret=${Webhook__HmacSecret}
+    depends_on:
+      mongo_db:
+        condition: service_healthy
+
+  mongo_db:
+    image: mongo:7
+    container_name: ordemservico_mongo_db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MongoDB__DatabaseName}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  mongo_data:
