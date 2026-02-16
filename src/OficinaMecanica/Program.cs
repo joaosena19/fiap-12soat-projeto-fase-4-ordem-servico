@@ -48,6 +48,7 @@ builder.Services.AddHealthChecks();
 // Registrar dependências como Singleton para o BackgroundService
 builder.Services.AddSingleton<Application.Contracts.Gateways.IOrdemServicoGateway, Infrastructure.Repositories.OrdemServico.OrdemServicoRepository>();
 builder.Services.AddSingleton<Application.Contracts.Monitoramento.IMetricsService, Infrastructure.Monitoramento.NewRelicMetricsService>();
+builder.Services.AddScoped<Application.Contracts.Monitoramento.IAppLogger, Infrastructure.Monitoramento.LoggerAdapter<Program>>();
 
 builder.Services.AddHostedService<Infrastructure.BackgroundServices.SagaTimeoutBackgroundService>();
 
