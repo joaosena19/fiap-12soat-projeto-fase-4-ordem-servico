@@ -11,7 +11,7 @@ namespace Tests.Application.SharedHelpers.AggregateBuilders
         private string _marca;
         private string _cor;
         private int _ano;
-        private int _tipoVeiculo;
+        private string _tipoVeiculo;
         private readonly Faker _faker = new Faker("pt_BR");
 
         public VeiculoExternalDtoBuilder()
@@ -21,7 +21,7 @@ namespace Tests.Application.SharedHelpers.AggregateBuilders
             _marca = _faker.Vehicle.Manufacturer();
             _cor = _faker.Commerce.Color();
             _ano = _faker.Random.Int(2000, DateTime.Now.Year);
-            _tipoVeiculo = _faker.Random.Int(1, 2); 
+            _tipoVeiculo = _faker.PickRandom("Carro", "Moto");
         }
 
         public VeiculoExternalDtoBuilder ComClienteId(Guid clienteId)
@@ -60,7 +60,7 @@ namespace Tests.Application.SharedHelpers.AggregateBuilders
             return this;
         }
 
-        public VeiculoExternalDtoBuilder ComTipoVeiculo(int tipoVeiculo)
+        public VeiculoExternalDtoBuilder ComTipoVeiculo(string tipoVeiculo)
         {
             _tipoVeiculo = tipoVeiculo;
             return this;

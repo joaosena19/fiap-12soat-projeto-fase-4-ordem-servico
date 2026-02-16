@@ -3,6 +3,7 @@ using Application.Contracts.Presenters;
 using Application.OrdemServico.Interfaces.External;
 using Application.Identidade.Services;
 using Application.Identidade.Services.Extensions;
+using Domain.OrdemServico.Enums;
 using Shared.Enums;
 using Shared.Exceptions;
 using Application.Extensions;
@@ -27,12 +28,14 @@ public class AdicionarItemUseCase
             if (itemEstoque == null)
                 throw new DomainException($"Item de estoque com ID {itemEstoqueOriginalId} não encontrado.", ErrorType.ReferenceNotFound, "Item de estoque não encontrado para Id {ItemEstoqueId}", itemEstoqueOriginalId);
 
+            var tipoItemIncluido = Enum.Parse<TipoItemIncluidoEnum>(itemEstoque.TipoItemIncluido, true);
+
             ordemServico.AdicionarItem(
                 itemEstoque.Id,
                 itemEstoque.Nome,
                 itemEstoque.Preco,
                 quantidade,
-                itemEstoque.TipoItemIncluido);
+                tipoItemIncluido);
 
             var result = await gateway.AtualizarAsync(ordemServico);
             presenter.ApresentarSucesso(result);

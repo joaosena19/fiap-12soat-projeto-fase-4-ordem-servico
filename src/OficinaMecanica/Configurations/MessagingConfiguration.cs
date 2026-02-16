@@ -3,6 +3,7 @@ using Application.Contracts.Messaging.DTOs;
 using Infrastructure.Messaging;
 using Infrastructure.Messaging.Filters;
 using MassTransit;
+using System.Text.Json.Serialization;
 
 namespace API.Configurations;
 
@@ -47,6 +48,7 @@ public static class MessagingConfiguration
                 cfg.ConfigureJsonSerializerOptions(options =>
                 {
                     options.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+                    options.Converters.Add(new JsonStringEnumConverter());
                     return options;
                 });
             });

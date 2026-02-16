@@ -227,7 +227,7 @@ public class CadastroHttpClientServiceTests
             Marca = "Honda",
             Cor = "Preto",
             Ano = 2023,
-            TipoVeiculo = 1
+            TipoVeiculo = "Carro"
         };
         var veiculoEsperado = new VeiculoExternalDtoBuilder()
             .ComClienteId(criarDto.ClienteId)
@@ -266,7 +266,7 @@ public class CadastroHttpClientServiceTests
             Marca = "Honda",
             Cor = "Preto",
             Ano = 2023,
-            TipoVeiculo = 1
+            TipoVeiculo = "Carro"
         };
         
         handler.ParaRota("POST", "/api/veiculos")

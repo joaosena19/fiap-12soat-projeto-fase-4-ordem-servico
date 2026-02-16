@@ -12,7 +12,7 @@ namespace Application.OrdemServico.Dtos.External
         public string Marca { get; set; } = string.Empty;
         public string Cor { get; set; } = string.Empty;
         public int Ano { get; set; }
-       public int TipoVeiculo { get; set; } // Enum as int for loose coupling
+        public string TipoVeiculo { get; set; } = string.Empty;
     }
 
     /// <summary>
@@ -35,6 +35,6 @@ namespace Application.OrdemServico.Dtos.External
         public string Marca { get; set; } = string.Empty;
         public string Cor { get; set; } = string.Empty;
         public int Ano { get; set; }
-        public int TipoVeiculo { get; set; } // Enum as int for loose coupling
+        public string TipoVeiculo { get; set; } = string.Empty;
     }
 }
