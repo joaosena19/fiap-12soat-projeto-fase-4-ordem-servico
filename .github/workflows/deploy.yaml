@@ -163,7 +163,7 @@ jobs:
           DOCDB_PORT=$(echo "$STATE_DATA" | jq -r '.outputs.docdb_cluster_port.value // "27017"')
           DB_NAME_VALUE=$(echo "$STATE_DATA" | jq -r '.outputs.db_name.value')
           DB_USERNAME_VALUE=$(echo "$STATE_DATA" | jq -r '.outputs.db_username.value')
-          DB_CONNECTION_STRING=$(echo "$STATE_DATA" | jq -r '.outputs.db_connection_string.value')
+          DB_CONNECTION_STRING=$(echo "$STATE_DATA" | jq -r '.outputs.db_connection_string_with_password.value')
           
           if [ "$DOCDB_ENDPOINT" = "null" ] || [ -z "$DOCDB_ENDPOINT" ]; then
             echo "❌ Erro: Não foi possível obter dados do DocumentDB"
@@ -194,6 +194,7 @@ jobs:
       - name: Atualizar Secret do Kubernetes
         run: |
           kubectl create secret generic ${{ env.K8S_SECRET_NAME }} \
+            --from-literal=MongoDB__ConnectionString="$DB_CONNECTION_STRING" \
             --from-literal=MongoDB__Password=${{ secrets.DB_MASTER_PASSWORD }} \
             --from-literal=Jwt__Key=${{ secrets.JWT_KEY }} \
             --from-literal=ApiCredentials__ClientSecret=${{ secrets.API_CLIENT_SECRET }} \
@@ -206,7 +207,6 @@ jobs:
       - name: Atualizar ConfigMap do Kubernetes
         run: |
           kubectl create configmap ${{ env.K8S_CONFIG_NAME }} \
-            --from-literal=MongoDB__ConnectionString="$DB_CONNECTION_STRING" \
             --from-literal=MongoDB__DatabaseName="$DB_NAME_VALUE" \
             --from-literal=ASPNETCORE_ENVIRONMENT=Production \
             --from-literal=ASPNETCORE_URLS=http://+:8080 \
