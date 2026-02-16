@@ -85,7 +85,7 @@ public class CriarOrdemServicoCompletaUseCase
             Marca = veiculoDto.Marca,
             Cor = veiculoDto.Cor,
             Ano = veiculoDto.Ano,
-            TipoVeiculo = (int)veiculoDto.TipoVeiculo
+            TipoVeiculo = veiculoDto.TipoVeiculo.ToString()
         });
 
         return novoVeiculo;
@@ -133,12 +133,14 @@ public class CriarOrdemServicoCompletaUseCase
             var itemEstoque = await estoqueExternalService.ObterItemEstoquePorIdAsync(itemDto.ItemEstoqueId);
             if (itemEstoque == null) continue;
 
+            var tipoItemIncluido = Enum.Parse<TipoItemIncluidoEnum>(itemEstoque.TipoItemIncluido, true);
+
             ordemServico.AdicionarItem(
                 itemEstoque.Id,
                 itemEstoque.Nome,
                 itemEstoque.Preco,
                 itemDto.Quantidade,
-                itemEstoque.TipoItemIncluido);
+                tipoItemIncluido);
         }
     }
 

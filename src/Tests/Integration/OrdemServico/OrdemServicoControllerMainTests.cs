@@ -240,7 +240,7 @@ public class OrdemServicoControllerMainTests : IClassFixture<Mongo2GoFixture>, I
                 Marca = request.Veiculo.Marca,
                 Cor = request.Veiculo.Cor,
                 Ano = request.Veiculo.Ano,
-                TipoVeiculo = (int)request.Veiculo.TipoVeiculo
+                TipoVeiculo = request.Veiculo.TipoVeiculo.ToString()
             });
 
         // Act

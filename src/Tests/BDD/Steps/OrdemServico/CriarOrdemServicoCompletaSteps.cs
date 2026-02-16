@@ -86,7 +86,7 @@ namespace Tests.BDD.Steps.OrdemServico
                     Marca = "Marca Teste",
                     Cor = "Preto",
                     Ano = 2023,
-                    TipoVeiculo = 1
+                    TipoVeiculo = "Carro"
                 });
         }
 
@@ -119,7 +119,7 @@ namespace Tests.BDD.Steps.OrdemServico
                     Marca = "Marca Existente",
                     Cor = "Branco",
                     Ano = 2022,
-                    TipoVeiculo = 1
+                    TipoVeiculo = "Carro"
                 });
         }
 
@@ -165,7 +165,7 @@ namespace Tests.BDD.Steps.OrdemServico
                     Marca = "Marca",
                     Cor = "Azul",
                     Ano = 2023,
-                    TipoVeiculo = 1
+                    TipoVeiculo = "Carro"
                 });
         }
 
@@ -203,7 +203,7 @@ namespace Tests.BDD.Steps.OrdemServico
                     Nome = "Item Existente",
                     Preco = 50.00m,
                     Quantidade = 10,
-                    TipoItemIncluido = (TipoItemIncluidoEnum)1
+                    TipoItemIncluido = "Peca"
                 });
 
             _contexto.Factory.Mocks.EstoqueService
