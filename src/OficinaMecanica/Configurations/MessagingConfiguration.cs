@@ -18,11 +18,18 @@ public static class MessagingConfiguration
             // Configurar Amazon SQS como transport
             x.UsingAmazonSqs((context, cfg) =>
             {
-                // Configurar região AWS
-                cfg.Host("us-east-1", h =>
+                var region = configuration["AWS:Region"] ?? "us-east-1";
+
+                cfg.Host(region, h =>
                 {
-                    // Credenciais via IAM role do pod - sem necessidade de access key
-                    // A role anexada ao node group do EKS já tem permissão
+                    var accessKey = configuration["AWS:AccessKeyId"];
+                    var secretKey = configuration["AWS:SecretAccessKey"];
+
+                    if (!string.IsNullOrEmpty(accessKey) && !string.IsNullOrEmpty(secretKey))
+                    {
+                        h.AccessKey(accessKey);
+                        h.SecretKey(secretKey);
+                    }
                 });
 
                 // Registrar filtros globais de correlação
