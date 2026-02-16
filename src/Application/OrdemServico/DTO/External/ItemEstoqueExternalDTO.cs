@@ -9,6 +9,6 @@ namespace Application.OrdemServico.Dtos.External
         public string Nome { get; set; } = string.Empty;
         public decimal Preco { get; set; }
         public int Quantidade { get; set; }
-        public string TipoItemIncluido { get; set; } = string.Empty;
+        public string TipoItemEstoque { get; set; } = string.Empty;
     }
 }

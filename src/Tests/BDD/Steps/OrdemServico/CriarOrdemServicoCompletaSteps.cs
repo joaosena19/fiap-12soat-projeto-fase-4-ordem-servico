@@ -203,7 +203,7 @@ namespace Tests.BDD.Steps.OrdemServico
                     Nome = "Item Existente",
                     Preco = 50.00m,
                     Quantidade = 10,
-                    TipoItemIncluido = "Peca"
+                    TipoItemEstoque = "Peca"
                 });
 
             _contexto.Factory.Mocks.EstoqueService

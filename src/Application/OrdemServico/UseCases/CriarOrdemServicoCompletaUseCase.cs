@@ -133,7 +133,7 @@ public class CriarOrdemServicoCompletaUseCase
             var itemEstoque = await estoqueExternalService.ObterItemEstoquePorIdAsync(itemDto.ItemEstoqueId);
             if (itemEstoque == null) continue;
 
-            var tipoItemIncluido = Enum.Parse<TipoItemIncluidoEnum>(itemEstoque.TipoItemIncluido, true);
+            var tipoItemIncluido = Enum.Parse<TipoItemIncluidoEnum>(itemEstoque.TipoItemEstoque, true);
 
             ordemServico.AdicionarItem(
                 itemEstoque.Id,
