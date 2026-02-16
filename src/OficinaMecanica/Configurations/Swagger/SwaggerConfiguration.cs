@@ -74,11 +74,14 @@ namespace API.Configurations.Swagger
         /// <returns>Aplicação configurada</returns>
         public static WebApplication UseSwaggerDocumentation(this WebApplication app)
         {
-            app.UseSwagger();
+            app.UseSwagger(c =>
+            {
+                c.RouteTemplate = "swagger/ordens-servico/{documentName}/swagger.json";
+            });
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Oficina Mecânica API v1");
-                c.RoutePrefix = string.Empty;
+                c.SwaggerEndpoint("/swagger/ordens-servico/v1/swagger.json", "Ordem de Servico API v1");
+                c.RoutePrefix = "swagger/ordens-servico";
             });
 
             return app;
