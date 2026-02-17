@@ -16,6 +16,10 @@ public static class MessagingConfiguration
             // Registrar consumer de resultado de redução de estoque
             x.AddConsumer<ReducaoEstoqueResultadoConsumer>();
 
+            // Mapear nomes de entidades (SNS topics) fixos para garantir que
+            // ambos os microsserviços usem o mesmo topic independente do namespace
+            x.SetEndpointNameFormatter(new KebabCaseEndpointNameFormatter(false));
+
             // Configurar Amazon SQS como transport
             x.UsingAmazonSqs((context, cfg) =>
             {
@@ -32,6 +36,10 @@ public static class MessagingConfiguration
                         h.SecretKey(secretKey);
                     }
                 });
+
+                // Topic names fixos para alinhamento entre microsserviços
+                cfg.Message<ReducaoEstoqueSolicitacao>(m => m.SetEntityName("fase4-reducao-estoque-solicitacao"));
+                cfg.Message<ReducaoEstoqueResultado>(m => m.SetEntityName("fase4-reducao-estoque-resultado"));
 
                 // Registrar filtros globais de correlação
                 cfg.UseConsumeFilter(typeof(ConsumeCorrelationIdFilter<>), context);
