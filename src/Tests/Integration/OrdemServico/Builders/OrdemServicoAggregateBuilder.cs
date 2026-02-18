@@ -73,7 +73,7 @@ public static class OrdemServicoAggregateBuilder
     public static OrdemServicoAggregate Finalizada()
     {
         var ordemServico = EmExecucao();
-        if (ordemServico.ItensIncluidos.Any())
+        if (ordemServico.ItensIncluidos.Count > 0)
             ordemServico.ConfirmarReducaoEstoque();
         ordemServico.FinalizarExecucao();
         return ordemServico;

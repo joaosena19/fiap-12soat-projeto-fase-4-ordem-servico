@@ -37,7 +37,7 @@ public class PropagateHeadersHandlerTests
     {
         // Arrange
         var token = "meu-token-secreto";
-        _httpContext.Request.Headers["Authorization"] = $"Bearer {token}";
+        _httpContext.Request.Headers.Authorization = $"Bearer {token}";
         _correlationIdAccessorMock.Setup(x => x.GetCorrelationId()).Returns(Guid.NewGuid().ToString());
         _innerHandler.ParaRota("GET", "/api/test").Retornar(HttpStatusCode.OK);
 
