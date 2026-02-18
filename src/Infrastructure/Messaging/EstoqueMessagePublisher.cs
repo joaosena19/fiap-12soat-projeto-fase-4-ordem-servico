@@ -24,8 +24,11 @@ public class EstoqueMessagePublisher : IEstoqueMessagePublisher
     /// <param name="logger">Logger para registro de mensagens.</param>
     public EstoqueMessagePublisher(IPublishEndpoint publishEndpoint, IAppLogger logger)
     {
-        _publishEndpoint = publishEndpoint ?? throw new ArgumentNullException(nameof(publishEndpoint));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        ArgumentNullException.ThrowIfNull(publishEndpoint);
+        ArgumentNullException.ThrowIfNull(logger);
+
+        _publishEndpoint = publishEndpoint;
+        _logger = logger;
     }
 
     /// <summary>
