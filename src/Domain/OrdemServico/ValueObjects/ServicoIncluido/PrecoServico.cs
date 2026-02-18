@@ -7,7 +7,7 @@ namespace Domain.OrdemServico.ValueObjects.ServicoIncluido
     [ValueObject]
     public record PrecoServico
     {
-        private decimal _valor = 0M;
+        private readonly decimal _valor = 0M;
 
         // Construtor sem parâmetro para EF Core
         private PrecoServico() { }

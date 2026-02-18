@@ -7,7 +7,7 @@ namespace Domain.OrdemServico.ValueObjects.Orcamento
     [ValueObject]
     public record DataCriacao
     {
-        private DateTime _valor;
+        private readonly DateTime _valor;
 
         // Construtor sem parâmetro para EF Core
         private DataCriacao() { }

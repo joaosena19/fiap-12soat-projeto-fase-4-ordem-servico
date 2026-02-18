@@ -34,7 +34,7 @@ namespace Tests.API.Endpoints
         {
             var httpContext = new DefaultHttpContext();
             if (authorizationHeader != null)
-                httpContext.Request.Headers["Authorization"] = authorizationHeader;
+                httpContext.Request.Headers.Authorization = authorizationHeader;
 
             _sut.ControllerContext = new ControllerContext { HttpContext = httpContext };
         }

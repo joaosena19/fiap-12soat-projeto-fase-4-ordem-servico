@@ -7,7 +7,7 @@ namespace Domain.OrdemServico.ValueObjects.ItemIncluido
     [ValueObject]
     public record Quantidade
     {
-        private int _valor;
+        private readonly int _valor;
 
         // Construtor sem parâmetro para o EF Core
         private Quantidade() { }

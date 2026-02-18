@@ -172,7 +172,7 @@ namespace Domain.OrdemServico.Aggregates.OrdemServico
             if (Status.Valor != StatusOrdemServicoEnum.EmDiagnostico)
                 throw new DomainException($"Só é possível gerar orçamento para uma ordem de serviço com o status '{StatusOrdemServicoEnum.EmDiagnostico}'", ErrorType.DomainRuleBroken);
 
-            if (!ServicosIncluidos.Any() && !ItensIncluidos.Any())
+            if (ServicosIncluidos.Count == 0 && ItensIncluidos.Count == 0)
                 throw new DomainException("Não é possível gerar orçamento sem pelo menos um serviço ou item incluído.", ErrorType.DomainRuleBroken);
 
             Status = new Status(StatusOrdemServicoEnum.AguardandoAprovacao);
@@ -204,7 +204,7 @@ namespace Domain.OrdemServico.Aggregates.OrdemServico
                 throw new DomainException($"Só é possível iniciar execução para uma ordem de serviço com o status '{StatusOrdemServicoEnum.Aprovada}'", ErrorType.DomainRuleBroken);
 
             // Garantia para não marcar novamente em cenário de Retry, onde IniciarExecucao pode ser chamado mais de uma vez antes de receber a confirmação do estoque
-            var deveAguardarReducaoEstoque = ItensIncluidos.Any() && InteracaoEstoque.EstoqueRemovidoComSucesso != true;
+            var deveAguardarReducaoEstoque = ItensIncluidos.Count > 0 && InteracaoEstoque.EstoqueRemovidoComSucesso != true;
             if (deveAguardarReducaoEstoque)
                 InteracaoEstoque = InteracaoEstoque.AguardandoReducao();
             else InteracaoEstoque = InteracaoEstoque.SemInteracao();
